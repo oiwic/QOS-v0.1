@@ -1,7 +1,9 @@
 % bring up qubits one by one
 % Yulin Wu, 2017/3/11
 %%
-addpath('D:\QOS1.1\qos\dlls');
+cd('D:\QOSv1.1\qos');
+rmpath(genpath('D:\QOS\qos'));
+addpath('D:\QOSv1.1\qos\dlls');
 import data_taking.public.util.allQNames
 import data_taking.public.util.setZDC
 import data_taking.public.util.readoutFreqDiagram

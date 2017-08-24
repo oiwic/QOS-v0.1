@@ -7,7 +7,7 @@ classdef aczSettings < handle
 		thi
 		lam2
 		lam3
-		aczQ
+		aczFirstQ
 		meetUpDetuneFreq
 		meetUpLonger
 		dynamicPhase
