@@ -22,7 +22,7 @@ classdef randBenchMarking < qes.measurement.measurement
     end
     methods
         function obj = randBenchMarking(qubits, process,numGates,numShots)
-            if ~isa(process,'sqc.op.physical.operator')
+			if ~isempty(process) && ~isa(process,'sqc.op.physical.operator')
 				throw(MException('QOS_randBenchMarking:invalidInput',...
 						'the input is not a valid quantum operator.'));
 			end
@@ -40,7 +40,8 @@ classdef randBenchMarking < qes.measurement.measurement
                     qs = sqc.util.loadQubits();
                     qubits{ii} = qs{qes.util.find(qubits{ii},qs)};
                 end
-                qubits{ii} = Copy(qubits{ii}); % copy is important for CZ based two-qubit RB 
+				qubits{ii} = qubits{ii};
+                % qubits{ii} = Copy(qubits{ii}); % copy is important for CZ based two-qubit RB 
             end
             obj = obj@qes.measurement.measurement([]);
             obj.process = process;
@@ -49,10 +50,16 @@ classdef randBenchMarking < qes.measurement.measurement
             obj.numGates = numGates;
             obj.numShots = numShots;
 
-            className = class(process);
-            className = strsplit(className,'.');
-            className = className{end};
+			if ~isempty(process)
+				className = class(process);
+				className = strsplit(className,'.');
+				className = className{end};
+			else
+				className = 'NULL';
+			end
             switch className
+				case 'NULL' % case which only measures the reference
+					obj.processIdx = 0;
                 case 'I'
                     obj.processIdx = 1;
                 case {'X','X_'}
@@ -80,8 +87,7 @@ classdef randBenchMarking < qes.measurement.measurement
                     throw(MException('QOS_randBenchMarking:notImplemeted',...
 						'Not implemented error'));
                 otherwise
-                    
-                    error('Process not one of I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap, Run X gate tomography.');
+                    error('Process not one of NULL, I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap, Run X gate tomography.');
             end
             
             obj.R = sqc.measure.resonatorReadout_ss(obj.qubits);
@@ -106,20 +112,27 @@ classdef randBenchMarking < qes.measurement.measurement
                     PR = PR*gs{ii};
                 end
                 PR = PR*gf_ref;
-                Pi = gs{1};
-                for ii = 2:obj.numGates
-                    Pi = Pi*obj.process*gs{ii};
-                end
-                Pi = Pi*obj.process*gf_i;
+				
+				if obj.processIdx
+					Pi = gs{1};
+					for ii = 2:obj.numGates
+						Pi = Pi*obj.process*gs{ii};
+					end
+					Pi = Pi*obj.process*gf_i;
+				end
+				
                 obj.R.state = 1;
-
                 obj.R.delay = PR.length;
                 PR.Run();
                 pa = obj.R();
 
-                obj.R.delay = Pi.length;
-                Pi.Run();
-                pb = obj.R();
+				if obj.processIdx
+					obj.R.delay = Pi.length;
+					Pi.Run();
+					pb = obj.R();
+				else
+					pb = NaN;
+				end
                 obj.data(nn,:) = [pa, pb];
                 obj.extradata(nn,:) = {gref_idx,gint_idx};
             end
@@ -141,10 +154,15 @@ classdef randBenchMarking < qes.measurement.measurement
                     end
             end
             [gf_ref, gf_idx] = obj.finalGate(ridx);
-            iidx = reshape([ridx; obj.processIdx*ones(1,obj.numGates)],1,[]);
-            [gf_i, gf_i_idx] = obj.finalGate(iidx);
-            gref_idx = [ridx,gf_idx];
-            gint_idx = [iidx,gf_i_idx];
+			gref_idx = [ridx,gf_idx];
+			if obj.processIdx
+				iidx = reshape([ridx; obj.processIdx*ones(1,obj.numGates)],1,[]);
+				[gf_i, gf_i_idx] = obj.finalGate(iidx);
+				gint_idx = [iidx,gf_i_idx];
+			else
+				gf_i = [];
+				gint_idx = [];
+			end
         end
 		function [g, gidx] = finalGate(obj,gidx)
             if obj.numQs == 1

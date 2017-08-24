@@ -24,7 +24,19 @@ classdef ACZ < sqc.op.physical.operator
         meetUpQ
     end
     methods
-        function obj = ACZ(q1, q2, scz)
+        function obj = ACZ(q1, q2)
+			if isempty(q1.aczSettings) && isempty(q1.aczSettings)
+				aczSettingsKey = sprintf('%s_%s',q1.name,q2.name);
+				QS = qes.qSettings.GetInstance();
+				scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
+			else
+				if ~isempty(q1.aczSettings)
+					scz = q1.aczSettings;
+				else
+					scz = q1.aczSettings;
+				end
+			end
+
             obj = obj@sqc.op.physical.operator({q1, q2});
             obj.amp = scz.amp;
             obj.thf = scz.thf;

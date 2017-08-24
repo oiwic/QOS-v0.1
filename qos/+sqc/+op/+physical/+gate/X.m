@@ -12,7 +12,7 @@ function g = X(qubit)
             g.setGateClass('X');
 		otherwise
 			error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
-				qubit.g_Z_typ);
+				qubit.g_XY_typ);
 	
 	end
 end

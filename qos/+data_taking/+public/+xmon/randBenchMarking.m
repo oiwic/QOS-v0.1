@@ -74,7 +74,11 @@ function varargout = randBenchMarking(varargin)
     Pref = NaN(args.numReps,N); 
     Pgate = NaN(args.numReps,N);
     Gates = cell(N,args.numReps,2);
-    dataFileName = ['RB',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+	if numel(q) == 1
+		dataFileName = ['RB_',q1.name,'_',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+	else
+		dataFileName = ['RB_',q1.name,q2.name,'_',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+	end
     QS = qes.qSettings.GetInstance();
     dataPath = QS.loadSSettings('data_path');
     sessionSettings = QS.loadSSettings;
