@@ -16,13 +16,14 @@ function varargout = zDelay(varargin)
 
 % Yulin Wu, 2017/5/10
 
-
-fcn_name = 'data_taking.public.xmon.zDelay'; % this and args will be saved with data
 import qes.*
 import sqc.*
 import sqc.op.physical.*
 
-args = util.processArgs(varargin,{'zLn',[],'r_avg',[],'gui',false,'notes','','save',true});
+if nargin > 1  % otherwise playback
+	fcn_name = 'data_taking.public.xmon.zDelay'; % this and args will be saved with data
+	args = util.processArgs(varargin,{'zLn',[],'r_avg',[],'gui',false,'notes','','save',true});
+end
 q = data_taking.public.util.getQubits(args,{'qubit'});
 
 if ~isempty(args.r_avg) 

@@ -38,15 +38,16 @@ function varargout = zPulseRipplePhase_beta(varargin)
 %     fsamples = xfrFunc_f.eval(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-b');
 
-
-    fcn_name = 'data_taking.public.xmon.zPulseRipple'; % this and args will be saved with data
     import qes.*
     import sqc.*
     import sqc.op.physical.*
     
     Z_LENGTH = 10000;
 
-    args = util.processArgs(varargin,{'xfrFunc',[],'gui',false,'notes','','detuning',0,'save',true});
+	if nargin > 1  % otherwise playback
+		fcn_name = 'data_taking.public.xmon.zPulseRipple'; % this and args will be saved with data
+		args = util.processArgs(varargin,{'xfrFunc',[],'gui',false,'notes','','detuning',0,'save',true});
+	end
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
     X2 = gate.X2p(q);

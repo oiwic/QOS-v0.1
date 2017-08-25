@@ -18,18 +18,18 @@ classdef jpaRunner < qes.qHandle
     methods
         function obj = jpaRunner(jpaObj)
            obj.jpa = jpaObj;
-           awg = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
+           da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
                     'name',jpaObj.channels.signal_da_i.instru);
            % needs checking here because awg could be a network analyzer,
            % jpaRunner dose not handle cases of using a network analyzer as
            % singnal source for S21, we only deal with the standard way of
            % using awg(DAC) and IQ mixing as signal source. 
-            if ~isa(awg,'qes.hwdriver.sync.awg') && ~isa(awg,'qes.hwdriver.async.awg')
+            if ~isa(da,'qes.hwdriver.sync.awg') && ~isa(da,'qes.hwdriver.async.awg')
                 throw(MException('QOS_jpaRunner:inValidSettings',...
                       sprintf('jpaRunner only handles cases of using awg(DAC) and IQ mixing as signal source, %s given.',...
                       jpaObj.channels.signal_i.instru)));
             end
-            obj.jpaPumpDA = awg;
+            obj.jpaPumpDA = da;
             biasSrc_ = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',jpaObj.channels.bias.instru);
             obj.biasSrc = biasSrc_.GetChnl(jpaObj.channels.bias.chnl);
             pumpMwSrc_ = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',jpaObj.channels.pump_mw.instru);

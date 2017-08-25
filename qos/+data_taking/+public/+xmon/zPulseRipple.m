@@ -16,15 +16,17 @@ function varargout = zPulseRipple(varargin)
 % arguments order not important as long as they form correct pairs.
 
 % Yulin Wu, 2016/12/27
-
-    fcn_name = 'data_taking.public.xmon.zPulseRipple'; % this and args will be saved with data
+	
     import qes.*
     import sqc.*
     import sqc.op.physical.*
     
     Z_LENGTH = 10000;
 
-    args = util.processArgs(varargin,{'dataTyp','P','gui',false,'notes','','detuning',0,'save',true});
+	if nargin > 1  % otherwise playback
+		fcn_name = 'data_taking.public.xmon.zPulseRipple'; % this and args will be saved with data
+		args = util.processArgs(varargin,{'dataTyp','P','gui',false,'notes','','detuning',0,'save',true});
+	end
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
     X2 = gate.X2p(q);

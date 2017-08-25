@@ -43,6 +43,11 @@ classdef ACZ < sqc.op.physical.operator
             obj.thi = scz.thi;
             obj.lam2 = scz.lam2;
             obj.lam3 = scz.lam3;
+			
+            if ~isempty(g_.dynamicPhase)
+                q1.g_XY_phaseOffset = q1.g_XY_phaseOffset + g_.dynamicPhase(1);
+                q2.g_XY_phaseOffset = q2.g_XY_phaseOffset + g_.dynamicPhase(2);
+            end
             
             
             obj.meetUpLonger = scz.meetUpLonger;

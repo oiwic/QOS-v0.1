@@ -6,5 +6,5 @@ function g = H(qubit)
 	
 	import sqc.op.physical.gate.*
 	g = Y4p(qubit)*X(qubit)*Y4m(qubit);
-    g.setGateClass('operator');
+    g.setGateClass('H');
 end

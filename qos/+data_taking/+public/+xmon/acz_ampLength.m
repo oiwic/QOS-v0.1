@@ -16,12 +16,16 @@ function varargout = acz_ampLength(varargin)
 
 % Yulin Wu, 2017/7/2
 
-    fcn_name = 'data_taking.public.xmon.acz_ampLength'; % this and args will be saved with data
+    
     import qes.*
     import sqc.*
     import sqc.op.physical.*
 
-    args = util.processArgs(varargin,{'cState','0','gui',false,'notes','','save',true});
+	if nargin > 1  % otherwise playback
+		fcn_name = 'data_taking.public.xmon.acz_ampLength'; % this and args will be saved with data
+		args = util.processArgs(varargin,{'cState','0','gui',false,'notes','','save',true});
+	end
+	
     [qc,qt] = data_taking.public.util.getQubits(args,{'controlQ','targetQ'});
 
     

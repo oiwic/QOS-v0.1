@@ -12,7 +12,7 @@ classdef resonatorReadout < qes.measurement.prob
         mw_src_power % expose qubit setting r_uSrcPower for tunning
         mw_src_frequency % expose qubit setting r_fc for tunning
         
-        startWv % wave object to be added before the start of readout waveform
+        startWv % waveform object to be added before the start of readout waveform
     end
     properties (SetAccess = protected)
         qubits
