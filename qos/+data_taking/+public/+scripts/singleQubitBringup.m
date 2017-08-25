@@ -1,4 +1,4 @@
-% bring up qubits one by one
+% bring up qubits
 % Yulin Wu, 2017/3/11
 %%
 cd('D:\QOSv1.1\qos');
