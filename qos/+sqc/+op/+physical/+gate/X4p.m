@@ -9,6 +9,7 @@ classdef X4p < sqc.op.physical.gate.XY_base
             obj = obj@sqc.op.physical.gate.XY_base(qubit);
             obj.length = obj.qubits{1}.g_XY4_ln;
             obj.amp = obj.qubits{1}.g_XY4_amp;
+            obj.setGateClass('X4p');
         end
     end
 end

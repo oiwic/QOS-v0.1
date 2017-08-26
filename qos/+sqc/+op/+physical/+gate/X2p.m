@@ -9,6 +9,7 @@ classdef X2p < sqc.op.physical.gate.XY_base
 			obj = obj@sqc.op.physical.gate.XY_base(qubit);
 			obj.length = obj.qubits{1}.g_XY2_ln;
             obj.amp = obj.qubits{1}.g_XY2_amp;
+            obj.setGateClass('X2p');
         end
     end
 end

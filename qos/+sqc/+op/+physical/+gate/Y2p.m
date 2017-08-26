@@ -10,6 +10,7 @@ classdef Y2p < sqc.op.physical.gate.XY_base
 			obj.length = obj.qubits{1}.g_XY2_ln;
             obj.amp = obj.qubits{1}.g_XY2_amp;
             obj.phase = pi/2;
+            obj.setGateClass('Y2p');
         end
     end
 end

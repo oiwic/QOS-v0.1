@@ -10,6 +10,7 @@ classdef X4m < sqc.op.physical.gate.XY_base
 			obj.length = obj.qubits{1}.g_XY4_ln;
             obj.amp = obj.qubits{1}.g_XY4_amp;
             obj.phase = pi;
+            obj.setGateClass('X4m');
         end
     end
 end

@@ -6,4 +6,5 @@ function g = Delay(qubit,length)
 	
 	g = sqc.op.physical.gate.I(qubit);
     g.ln = length;
+    g.setGateClass('I');
 end

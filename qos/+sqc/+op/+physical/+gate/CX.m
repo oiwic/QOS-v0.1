@@ -6,4 +6,5 @@ function g = CX(control_q, target_q)
 	
 	import sqc.op.physical.gate.*
 	g = Y2p(target_q)*CZ(control_q,target_q)*Y2m(target_q);
+    g.setGateClass('CX');
 end

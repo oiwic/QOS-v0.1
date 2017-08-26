@@ -12,6 +12,7 @@ import sqc.util.setQSettings
 import data_taking.public.xmon.*
 % padLength = 2e3;
 % com.qos.waveform.Waveform.setPadLength(padLength);
+clc;
 app.RE
 %%
 % qes.util.copySession([],'s170626');
@@ -255,17 +256,11 @@ for ii = 1:numel(qubits)
     end
 end
 %%
-setQSettings('r_avg',1000,'q8_7k');
-setQSettings('r_avg',1000,'q9');
-acz_ramsey('controlQ','q9','targetQ','q8_7k',...
-       'czLength',[70:4:150],'czAmp',[2.1e4:200:2.45e4],'czDelay',20,'cState','1',...
-       'notes','','gui',true,'save',true);
-%%
-setQSettings('r_avg',1000,'q8');
-setQSettings('r_avg',1000,'q9');
+setQSettings('r_avg',5000,'q8');
+setQSettings('r_avg',5000,'q9');
 acz_ampLength('controlQ','q9','targetQ','q8',...
        'dataTyp','Phase',...
-       'czLength',[60:2:200],'czAmp',[2.1e4:100:2.9e4],'cState','1',...
+       'czLength',[90],'czAmp',[2.73e4:15:2.77e4],'cState','0',...
        'notes','','gui',true,'save',true);
 
 %%
@@ -275,8 +270,8 @@ qqSwap('qubit1','q7','qubit2','q8',...
        'swapTime',[0:10:100],'readoutQubit',2,...
        'notes','','gui',true,'save',true);
 %%
-setQSettings('r_avg',2000,'q8');
-setQSettings('r_avg',2000,'q9');
+setQSettings('r_avg',5000,'q8');
+setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1','q9','qubit2','q8',...
        'process','CZ','reps',1,...
        'notes','','gui',true,'save',true);

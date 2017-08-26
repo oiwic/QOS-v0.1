@@ -13,6 +13,8 @@ classdef iSwap < sqc.op.physical.operator
             
             error('to be implemeted');
 			% use sqc.op.physical.op.Detune to detune other qubits
+            
+            obj.setGateClass('iSwap');
         end
     end
 	methods (Hidden = true)

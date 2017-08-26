@@ -9,6 +9,7 @@ classdef Z2m_z < sqc.op.physical.Z_z_base
 			obj = obj@sqc.op.physical.Z_z_base(qubit);
 			obj.length = obj.qubits{1}.g_Z2_z_ln;
             obj.zpulse_amp = obj.qubits{1}.g_Z2m_z_amp;
+            obj.setGateClass('Z2m');
         end
     end
 end

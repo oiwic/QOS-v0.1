@@ -52,6 +52,16 @@ classdef processTomography < qes.measurement.measurement
 % 										};
             end
 			obj.stateTomoObj = sqc.measure.stateTomography(qubits);
+            
+            %% deals with cz gate phase offset, will be handled differently in a future version
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if strcmp(class(obj.process),'CZ')
+                obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
+            end
+            
+            
             obj.numericscalardata = false;
         end
         function Run(obj)

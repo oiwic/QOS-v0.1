@@ -1,4 +1,4 @@
-function ax = Chi(data,ax,FaceAlpha, Fidelity)
+function ax = Chi(data,ax,FaceAlpha)
     % plots process tomography data
     
 % Copyright 2017 Yulin Wu, USTC
@@ -6,7 +6,7 @@ function ax = Chi(data,ax,FaceAlpha, Fidelity)
 
 
     
-    if nargin < 2 || isempty(ax)
+    if nargin < 2
         hf = qes.ui.qosFigure('Density matrix',false);
         fpos = get(hf,'Position');
         fpos(1) = fpos(1) - fpos(3)/2;
@@ -67,9 +67,7 @@ function ax = Chi(data,ax,FaceAlpha, Fidelity)
     %             set(ax,'CameraPosition',[-10   -10   10],'Projection','perspective');
         set(ax(ii),'Projection','perspective');
         set(ax(ii),'Projection','perspective','Color',get(gcf,'Color'),'YDir','reverse');
-        if ii == 1 && nargin > 3
-            title(ax(1),sprintf('Fidelity: %0.1f%%',Fidelity*100),'FontSize',10);
-        end
+   
         if ii == 2
 %             linkaxes(ax);
             zLim1 = get(ax(1),'ZLim');

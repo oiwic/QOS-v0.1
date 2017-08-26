@@ -5,10 +5,17 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
+
+% 
+%             if ~isempty(scz.dynamicPhase)
+%                 q1.g_XY_phaseOffset = q1.g_XY_phaseOffset + scz.dynamicPhase(1);
+%                 q2.g_XY_phaseOffset = q2.g_XY_phaseOffset + scz.dynamicPhase(2);
+%             end
+
 	properties
 		showProgress@logical scalar = true; % print measurement progress to command window or not
 		progInfoPrefix = ''
-        singleQXYGatePhaseOffset = 0; % introduced to shift xy gate phase in single qubit phase tomo
+        xyGatePhaseOffset = 0; % introduced to shift xy gate phase in single qubit phase tomo
 	end
 	properties (SetAccess = private)
 		qubits
@@ -65,10 +72,20 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 				if isempty(rGates)
 					break;
                 end
-                if numTomoQs == 1 &&...
-                    isa(rGates{1},'sqc.op.physical.gate.XY_base')
-                    rGates{1}.phaseOffset = obj.singleQXYGatePhaseOffset;
+%                 if numTomoQs == 1 &&...
+%                     isa(rGates{1},'sqc.op.physical.gate.XY_base')
+%                     rGates{1}.phaseOffset = obj.xyGatePhaseOffset;
+%                 end
+                
+                
+                for uu = 1:numTomoQs
+                    if isa(rGates{uu},'sqc.op.physical.gate.XY_base')
+                        rGates{uu}.phaseOffset = obj.xyGatePhaseOffset(uu);
+                    end
                 end
+                
+                
+                
 				P = rGates{1};
 				for ii = 2:numTomoQs
 					P = P.*rGates{ii};

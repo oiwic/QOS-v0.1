@@ -10,6 +10,7 @@ classdef Y_ < sqc.op.physical.gate.XY_base
 			obj.length = obj.qubits{1}.g_XY_ln;
             obj.amp = obj.qubits{1}.g_XY_amp;
             obj.phase = pi/2;
+            obj.setGateClass('Y');
         end
     end
 end

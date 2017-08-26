@@ -10,6 +10,7 @@ classdef Y4p < sqc.op.physical.gate.XY_base
 			obj.length = obj.qubits{1}.g_XY4_ln;
             obj.amp = obj.qubits{1}.g_XY4_amp;
             obj.phase = pi/2;
+            obj.setGateClass('Y4p');
         end
     end
 end

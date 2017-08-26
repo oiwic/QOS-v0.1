@@ -8,4 +8,5 @@ function g = FH(qubit)
 	
 	import sqc.op.physical.gate.*
 	g = Y4m(qubit)*X(qubit)*Y4p(qubit);
+    g.setGateClass('H');
 end

@@ -87,7 +87,7 @@ classdef randBenchMarking < qes.measurement.measurement
                     throw(MException('QOS_randBenchMarking:notImplemeted',...
 						'Not implemented error'));
                 otherwise
-                    error('Process not one of NULL, I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap, Run X gate tomography.');
+                    error('Process not one of NULL, I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap.');
             end
             
             obj.R = sqc.measure.resonatorReadout_ss(obj.qubits);

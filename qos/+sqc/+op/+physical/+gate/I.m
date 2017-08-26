@@ -12,6 +12,7 @@ classdef I < sqc.op.physical.operator
 			assert(numel(qubit) == 1);
             obj = obj@sqc.op.physical.operator(qubit);
 			obj.length = obj.qubits{1}.g_I_ln;
+            obj.setGateClass('I');
         end
         function set.ln(obj,val)
             obj.length = val;
