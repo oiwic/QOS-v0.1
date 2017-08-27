@@ -11,7 +11,7 @@ classdef jpaRunner < qes.qHandle
     end
     properties (SetAccess = private, GetAccess = private)
         pumpWv
-        jpaPumpDA
+        pumpDAChnl
         setupDC = true
         setupMwSrc = true
     end
@@ -29,7 +29,8 @@ classdef jpaRunner < qes.qHandle
                       sprintf('jpaRunner only handles cases of using awg(DAC) and IQ mixing as signal source, %s given.',...
                       jpaObj.channels.signal_i.instru)));
             end
-            obj.jpaPumpDA = da;
+			obj.pumpDAChnl{1,1} = da.GetChnl(obj.jpa.channels.pump_i.chnl);
+            obj.pumpDAChnl{2,1} = da.GetChnl(obj.jpa.channels.pump_q.chnl);
             biasSrc_ = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',jpaObj.channels.bias.instru);
             obj.biasSrc = biasSrc_.GetChnl(jpaObj.channels.bias.chnl);
             pumpMwSrc_ = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',jpaObj.channels.pump_mw.instru);
@@ -53,21 +54,21 @@ classdef jpaRunner < qes.qHandle
             if isempty(obj.pumpWv) || refresh
                 obj.GenWave();
             end
+			
+			
             obj.pumpWv.SendWave();
-        end
-    end
-    methods (Access = private)
-        function GenWave(obj)
-            obj.pumpWv = sqc.wv.rect_cos(obj.jpa.opDuration);
-			obj.pumpWv.amp = obj.jpa.pumpAmp;
-			obj.pumpWv.awg = obj.jpaPumpDA;
-            obj.pumpWv.df = 0;
-			obj.pumpWv.awgchnl = [obj.jpa.channels.pump_i.chnl,obj.jpa.channels.pump_q.chnl];
+			
 			obj.pumpWv.hw_delay = true; % important
             % syncDelay_pump is added as a small calibration to compensate hardware imperfection while startDelay is a logical delay.
 			outputDelay = obj.jpa.startDelay+obj.jpa.syncDelay_pump;
             outputDelay(outputDelay<0) = 0;
-            obj.pumpWv.output_delay = outputDelay;
+        end
+    end
+    methods (Access = private)
+        function GenWave(obj)
+			wv = qes.waveform.flattop(obj.jpa.opDuration, obj.jpa.pumpAmp,5));
+			wv.carrierFrequency = 0; % no frequency mixing to achieve strong pumping power
+			obj.pumpWv = qes.waveform.sequence(wv);
         end
     end
 end

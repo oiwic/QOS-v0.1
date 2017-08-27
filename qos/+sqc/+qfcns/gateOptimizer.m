@@ -4,9 +4,6 @@ classdef gateOptimizer < qes.measurement.measurement
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
-    properties
-		maxIterNum = 20;
-    end
 	methods(Static = true)
 		function xyGateOptWithDrag(qubit,numGates,numReps,rAvg,maxIter)
             if nargin < 5
@@ -39,15 +36,15 @@ classdef gateOptimizer < qes.measurement.measurement
             
             QS = qes.qSettings.GetInstance();
 
-			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.001,'TolFun',0.01,'PlotFcns',{@optimplotfval,});
+			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp,alpha],R);
                 x0 = [0,0,0,0];
                 fval0 = f(x0);
 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
 					x0,...
-					[-3e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05,-0.25],...
-					[3e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05,0.25],...
+					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05,-0.25],...
+					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05,0.25],...
 					opts);
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
@@ -61,7 +58,7 @@ classdef gateOptimizer < qes.measurement.measurement
                 x0 = [0,0,0];
                 fval0 = f(x0);
 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					[0,0,0],...
+					x0,...
 					[-2e6,-qubit.g_XY2_amp*0.05,-0.25],...
 					[2e6,qubit.g_XY2_amp*0.05,0.25],...
 					opts);
@@ -75,13 +72,23 @@ classdef gateOptimizer < qes.measurement.measurement
 				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
 					qubit.g_XY_typ);
             end
+			dataPath = QS.loadSSettings('data_path');
+			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
+			dataFileName = ['XYGateOpt_',TimeStamp,'.mat'];
+			figFileName = ['XYGateOpt_',TimeStamp,'.fig'];
+			sessionSettings = QS.loadSSettings;
+			hwSettings = QS.loadHwSettings;
+			save(fullfile(dataPath,dataFileName),'optParams','sessionSettings','hwSettings','notes: xyGateOptWithDrag');
+			try
+				saveas(gcf,figFileName);
+			catch
+			end
 		end
-		function xyGateOptNoDrag(qubit,numGates,numReps,maxIter)
+		function xyGateOptNoDrag(qubit,numGates,numReps,rAvg,maxIter)
             if nargin < 4
                 maxIter = 20;
             end
-            
-            
+ 
 			import sqc.op.physical.*
 			if ischar(qubit)
 				qs = sqc.util.loadQubits();
@@ -102,45 +109,137 @@ classdef gateOptimizer < qes.measurement.measurement
 			XY_amp = qes.expParam(qubit,'g_XY_amp');
 			XY_amp.offset = qubit.g_XY_amp;
 
-			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
+			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp],R);
+                x0 = [0,0,0];
+                fval0 = f(x0);
 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-                    [0,0,0],...
+					x0,...
 					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05],...
 					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05],...
 					opts);
+                if fval > fval0
+                    error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
+                end
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
+                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
 			elseif strcmp(qubit.g_XY_typ,'hPi')
-				f = qes.expFcn([detune,XY2_amp],R);
+				f = qes.expFcn([detune,XY2_amp,alpha],R);
+                x0 = [0,0];
+                fval0 = f(x0);
 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-                    [0,0],...
-					[-2e6, -qubit.g_XY2_amp*0.05],...
-					[2e6, qubit.g_XY2_amp*0.05],...
+					x0,...
+					[-2e6,-qubit.g_XY2_amp*0.05],...
+					[2e6,qubit.g_XY2_amp*0.05],...
 					opts);
+                if fval > fval0
+                    error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
+                end
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
 			else
 				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
 					qubit.g_XY_typ);
             end
-            
-            
-            try
-            timeStamp = datestr(now,'_yymmddTHHMMSS_');
-            dataFileName = ['OPT_',timeStamp,'.mat'];
-            figFileName = ['OPT_',timeStamp,'.fig'];
-            saveas(gcf,figFileName);
-            close(gcf);
-            save(dataFileName,'optParams');
-                catch
+			dataPath = QS.loadSSettings('data_path');
+			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
+			dataFileName = ['XYGateOpt_',TimeStamp,'.mat'];
+			figFileName = ['XYGateOpt_',TimeStamp,'.fig'];
+			sessionSettings = QS.loadSSettings;
+			hwSettings = QS.loadHwSettings;
+			save(fullfile(dataPath,dataFileName),'optParams','sessionSettings','hwSettings','notes: xyGateOptNoDrag');
+			try
+				saveas(gcf,figFileName);
+			catch
+			end
+        end
+		
+		function zGateOpt(qubit,numGates,numReps,rAvg,maxIter)
+            if nargin < 4
+                maxIter = 20;
+            end
+ 
+			import sqc.op.physical.*
+			if ischar(qubit)
+				qs = sqc.util.loadQubits();
+				qubit = qs{qes.util.find(qubit,qs)};
+			end
+			if ~strcmp(qubit.g_Z_typ,'z')
+				error('zGateOpt perform Z gate optimization by tunning pulse callibration paraeters, it is applicable only when Z gate is implemented by z pulse, check Z gate settings.');
+			end
+			qubit.r_avg = rAvg;
+			Z = sqc.op.physical.gate.Z(qubit);
+			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numReps,Z);
+			
+			Z_amp = qes.expParam(Z,'amp');
+			Z_amp.offset = qubit.g_Z_z_amp;
+			
+			da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
+                        'name',obj.qubit.channels.z_pulse.instru);
+            z_daChnl = da.GetChnl(obj.qubit.channels.z_pulse.chnl);
+
+			detune = qes.expParam(qubit,'f01');
+			detune.offset = qubit.f01;
+			
+			XY2_amp = qes.expParam(qubit,'g_XY2_amp');
+			XY2_amp.offset = qubit.g_XY2_amp;
+			
+		
+			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
+			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
+				f = qes.expFcn([detune,XY2_amp,XY_amp],R);
+                x0 = [0,0,0];
+                fval0 = f(x0);
+				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+					x0,...
+					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05],...
+					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05],...
+					opts);
+                if fval > fval0
+                    error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-            
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
+                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
+			elseif strcmp(qubit.g_XY_typ,'hPi')
+				f = qes.expFcn([detune,XY2_amp,alpha],R);
+                x0 = [0,0];
+                fval0 = f(x0);
+				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+					x0,...
+					[-2e6,-qubit.g_XY2_amp*0.05],...
+					[2e6,qubit.g_XY2_amp*0.05],...
+					opts);
+                if fval > fval0
+                    error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
+                end
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
+			else
+				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
+					qubit.g_XY_typ);
+            end
+			
+			dataPath = QS.loadSSettings('data_path');
+			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
+			dataFileName = ['ZGateOpt_',TimeStamp,'.mat'];
+			figFileName = ['ZGateOpt_',TimeStamp,'.fig'];
+			sessionSettings = QS.loadSSettings;
+			hwSettings = QS.loadHwSettings;
+			save(fullfile(dataPath,dataFileName),'optParams','sessionSettings','hwSettings','notes: zGateOpt');
+			try
+				saveas(gcf,figFileName);
+			catch
+			end
         end
         
         function czOptPhaseAmp(qubits,numGates,numReps, rAvg, maxIter)
             if nargin < 5
                 maxIter = 20;
             end
-            
-            
+			
 			import sqc.op.physical.*
 			if ~iscell(qubits) || numel(qubits) ~= 2
 				error('qubits not a cell of 2.');
@@ -152,8 +251,7 @@ classdef gateOptimizer < qes.measurement.measurement
                 end
                 qubits{ii}.r_avg = rAvg;
             end
-            
-			
+
 			aczSettingsKey = sprintf('%s_%s',qubits{1}.name,qubits{2}.name);
 			QS = qes.qSettings.GetInstance();
 			scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
@@ -167,36 +265,44 @@ classdef gateOptimizer < qes.measurement.measurement
 			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
-			phase1.offset = 0;
+			phase1.offset = aczSettings.dynamicPhase(1);
 			
 			phase2 = qes.expParam(aczSettings,'dynamicPhase(2)');
-			phase2.offset = 0;
+			phase2.offset = aczSettings.dynamicPhase(2);
 			
 			amplitude = qes.expParam(aczSettings,'amp');
 			amplitude.offset = aczSettings.amp;
 
-			opts = optimset('Display','none','MaxIter',MAX_ITER,'TolX',0.001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
+			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			f = qes.expFcn([phase1,phase2,amplitude],R);
+			x0 = [0,0,0];
+			fval0 = f(x0);
 			[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-                    [0,0,0],...
+                    x0,...
 					[-pi,-pi,-aczSettings.amp*0.1],...
 					[pi,pi,aczSettings.amp*0.1],...
 					opts);
             
-                try
-            timeStamp = datestr(now,'_yymmddTHHMMSS_');
-            dataFileName = ['OPT_',timeStamp,'.mat'];
-            figFileName = ['OPT_',timeStamp,'.fig'];
-            saveas(gcf,figFileName);
-            close(gcf);
-            save(dataFileName,'optParams');
-                catch
-                end
-            
-            
-            
-            
-            
+			if fval > fval0
+               error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
+            end
+			QS.saveSSettings({'shared','g_cz',aczSettingsKey,'dynamicPhase(1)'},...
+								aczSettings.dynamicPhase(1)+optParams(1));
+            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'dynamicPhase(1)'},...
+								aczSettings.dynamicPhase(2)+optParams(2));
+            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'}aczSettings.amp+optParams(3));
+			
+			dataPath = QS.loadSSettings('data_path');
+			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
+			dataFileName = ['CZGateOpt_',TimeStamp,'.mat'];
+			figFileName = ['CZGateOpt_',TimeStamp,'.fig'];
+			sessionSettings = QS.loadSSettings;
+			hwSettings = QS.loadHwSettings;
+			save(fullfile(dataPath,dataFileName),'optParams','sessionSettings','hwSettings','notes: CZGateOpt');
+			try
+				saveas(gcf,figFileName);
+			catch
+			end
         end
         
     end

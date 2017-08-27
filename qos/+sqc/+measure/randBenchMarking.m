@@ -19,9 +19,14 @@ classdef randBenchMarking < qes.measurement.measurement
         C2
         C2m
         numQs
+		noReference@logical scalar
     end
     methods
-        function obj = randBenchMarking(qubits, process,numGates,numShots)
+        function obj = randBenchMarking(qubits, process, numGates, numShots, noReference)
+			if nargin < 5
+				noReference = false;
+			end
+			obj.noReference = noReference;
 			if ~isempty(process) && ~isa(process,'sqc.op.physical.operator')
 				throw(MException('QOS_randBenchMarking:invalidInput',...
 						'the input is not a valid quantum operator.'));
@@ -109,11 +114,21 @@ classdef randBenchMarking < qes.measurement.measurement
             obj.extradata = cell(obj.numShots,2);
             for nn = 1:obj.numShots
                 [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates();
-                PR = gs{1};
-                for ii = 2:obj.numGates
-                    PR = PR*gs{ii};
-                end
-                PR = PR*gf_ref;
+				
+				if obj.noReference
+					pa = NaN
+				else
+					PR = gs{1};
+					for ii = 2:obj.numGates
+						PR = PR*gs{ii};
+					end
+					PR = PR*gf_ref;
+				
+					obj.R.state = 1;
+					obj.R.delay = PR.length;
+					PR.Run();
+					pa = obj.R();
+				end
 				
 				if obj.processIdx
 					Pi = gs{1};
@@ -121,14 +136,6 @@ classdef randBenchMarking < qes.measurement.measurement
 						Pi = Pi*obj.process*gs{ii};
 					end
 					Pi = Pi*obj.process*gf_i;
-				end
-				
-                obj.R.state = 1;
-                obj.R.delay = PR.length;
-                PR.Run();
-                pa = obj.R();
-
-				if obj.processIdx
 					obj.R.delay = Pi.length;
 					Pi.Run();
 					pb = obj.R();

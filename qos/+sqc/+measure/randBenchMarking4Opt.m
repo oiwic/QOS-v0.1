@@ -4,15 +4,29 @@ classdef randBenchMarking4Opt < sqc.measure.randBenchMarking
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
+	properties(SetAccess = private, GetAccess = private)
+		isReference = true;
+	end
     methods
-        function obj = randBenchMarking4Opt(qubits,numGates,numShots)
-			obj@sqc.measure.randBenchMarking(qubits,[],numGates,numShots);
+        function obj = randBenchMarking4Opt(qubits,numGates,numShots,process)
+			if nargin < 4 || isempty(process)
+				process = [];
+				noReference = false;
+			else
+				noReference = true;
+				obj.isReference = false;
+			end
+			obj@sqc.measure.randBenchMarking(qubits,process,numGates,numShots,noReference);
             obj.numericscalardata = true;
             obj.name = 'Sequence Error';
         end
         function Run(obj)
             Run@sqc.measure.randBenchMarking(obj);
-            obj.data = 1-mean(obj.data(:,1));
+			if obj.isReference
+				obj.data = 1-mean(obj.data(:,1));
+			else
+				obj.data = 1-mean(obj.data(:,2));
+			end
             obj.dataready = true;
         end
     end
