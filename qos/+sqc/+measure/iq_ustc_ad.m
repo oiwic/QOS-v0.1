@@ -149,9 +149,7 @@ classdef iq_ustc_ad < qes.measurement.iq
 %             obj.data = mean(IQ);
 %             obj.extradata = IQ;
 
-                tic
 				obj.demod(Vi,Vq);
-                toc
 			end           
 
             obj.data = mean(obj.IQ);

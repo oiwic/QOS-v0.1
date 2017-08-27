@@ -75,13 +75,13 @@ classdef gateOptimizer < qes.measurement.measurement
 				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
 					qubit.g_XY_typ);
             end
-		end
+        end
+        
 		function xyGateOptNoDrag(qubit,numGates,numReps,maxIter)
             if nargin < 4
                 maxIter = 20;
             end
-            
-            
+
 			import sqc.op.physical.*
 			if ischar(qubit)
 				qs = sqc.util.loadQubits();
