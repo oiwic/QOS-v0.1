@@ -219,8 +219,10 @@ data = singleQStateTomo('qubit','q2','reps',2,'state',state);
 rho = sqc.qfcns.stateTomoData2Rho(data);
 h = figure();bar3(real(rho));h = figure();bar3(imag(rho));
 %%
-gate = 'Z';
-data = Tomo_1QProcess('qubit','q8','process',gate,'gui',true);
+gate = 'Y/2';
+data = Tomo_1Q('qubit','q2','reps',2,'process',gate);
+chi = sqc.qfcns.processTomoData2Rho(data);
+h = figure();bar3(real(chi));h = figure();bar3(imag(chi));
 %% single qubit gate benchmarking
 setQSettings('r_avg',200);
 numGates = 1:1:5;

@@ -74,6 +74,8 @@ classdef randBenchMarking < qes.measurement.measurement
                     obj.processIdx = 15;
                 case 'Y2m'
                     obj.processIdx = 16;
+                case 'Z'
+                    obj.processIdx = 4;
                 case {'CZ','ACZ'}
                     obj.processIdx = 4035;
                 case 'CNOT'  % CNOT with qubit{1} as control

@@ -7,7 +7,7 @@ function ax = Chi(data,ax,FaceAlpha, Fidelity)
 
     
     if nargin < 2 || isempty(ax)
-        hf = qes.ui.qosFigure('Density matrix',false);
+        hf = qes.ui.qosFigure('Process Tomography',false);
         fpos = get(hf,'Position');
         fpos(1) = fpos(1) - fpos(3)/2;
         fpos(3) = fpos(3) + fpos(3)/2;
@@ -47,7 +47,7 @@ function ax = Chi(data,ax,FaceAlpha, Fidelity)
             case 1
                 tickLabels = {'I','X','Y','Z'};
                 set(ax(ii),'XTick',[1,2,3,4],'XTickLabel',tickLabels,...
-                    'YTick',[1,2],'YTickLabel',tickLabels);
+                    'YTick',[1,2,3,4],'YTickLabel',tickLabels);
             case 2
                 tickLabels = {'II','XI','YI','ZI',...
                               'IX','XX','YX','ZX',...

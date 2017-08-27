@@ -47,9 +47,7 @@ function varargout = randBenchMarking(varargin)
             case {'-Y/2','Y2m'}
                 p = gate.Y2m(q);
             case {'Z'}
-                X = gate.X(q);
-                Y = gate.Y(q);
-                p = Y*X;
+                p = gate.Z(q);
             otherwise
                 throw(MException('randBenchMarking:unsupportedGate',...
                     sprintf('available process options is %s, %s given.',...

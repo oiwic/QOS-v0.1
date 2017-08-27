@@ -6,7 +6,7 @@ function varargout = Tomo_1QProcess(varargin)
 % process options are: 'X','Z','Y','X/2','-X/2','Y/2','-Y/2'
 %
 % <_o_> = singleQStateTomo('qubit',_c&o_,...
-%       'process',<_c_>,'reps',<_i_>,...
+%       'process',<_c_>,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -25,7 +25,7 @@ function varargout = Tomo_1QProcess(varargin)
     import sqc.*
     import sqc.op.physical.*
 
-    args = util.processArgs(varargin,{'reps',1,'gui',false,'notes','','detuning',0,'save',true});
+    args = util.processArgs(varargin,{,'gui',false,'notes','','save',true});
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
     switch args.process
@@ -44,9 +44,7 @@ function varargout = Tomo_1QProcess(varargin)
         case {'-Y/2','Y2m'}
             p = gate.Y2m(q);
 		case {'Z'}
-            X = gate.X(q);
-			Y = gate.Y(q);
-			p = Y*X;
+            p = gate.Z(q);
         otherwise
             throw(MException('QOS_singleQProcessTomo:unsupportedGate',...
                 sprintf('available process options for singleQProcessTomo is %s, %s given.',...
@@ -54,27 +52,28 @@ function varargout = Tomo_1QProcess(varargin)
     end
 	
     R = measure.processTomography(q,p);
-
-    for ii = 1:args.reps
-        if ii == 1
-            P = R();
-        else
-            P = P+R();
-        end
-    end
-    P = P/args.reps;
+    P = R();
     
-	
-    if ~args.gui
-        
+    if args.gui
+        axs = qes.util.plotfcn.Chi(P);
+        title(axs(1),[args.process, ' real part']);
+        title(axs(2),[args.process, ' imaginary part']);
     end
     if args.save
         QS = qes.qSettings.GetInstance();
         dataPath = QS.loadSSettings('data_path');
-        dataFileName = ['PTomo1',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+        
+        timeStamp = datestr(now,'_yymmddTHHMMSS_');
+        
+        dataFileName = ['PTomo1_',q.name,timeStamp,'.mat'];
+        figFileName = ['PTomo1_',q.name,timeStamp,'.fig'];
+        
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
         save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');
+        if args.gui && isgraphics(axs(1))
+            saveas(axs(1),fullfile(dataPath,figFileName));
+        end
     end
     varargout{1} = P;
 end
