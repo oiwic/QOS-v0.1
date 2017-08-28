@@ -28,22 +28,30 @@ function varargout = Tomo_2QProcess(varargin)
     args = util.processArgs(varargin,{'gui',false,'notes','','save',true});
     [q1,q2] = data_taking.public.util.getQubits(args,{'qubit1','qubit2'});
 
-    switch args.process
-        case 'I'
-            I1 = gate.I(q1);
-            I2 = gate.I(q2);
-            p = I2.*I1;
-        case 'CZ'
-            p = gate.CZ(q1,q2); 
-        case 'CNOT'
-            CZ = gate.CZ(q1,q2); 
-            Y2m = gate.Y2m(q2);
-            Y2p = gate.Y2p(q2);
-			p = Y2m*CZ*Y2p; % q1, control qubit, q2, target qubit
-        otherwise
-            throw(MException('QOS_singleQProcessTomo:unsupportedGate',...
-                sprintf('available process options for singleQProcessTomo is %s, %s given.',...
-                '''CZ'',''CNOT''',args.process)));
+    if ischar(args.process)
+        switch args.process
+            case 'I'
+                I1 = gate.I(q1);
+                I2 = gate.I(q2);
+                p = I2.*I1;
+            case 'CZ'
+                p = gate.CZ(q1,q2); 
+            case 'CNOT'
+                CZ = gate.CZ(q1,q2); 
+                Y2m = gate.Y2m(q2);
+                Y2p = gate.Y2p(q2);
+                p = Y2m*CZ*Y2p; % q1, control qubit, q2, target qubit
+            otherwise
+                throw(MException('QOS_singleQProcessTomo:unsupportedGate',...
+                    sprintf('available process options for singleQProcessTomo is %s, %s given.',...
+                    '''CZ'',''CNOT''',args.process)));
+        end
+    else
+        if ~isa(args.process,'sqc.op.physical.operator')
+            throw(MException('QOS_singleQProcessTomo:illegalArgument',...
+                    sprintf('process not a valid quantum operator.')));
+        end
+        p = args.process;
     end
 	
     R = measure.processTomography({q1,q2},p);
@@ -52,8 +60,13 @@ function varargout = Tomo_2QProcess(varargin)
     
     if args.gui
         axs = qes.util.plotfcn.Chi(P);
-        title(axs(1),[args.process, ' real part']);
-        title(axs(2),[args.process, ' imaginary part']);
+        if ischar(args.process)
+            title(axs(1),[args.process, ' real part']);
+            title(axs(2),[args.process, ' imaginary part']);
+        else
+            title(axs(1),[args.process.class(), ' real part']);
+            title(axs(2),[args.process.class(), ' imaginary part']);
+        end
     end
     if args.save
         QS = qes.qSettings.GetInstance();
@@ -61,8 +74,8 @@ function varargout = Tomo_2QProcess(varargin)
         
         timeStamp = datestr(now,'_yymmddTHHMMSS_');
         
-        dataFileName = ['PTomo1_',q1.name,q2.name,timeStamp,'.mat'];
-        figFileName = ['PTomo1_',q1.name,q2.name,timeStamp,'.fig'];
+        dataFileName = ['PTomo2_',q1.name,q2.name,timeStamp,'.mat'];
+        figFileName = ['PTomo2_',q1.name,q2.name,timeStamp,'.fig'];
         
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;

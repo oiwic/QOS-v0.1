@@ -25,6 +25,9 @@ classdef ACZ < sqc.op.physical.operator
     end
     methods
         function obj = ACZ(q1, q2)
+            if q1 == q2
+                error('perform two qubit gate ACZ on the same qubit is not possible.');
+            end
 			if isempty(q1.aczSettings) && isempty(q1.aczSettings)
 				aczSettingsKey = sprintf('%s_%s',q1.name,q2.name);
 				QS = qes.qSettings.GetInstance();

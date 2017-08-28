@@ -37,6 +37,7 @@ classdef processTomography < qes.measurement.measurement
             obj.process = process;
 			obj.qubits = qubits;
 			numTomoQs = numel(obj.qubits);
+            obj.stateTomoObj.xyGatePhaseOffset = zeros(1,numTomoQs);
 			obj.statePrepGates = cell(1,numTomoQs);
 			for ii = 1:numTomoQs
 				% gates that prepares the qubit onto states: {|0>, |1>, |0>+|1>, |0>+i|1>}
@@ -59,6 +60,8 @@ classdef processTomography < qes.measurement.measurement
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             if strcmp(class(obj.process),'CZ')
                 obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
+            else
+                % obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
             end
             
             
