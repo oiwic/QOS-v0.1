@@ -1,4 +1,4 @@
-function P = CZP(phi)
+function P = CZChiP(phi)
 s = cell(1,4);
 s{1} = [1;0];
 s{2} = [0;1];

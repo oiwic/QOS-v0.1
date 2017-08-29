@@ -79,6 +79,9 @@ function varargout = Tomo_2QProcess(varargin)
         
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
+        if ~ischar(args.process)
+            args.process = 'operator object, can not be saved.';
+        end
         save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');
         if args.gui && isgraphics(axs(1))
             saveas(axs(1),fullfile(dataPath,figFileName));
