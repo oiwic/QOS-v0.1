@@ -180,8 +180,8 @@ classdef gateOptimizer < qes.measurement.measurement
 			Z_amp.offset = qubit.g_Z_z_amp;
 			
  			da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
-                         'name',obj.qubit.channels.z_pulse.instru);
-            z_daChnl = da.GetChnl(obj.qubit.channels.z_pulse.chnl);
+                         'name',qubit.channels.z_pulse.instru);
+            z_daChnl = da.GetChnl(qubit.channels.z_pulse.chnl);
 %             
 %             xfrFuncSettings = QS.loadHwSettings({'obj.qubit.channels.z_pulse.instru',...
 %                 'xfrFunc'});
@@ -198,12 +198,12 @@ classdef gateOptimizer < qes.measurement.measurement
 				
 			lowPassFilterSettings0 = struct('type','function',...
 					'funcName','com.qos.waveform.XfrFuncFastGaussianFilter',...
-					'bandWidth','0.130');
-            xfrFuncsSettings0 = {struct('type','function',...
+					'bandWidth',0.130);
+            xfrFuncsSettings0 = struct('type','function',...
                 'funcName','qes.waveform.xfrFunc.gaussianExp',...
                 'bandWidth',0.25,...
                 'rAmp',[0.0155],...
-                'td',[800])};
+                'td',[800]);
 			
 			rAmp = qes.util.hvar(xfrFuncsSettings0.rAmp(1));
 			td = qes.util.hvar(xfrFuncsSettings0.td(1));
@@ -214,16 +214,19 @@ classdef gateOptimizer < qes.measurement.measurement
 					'funcName','qes.waveform.xfrFunc.gaussianExp',...
 					'bandWidth',0.25,...
 					'rAmp',[rAmp.val],...
-					'td',[td.var]));
+					'td',[td.val]));
 				xfrFunc = lowPassFilter.add(xfrFunc_.inv());
 				z_daChnl.xfrFunc = xfrFunc;
 			end
             
-			p_rAmp = qes.expParam(rAmp,'var');
-			p_rAmp.offset = rAmp.var;
+			p_rAmp = qes.expParam(rAmp,'val');
+			p_rAmp.offset = rAmp.val;
+            p_rAmp.callbacks = {@(x)setXfrFunc()};
+            setXfrFunc()
 			
-			p_td = qes.expParam(td,'var');
-			p_td.offset = td.var;
+			p_td = qes.expParam(td,'val');
+            p_td.callbacks = {@(x)setXfrFunc()};
+			p_td.offset = td.val;
 			
 		
 			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
@@ -239,10 +242,7 @@ classdef gateOptimizer < qes.measurement.measurement
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
-                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
-                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
-			
+                
 			dataPath = QS.loadSSettings('data_path');
 			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
 			dataFileName = ['ZGateOpt_',TimeStamp,'.mat'];
@@ -269,7 +269,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			for ii = 1:numel(qubits)
 				if ischar(qubits{ii})
-					c
+					qubits{ii} = sqc.util.qName2Obj(qubits{ii});
                 end
                 qubits{ii}.r_avg = rAvg;
             end

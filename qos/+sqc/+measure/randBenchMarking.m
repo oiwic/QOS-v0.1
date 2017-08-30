@@ -117,7 +117,7 @@ classdef randBenchMarking < qes.measurement.measurement
                 [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates();
 				
 				if obj.noReference
-					pa = NaN
+					pa = NaN;
 				else
 					PR = gs{1};
 					for ii = 2:obj.numGates

@@ -19,7 +19,7 @@ setQSettings('r_avg',5000,'q8');
 setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1',Q9,'qubit2',Q8,...
 'process',P,'reps',1,...
-'notes','CZ, not xy phase shift','gui',true,'save',true);
+'notes','CZ, no xy phase shift','gui',true,'save',true);
 
 Q8 = sqc.util.qName2Obj('q8');
 Q9 = sqc.util.qName2Obj('q9');
@@ -29,7 +29,7 @@ setQSettings('r_avg',5000,'q8');
 setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1',Q9,'qubit2',Q8,...
 'process',P,'reps',1,...
-'notes','CZ^2, not xy phase shift','gui',true,'save',true);
+'notes','CZ^2, no xy phase shift','gui',true,'save',true);
 
 Q8 = sqc.util.qName2Obj('q8');
 Q9 = sqc.util.qName2Obj('q9');
@@ -39,7 +39,7 @@ setQSettings('r_avg',5000,'q8');
 setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1',Q9,'qubit2',Q8,...
 'process',P,'reps',1,...
-'notes','CZ^3, not xy phase shift','gui',true,'save',true);
+'notes','CZ^3, no xy phase shift','gui',true,'save',true);
 
 Q8 = sqc.util.qName2Obj('q8');
 Q9 = sqc.util.qName2Obj('q9');
@@ -49,7 +49,7 @@ setQSettings('r_avg',5000,'q8');
 setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1',Q9,'qubit2',Q8,...
 'process',P,'reps',1,...
-'notes','CZ^4, not xy phase shift','gui',true,'save',true);
+'notes','CZ^4, no xy phase shift','gui',true,'save',true);
 
 Q8 = sqc.util.qName2Obj('q8');
 Q9 = sqc.util.qName2Obj('q9');

@@ -1,6 +1,6 @@
 function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
 
-    numGates = double(numGates); % numGates could be int16
+    numGates = double(numGates); % numGates could be unit16
 
     if nargin < 5
         gateName = '';

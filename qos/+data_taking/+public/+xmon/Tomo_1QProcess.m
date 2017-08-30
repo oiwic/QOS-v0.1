@@ -25,7 +25,7 @@ function varargout = Tomo_1QProcess(varargin)
     import sqc.*
     import sqc.op.physical.*
 
-    args = util.processArgs(varargin,{,'gui',false,'notes','','save',true});
+    args = util.processArgs(varargin,{'reps',1,'gui',false,'notes','','save',true});
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
     switch args.process
@@ -54,6 +54,7 @@ function varargout = Tomo_1QProcess(varargin)
     R = measure.processTomography(q,p);
     P = R();
     
+	
     if args.gui
         axs = qes.util.plotfcn.Chi(P);
         title(axs(1),[args.process, ' real part']);

@@ -28,11 +28,12 @@ function varargout = APE(varargin)
 
     X2p = gate.X2p(q);
 	X2m = gate.X2m(q);
-	XY2 = op.XY2p(q,0);
+	XY2 = op.XY2(q,0);
 	I = (X2m*X2p)^args.numI;
     function proc = procFactory(phase)
-		XY2.phase = phase;
+		XY2.phi = phase;
         proc = X2p*I*XY2;
+        proc.Run();
     end
 	R = measure.resonatorReadout_ss(q);
     R.state = 2;

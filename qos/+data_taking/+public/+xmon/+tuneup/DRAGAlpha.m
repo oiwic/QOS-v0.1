@@ -22,8 +22,8 @@ function varargout = DRAGAlpha(varargin)
 	MINIMUMVISIBILITY1 = 0.35;
 	MINIMUMVISIBILITY2 = 0.25;
 	
-    args = qes.util.processArgs(varargin,{numI,10,'gui',false,'save',true});
-	q = copy(getQubits(args,{'qubit'})); % we need to modify the qubit properties, better make a copy to avoid unwanted modifications to the original.
+    args = qes.util.processArgs(varargin,{'numI',10,'gui',false,'save',true});
+	q = getQubits(args,{'qubit'});
 	if ~q.qr_xy_dragPulse
 		q.qr_xy_dragPulse = true;
 	end

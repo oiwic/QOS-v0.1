@@ -58,23 +58,23 @@ classdef processTomography < qes.measurement.measurement
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%             if strcmp(class(obj.process),'CZ')
-%                 obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
-%             else
-%                 % obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
-%             end
+            if strcmp(class(obj.process),'CZ')
+                obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
+            else
+                % obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
+            end
             % temp
-            % q9 - q8 one cz 
-            obj.stateTomoObj.xyGatePhaseOffset = [1.2579, -1.907];
-            % q9 - q8 2 cz 
-            obj.stateTomoObj.xyGatePhaseOffset = [2.743867, -3.44946];
-            % q9 - q8 3 cz 
-            obj.stateTomoObj.xyGatePhaseOffset = [4.22984,  -4.99199];
-            % q9 - q8 4 cz 
-            obj.stateTomoObj.xyGatePhaseOffset = [5.715813,  -6.534512];
-            
-            
-            obj.numericscalardata = false;
+%             % q9 - q8 one cz 
+%             obj.stateTomoObj.xyGatePhaseOffset = [1.2579, -1.907];
+%             % q9 - q8 2 cz 
+%             obj.stateTomoObj.xyGatePhaseOffset = [2.743867, -3.44946];
+%             % q9 - q8 3 cz 
+%             obj.stateTomoObj.xyGatePhaseOffset = [4.22984,  -4.99199];
+%              % q9 - q8 4 cz 
+%             obj.stateTomoObj.xyGatePhaseOffset = [5.715813,  -6.534512];
+%             
+%             
+%             obj.numericscalardata = false;
         end
         function Run(obj)
             Run@qes.measurement.measurement(obj);

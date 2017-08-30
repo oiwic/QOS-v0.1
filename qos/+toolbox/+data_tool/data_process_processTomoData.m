@@ -4,7 +4,7 @@ if ~exist('TomoData','var')
 end
 chi = sqc.qfcns.processTomoData2Chi(TomoData);
 phi = toolbox.data_tool.fitting.fitCZPhase(TomoData)
-PIdeal = sqc.qfcns.CZP(phi);
+PIdeal = sqc.qfcns.CZChiP(phi);
 chiIdeal = sqc.qfcns.processTomoData2Chi(PIdeal);
 trace(chi*chiIdeal)
 trace(chi*chiIdeal)/trace(chi)/trace(chiIdeal)
