@@ -15,6 +15,8 @@ function varargout = DRAGAlpha(varargin)
 % arguments order not important as long as the form correct pairs.
     
     % Yulin Wu, 2017/4/2
+    
+    error('obsolete, use DRAGAlphaAPE');
 	
     import data_taking.public.xmon.tuneup.APE
 	import data_taking.public.util.getQubits

@@ -7,7 +7,7 @@ function varargout = Tomo_2QState(varargin)
 % and do state tomography.
 %
 % <_o_> = Tomo_2QState('qubit1',_c&o_,'qubit2',_c&o_,...
-%       'state',<_c_>,'reps',<_i_>,...
+%       'state',<_c_>,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -26,7 +26,7 @@ function varargout = Tomo_2QState(varargin)
     import sqc.*
     import sqc.op.physical.*
 
-    args = util.processArgs(varargin,{'state','|00>','reps',1,'gui',false,'notes','','detuning',0,'save',true});
+    args = util.processArgs(varargin,{'state','|00>','gui',false,'notes','','save',true});
     [q1,q2] = data_taking.public.util.getQubits(args,{'qubit1','qubit2'});
 
     R = measure.stateTomography({q1,q2});
@@ -62,14 +62,7 @@ function varargout = Tomo_2QState(varargin)
                 '|0> |1> |0>+|1> |0>-|1> |0>+i|1> |0>-i|1>',args.state)));
     end
     R.setProcess(p);
-    for ii = 1:args.reps
-        if ii == 1
-            P = R();
-        else
-            P = P+R();
-        end
-    end
-    P = P/args.reps;
+    P = R();
 
     if ~args.gui
         
@@ -77,7 +70,7 @@ function varargout = Tomo_2QState(varargin)
     if args.save
         QS = qes.qSettings.GetInstance();
         dataPath = QS.loadSSettings('data_path');
-        dataFileName = ['STomo2',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+        dataFileName = ['STomo2_',q1.name,q2.name,datestr(now,'_yymmddTHHMMSS_'),'.mat'];
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
         save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');

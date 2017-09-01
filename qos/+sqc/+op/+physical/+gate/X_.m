@@ -10,6 +10,7 @@ classdef X_ < sqc.op.physical.gate.XY_base
             obj = obj@sqc.op.physical.gate.XY_base(qubit);
 			obj.length = obj.qubits{1}.g_XY_ln;
             obj.amp = obj.qubits{1}.g_XY_amp;
+            obj.setGateClass('X');
         end
     end
 end

@@ -1,4 +1,4 @@
-function varargout = Tomo_1QState(varargin)
+function varargout = Tomo_1QState_animation(varargin)
 % demonstration of state tomography on single qubit.
 % state tomography is a measurement, it is not used alone in real
 % applications, this simple function is just a demonstration/test to show
@@ -7,7 +7,7 @@ function varargout = Tomo_1QState(varargin)
 % and do state tomography.
 %
 % <_o_> = Tomo_1QState('qubit',_c&o_,...
-%       'state',<_c_>,...
+%       'state',<_c_>,'numPts',_i_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -26,14 +26,12 @@ function varargout = Tomo_1QState(varargin)
     import sqc.*
     import sqc.op.physical.*
 
-    args = util.processArgs(varargin,{'state','|0>','reps',1,'gui',false,'notes','','detuning',0,'save',true});
+    args = util.processArgs(varargin,{'state','|0>','notes','','save',true});
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
     R = measure.stateTomography(q);
     
     switch args.state
-        case '|0>'
-            p = gate.I(q);
         case '|1>'
             p = gate.X(q);
         case '|0>+|1>'
@@ -50,11 +48,21 @@ function varargout = Tomo_1QState(varargin)
                 '|0> |1> |0>+|1> |0>-|1> |0>+i|1> |0>-i|1>',args.state)));
     end
     R.setProcess(p);
-    P = R();
-
-    if ~args.gui
-        
+    h = qes.ui.qosFigure(sprintf('State tomography | %s', q.name),true);
+    ax = axes('parent',h);
+    blochSphere = sqc.util.blochSphere(ax);
+    blochSphere.drawHistory = true;
+    blochSphere.showMenubar = true;
+    blochSphere.showToolbar = true;
+    amps = linspace(0,p.amp,args.numPts);
+    data = NaN(3,args.numPts);
+    for ii = 1:args.numPts
+        p.amp = amps(ii);
+        P = R();
+        data(:,ii) = P*[1;-1];
+        blochSphere.addStateXYZ(data(1,ii),data(2,ii),data(3,ii),1,true);
     end
+
     if args.save
         QS = qes.qSettings.GetInstance();
         dataPath = QS.loadSSettings('data_path');
@@ -62,6 +70,7 @@ function varargout = Tomo_1QState(varargin)
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
         save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');
+        
     end
     varargout{1} = P;
 end

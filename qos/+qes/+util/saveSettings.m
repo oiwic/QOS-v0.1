@@ -122,7 +122,7 @@ function saveSettings(spath, field,value)
                     case '=' % in case of numeric settings value, we allow the caller to convert the numeric value to a string, this is usefull since
                         % only the caller knows how much number of digits to
                         % use in converting to char string.
-                        if ~isnumeric(value)
+                        if ~isnumeric(value) && ~islogical(value)
                             if ~ischar(value)
                                 error('saveSettings:invalidInput',...
                                 	'value type of the current settings field is numeric, %s given.', class(value));

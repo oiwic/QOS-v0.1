@@ -61,7 +61,7 @@ classdef processTomography < qes.measurement.measurement
             if strcmp(class(obj.process),'CZ')
                 obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
             else
-                % obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
+                obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
             end
             % temp
 %             % q9 - q8 one cz 

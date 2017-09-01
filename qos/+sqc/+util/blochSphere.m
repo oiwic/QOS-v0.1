@@ -9,7 +9,8 @@ classdef blochSphere < handle
         showMenubar = false
         drawHistory = false % draw history or not
         arrorTransparency
-        historyMarkerSize = 2
+        historyMarkerSize = 3;
+        historyMarker = 'O';
         color % numStates by 3 to specify color for each state, default is all red
         title = 'Bloch Sphere'
     end
@@ -20,8 +21,12 @@ classdef blochSphere < handle
     properties (GetAccess = private, SetAccess = private)   
         states = {}
 
-        theta
-        phi
+%         theta
+%         phi
+        
+        x
+        y
+        z
         
         handles
         arrows
@@ -47,8 +52,24 @@ classdef blochSphere < handle
             obj.arrows = NaN*ones(1,obj.numStates);
             obj.historyLine = NaN*ones(1,obj.numStates);
             
-            obj.theta = NaN*ones(1,obj.numStates);
-            obj.phi = NaN*ones(1,obj.numStates);
+%             obj.theta = NaN*ones(1,obj.numStates);
+%             obj.phi = NaN*ones(1,obj.numStates);
+            
+            obj.x = NaN*ones(1,obj.numStates);
+            obj.y = NaN*ones(1,obj.numStates);
+            obj.z = NaN*ones(1,obj.numStates);
+        end
+        function set.historyMarkerSize(obj,val)
+            obj.historyMarkerSize = val;
+            obj.drawHistory = obj.drawHistory;
+        end
+        function set.historyMarker(obj,val)
+            obj.historyMarker = val;
+            obj.drawHistory = obj.drawHistory;
+        end
+        function set.color(obj,val)
+            obj.color = val;
+            obj.drawHistory = obj.drawHistory;
         end
         function set.drawHistory(obj,val)
             val = logical(val);
@@ -65,11 +86,47 @@ classdef blochSphere < handle
                 obj.checkFigure(obj);
                 for ii = 1:obj.numStates
                     obj.historyLine(ii) = line(NaN, NaN, NaN,...
-                        'Marker','.','Color', obj.color(ii,:),...
+                        'Marker',obj.historyMarker,'Color', obj.color(ii,:),...
+                        'MarkerFaceColor',obj.color(ii,:),'MarkerEdgeColor', obj.color(ii,:),...
                         'LineStyle','none','MarkerSize',obj.historyMarkerSize);
                 end
             end
             obj.drawHistory = val;
+        end
+        function addStateXYZ(obj,x,y,z,stateIdx,drawNow)
+            if nargin < 5
+                stateIdx = 1;
+            end
+            if nargin < 6
+                drawNow = false;
+            end
+            if isempty(x)
+                obj.states{stateIdx} = [];
+                obj.x(stateIdx) = NaN;
+                obj.y(stateIdx) = NaN;
+                obj.z(stateIdx) = NaN;
+                if drawNow
+                    obj.checkFigure(obj);
+                    obj.plotStateArrow(obj,stateIdx);
+                end
+                return;
+            end
+            if stateIdx > obj.numStates
+                throw(MException('QOS_blochSphere:stateIdxOutOfRange',...
+                    sprintf('stateIdx %0.0f out of range, maximum: %0.0f.',...
+                    stateIdx, obj.numStates)));
+            end
+            obj.states{stateIdx} = 'TODO';
+
+            obj.x(stateIdx) = x;
+            obj.y(stateIdx) = y;
+            obj.z(stateIdx) = z;
+ 
+            if drawNow
+                obj.checkFigure(obj);
+                obj.draw();
+%                 obj.plotStateArrow(obj,stateIdx);
+            end
         end
         function addState(obj,state,stateIdx,drawNow)
             if nargin < 3
@@ -80,8 +137,13 @@ classdef blochSphere < handle
             end
             if isempty(state)
                 obj.states{stateIdx} = [];
-                obj.theta(stateIdx) = NaN;
-                obj.phi(stateIdx) = NaN;
+%                 obj.theta(stateIdx) = NaN;
+%                 obj.phi(stateIdx) = NaN;
+                
+                obj.x(stateIdx) = NaN;
+                obj.y(stateIdx) = NaN;
+                obj.z(stateIdx) = NaN;
+                
                 if drawNow
                     obj.checkFigure(obj);
                     obj.plotStateArrow(obj,stateIdx);
@@ -109,13 +171,24 @@ classdef blochSphere < handle
             else
                 vs = obj.states{stateIdx};
             end
+%             a = angle(vs(1));
+%             obj.theta(stateIdx) = real(2*acos(vs(1)*exp(-1j*a)));
+%             obj.phi(stateIdx) = real(...
+%                 log((vs(2)*exp(-1j*a))/sin(obj.theta(stateIdx)/2))/1j);
+            
             a = angle(vs(1));
-            obj.theta(stateIdx) = real(2*acos(vs(1)*exp(-1j*a)));
-            obj.phi(stateIdx) = real(...
-                log((vs(2)*exp(-1j*a))/sin(obj.theta(stateIdx)/2))/1j);
+            theta = real(2*acos(vs(1)*exp(-1j*a)));
+            phi = real(log((vs(2)*exp(-1j*a))/sin(theta/2))/1j);
+            [xCur, yCur, zCur] = sph2cart(phi,pi/2-theta, 1);
+            
+            obj.x(stateIdx) = xCur;
+            obj.y(stateIdx) = yCur;
+            obj.z(stateIdx) = zCur;
+ 
             if drawNow
                 obj.checkFigure(obj);
-                obj.plotStateArrow(obj,stateIdx);
+                obj.draw();
+%                 obj.plotStateArrow(obj,stateIdx);
             end
         end
         function draw(obj)
@@ -146,8 +219,8 @@ classdef blochSphere < handle
             text(-1.4,0,0,'|0>-|1>','parent',obj.ax);
             text(0,1.4,0,'|0>+i|1>','parent',obj.ax);
             text(0,-1.4,0,'|0>-i|1>','parent',obj.ax);
-            text(0,0,1.4,'|0>','parent',obj.ax);
-            text(0,0,-1.4,'|1>','parent',obj.ax);
+            text(0,0,1.4,'|1>','parent',obj.ax);
+            text(0,0,-1.4,'|0>','parent',obj.ax);
             angle = linspace( 0, 2*pi, 128);
             sinA = sin(angle);
             cosA = cos(angle);
@@ -180,13 +253,17 @@ classdef blochSphere < handle
             end
         end
         function plotState(obj,stateIdx)
-            if isnan(obj.phi(stateIdx))
+%             if isnan(obj.phi(stateIdx))
+            if isnan(obj.x(stateIdx))
                 if ishghandle(obj.arrows(stateIdx))
                     delete(obj.arrows(stateIdx));
                 end
                 return;
             end
-            [xCur yCur zCur] = sph2cart(obj.phi(stateIdx), pi/2-obj.theta(stateIdx), 1);
+            xCur = obj.x(stateIdx);
+            yCur = obj.y(stateIdx);
+            zCur = obj.z(stateIdx);
+%             [xCur, yCur, zCur] = sph2cart(obj.phi(stateIdx), pi/2-obj.theta(stateIdx), 1);
             if ishghandle(obj.arrows(stateIdx))
                 delete(obj.arrows(stateIdx));
             end
