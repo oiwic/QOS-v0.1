@@ -15,7 +15,8 @@ function rho = stateTomoData2Rho(data)
     numQs = round(log(size(data,1))/log(3));
     switch numQs
         case 1
-            data = data*[-1;1];  % {'Y2m','X2p','I'}
+            % data = data*[-1;1];  % {'Y2m','X2p','I'}
+			data = data*[1;-1];  % {'Y2m','X2p','I'}
             rho = (data(3)*sigmaz + data(2)*sigmay + data(1)*sigmax+eye(2))/2;
         case 2
             

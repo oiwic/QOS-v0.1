@@ -17,7 +17,8 @@ classdef iq_ustc_ad < qes.measurement.iq
         
         eps_a = 0 % mixer amplitude correction
         eps_p = 0 % mixer phase correction
-        upSampleNum = 1 % upsample to match DA sampling rate
+
+%        upSampleNum = 1 % upsample to match DA sampling rate
         iqWeight
     end
     properties (SetAccess = private, GetAccess = private)
@@ -64,17 +65,17 @@ classdef iq_ustc_ad < qes.measurement.iq
             end
             obj.iqWeight = cell(1,numel(obj.freq));
         end
-        function set.upSampleNum(obj,val)
-            if isempty(val)
-                throw(MException('QOS_iq_ustc_ad:emptyUnpSampleNum','upSampleNum can not be empty.'));
-            end
-            if round(val) ~= val || val < 1
-                throw(MException('QOS_iq_ustc_ad:nonIntegerUnpSampleNum',...
-                    sprintf('upSampleNum must be a positive integer, %0.2f given.',val)));
-            end
-            obj.upSampleNum = val;
-            calcCachedVar(obj);
-        end
+%        function set.upSampleNum(obj,val)
+%            if isempty(val)
+%                throw(MException('QOS_iq_ustc_ad:emptyUnpSampleNum','upSampleNum can not be empty.'));
+%            end
+%            if round(val) ~= val || val < 1
+%                throw(MException('QOS_iq_ustc_ad:nonIntegerUnpSampleNum',...
+%                    sprintf('upSampleNum must be a positive integer, %0.2f given.',val)));
+%            end
+%            obj.upSampleNum = val;
+%            calcCachedVar(obj);
+%        end
         function set.startidx(obj,val)
 %             val = ceil(val);
 %             if val < 1 || val > obj.instrumentObject.recordLength || (~isempty(obj.endidx) && val >= obj.endidx)
