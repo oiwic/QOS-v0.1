@@ -13,6 +13,8 @@ classdef resonatorReadout < qes.measurement.prob
         mw_src_frequency % expose qubit setting r_fc for tunning
         
         startWv % waveform object to be added before the start of readout waveform
+        
+        iqRaw = false;
     end
     properties (SetAccess = protected)
         qubits
@@ -20,6 +22,8 @@ classdef resonatorReadout < qes.measurement.prob
 		adDelayStep
     end
     properties (SetAccess = private, GetAccess = protected)
+        delayStep
+        
         % da
         da_i_chnl
         da_q_chnl
@@ -116,14 +120,18 @@ classdef resonatorReadout < qes.measurement.prob
             assert(da_i_chnl_.samplingRate == da_q_chnl_.samplingRate);
 			
             rs = ad_i_chnl_.samplingRate/da_i_chnl_.samplingRate;
-			rln = ceil(rs*(qubits{1}.r_ln+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep
+			rln = ceil(rs*(qubits{1}.r_ln+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
             ad_i_chnl_.recordLength = rln;
             ad_q_chnl_.recordLength = rln;
 			
 			iq_obj = sqc.measure.iq_ustc_ad(ad_i_chnl_,ad_q_chnl_);
             iq_obj.n = qubits{1}.r_avg;
-            iq_obj.upSampleNum = lcm(ad_i_chnl_.samplingRate,...
-                da_i_chnl_.samplingRate)/ad_i_chnl_.samplingRate;
+			
+			
+			% upsample is obsolete for performance
+%            iq_obj.upSampleNum = lcm(ad_i_chnl_.samplingRate,...
+%                da_i_chnl_.samplingRate)/ad_i_chnl_.samplingRate;
+				
             demod_freq = zeros(1,num_qubits);
             
             for ii = 1:num_qubits
@@ -135,12 +143,16 @@ classdef resonatorReadout < qes.measurement.prob
             prob_obj = sqc.measure.prob_iq_ustc_ad_j(iq_obj,qubits);
 
             obj = obj@qes.measurement.prob(prob_obj);
+            obj.delayStep = lcm(round(ad_i_chnl_.samplingRate),...
+                round(da_i_chnl_.samplingRate))/ad_i_chnl_.samplingRate;
+
             obj.n = prob_obj.n;
             obj.qubits = qubits;
             obj.stateNames = prob_obj.stateNames;
             obj.iq_obj = iq_obj;
             obj.adSamplingRate = ad_i_chnl_.samplingRate;
             obj.daSamplingRate = da_i_chnl_.samplingRate;
+			
 			uSrc = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',qubits{1}.channels.r_mw.instru);
             if isempty(uSrc)
                 throw(MException('QOS_resonatorReadout:hwNotFound',...
@@ -227,14 +239,26 @@ classdef resonatorReadout < qes.measurement.prob
                     sprintf('startWv length(%0.0f) exceeding delay(%0.0f).',...
                     wvObj.length,val)));
             end
- 			obj.delay = val;
-            vSamplingRate = lcm(obj.adSamplingRate,obj.daSamplingRate);
+			
+			% for odd delay, we need to interpolate
+ 			obj.delay = obj.delayStep*ceil(val/obj.delayStep);
+            
             dd = (obj.delay - obj.adDelayStep*floor(obj.delay/obj.adDelayStep))*...
-                vSamplingRate/obj.daSamplingRate;
-            obj.iq_obj.startidx = obj.qubits{1}.r_truncatePts(1)*obj.iq_obj.upSampleNum+dd+1;
-            obj.iq_obj.endidx = (obj.adRecordLength-obj.qubits{1}.r_truncatePts(2))*...
-                obj.iq_obj.upSampleNum...
-                -obj.adDelayStep*vSamplingRate/obj.daSamplingRate+dd;
+                obj.adSamplingRate/obj.daSamplingRate;
+            
+            obj.iq_obj.startidx = obj.qubits{1}.r_truncatePts(1)+dd+1;
+            obj.iq_obj.endidx = obj.adRecordLength-obj.qubits{1}.r_truncatePts(2)...
+                -obj.adDelayStep+dd;
+
+% in case of using interpolation:
+%			obj.delay = val
+%            vSamplingRate = lcm(obj.adSamplingRate,obj.daSamplingRate);
+%            dd = (obj.delay - obj.adDelayStep*floor(obj.delay/obj.adDelayStep))*...
+%                vSamplingRate/obj.daSamplingRate;
+%            obj.iq_obj.startidx = obj.qubits{1}.r_truncatePts(1)*obj.iq_obj.upSampleNum+dd+1;
+%            obj.iq_obj.endidx = (obj.adRecordLength-obj.qubits{1}.r_truncatePts(2))*...
+%                obj.iq_obj.upSampleNum...
+%                -obj.adDelayStep*vSamplingRate/obj.daSamplingRate+dd;
             
             if ~isempty(obj.qubits{1}.r_jpa)
                 obj.jpaRunner.jpa.startDelay = obj.delay-obj.qubits{1}.r_jpa_longer; % all qubits has the same r_jpa_longer value, asserted during object construction.
@@ -252,6 +276,14 @@ classdef resonatorReadout < qes.measurement.prob
                     wvObj.length,obj.delay)));
             end
             obj.startWv = wvObj;
+        end
+        function set.iqRaw(obj,val)
+            if ~islogical (val)
+                throw(MException('QOS_resonatorReadout:invalidInput',...
+                    'iqRaw not a boolean'));
+            end
+            obj.iqRaw = val;
+            obj.iq_obj.iqRaw = val;
         end
         function Run(obj)
             obj.GenWave();
@@ -271,9 +303,13 @@ classdef resonatorReadout < qes.measurement.prob
             if ~isempty(obj.jpaRunner)
                 obj.jpaRunner.Run();
             end
-            obj.data = obj.instrumentObject();
-            % extradata: 1 by numQubits cell
-            obj.extradata = obj.instrumentObject.extradata;
+            if obj.iqRaw
+                obj.data = obj.iq_obj();
+            else
+                obj.data = obj.instrumentObject();
+                % extradata: 1 by numQubits cell
+                obj.extradata = obj.instrumentObject.extradata;
+            end
             obj.dataready = true;
         end
     end

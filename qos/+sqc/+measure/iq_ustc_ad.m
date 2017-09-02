@@ -17,8 +17,11 @@ classdef iq_ustc_ad < qes.measurement.iq
         
         eps_a = 0 % mixer amplitude correction
         eps_p = 0 % mixer phase correction
-        upSampleNum = 1 % upsample to match DA sampling rate
+
+%        upSampleNum = 1 % upsample to match DA sampling rate
         iqWeight
+        
+        iqRaw@logical scalar = false;
     end
     properties (SetAccess = private, GetAccess = private)
         % Cached variables
@@ -64,17 +67,17 @@ classdef iq_ustc_ad < qes.measurement.iq
             end
             obj.iqWeight = cell(1,numel(obj.freq));
         end
-        function set.upSampleNum(obj,val)
-            if isempty(val)
-                throw(MException('QOS_iq_ustc_ad:emptyUnpSampleNum','upSampleNum can not be empty.'));
-            end
-            if round(val) ~= val || val < 1
-                throw(MException('QOS_iq_ustc_ad:nonIntegerUnpSampleNum',...
-                    sprintf('upSampleNum must be a positive integer, %0.2f given.',val)));
-            end
-            obj.upSampleNum = val;
-            calcCachedVar(obj);
-        end
+%        function set.upSampleNum(obj,val)
+%            if isempty(val)
+%                throw(MException('QOS_iq_ustc_ad:emptyUnpSampleNum','upSampleNum can not be empty.'));
+%            end
+%            if round(val) ~= val || val < 1
+%                throw(MException('QOS_iq_ustc_ad:nonIntegerUnpSampleNum',...
+%                    sprintf('upSampleNum must be a positive integer, %0.2f given.',val)));
+%            end
+%            obj.upSampleNum = val;
+%            calcCachedVar(obj);
+%        end
         function set.startidx(obj,val)
 %             val = ceil(val);
 %             if val < 1 || val > obj.instrumentObject.recordLength || (~isempty(obj.endidx) && val >= obj.endidx)
@@ -137,21 +140,22 @@ classdef iq_ustc_ad < qes.measurement.iq
 				
 				obj.IQ = (I+1j*Q).';
 			else
-				% TODO...
+				% tic
 				[Vi,Vq] = obj.adI.Run(obj.n);
-
+             % toc
 				Vi = double(Vi) -127;
 				Vq = double(Vq) -127;
                 
-%             tic
-%             IQ = obj.demod(Vi,Vq);
-% %             toc 
-%             obj.data = mean(IQ);
-%             obj.extradata = IQ;
-
-				obj.demod(Vi,Vq);
+                if obj.iqRaw
+                    obj.data = obj.demod_rawIQ(Vi,Vq);
+                    obj.dataready = true;
+                    return;
+                else
+                    obj.demod(Vi,Vq);
+                end
+				
 			end           
-
+               % toc 
             obj.data = mean(obj.IQ);
             obj.extradata = obj.IQ;
             
@@ -163,16 +167,20 @@ classdef iq_ustc_ad < qes.measurement.iq
             if ~isempty(obj.startidx) && ~isempty(obj.freq)
                 NperSeg = obj.adI.recordLength;
                 if isempty(obj.endidx)
-                    eidx = obj.upSampleNum*NperSeg;
+					eidx = NperSeg;
+                    % eidx = obj.upSampleNum*NperSeg;
                 else
                     eidx = obj.endidx;
                 end
                 % typically, one needs to remove a few data points at the
                 % beginning or at the end of each segament due to trigger
                 % and signal may not be exactly syncronized.
-                obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
-                t = (obj.selectidx-obj.startidx)/...
-                    (obj.adI.samplingRate*obj.upSampleNum);
+				obj.selectidx = obj.startidx:1:eidx;
+                % obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
+                % t = (obj.selectidx-obj.startidx)/...
+                %     (obj.adI.samplingRate*obj.upSampleNum);
+				t = (obj.selectidx-obj.startidx)/...
+                    (obj.adI.samplingRate);
                 obj.kernel = zeros(numel(obj.freq),numel(t));
                 for ii = 1:numel(obj.freq)
                     obj.kernel(ii,:) = exp(-2j*pi*obj.freq(ii).*t);
@@ -180,20 +188,14 @@ classdef iq_ustc_ad < qes.measurement.iq
             end
         end
 %         function IQ = demod(obj,Vi, Vq)
-          function demod(obj, Vi, Vq)
-%             NperSeg = obj.instrumentObject.recordLength;
-%             if isempty(obj.endidx)
-%                 eidx = NperSeg;
-%             else
-%                 eidx = obj.endidx;
-%             end
-%             disp('====')
-%             obj.selectidx(1)
-%             obj.selectidx(end)
-            Vi = qes.util.upsample_c(Vi,obj.upSampleNum);
-            Vq = qes.util.upsample_c(Vq,obj.upSampleNum);
+        function demod(obj, Vi, Vq)
+		  % iq_ustc_ad used to suporrted the minimum delay step of one DA point, for that we need to
+		  % interpolate the raw data, but interpolation is expensive, thus removed in later versions
+            % Vi = qes.util.upsample_c(Vi,obj.upSampleNum);
+            % Vq = qes.util.upsample_c(Vq,obj.upSampleNum);
             Vi = Vi(:,obj.selectidx);
             Vq = Vq(:,obj.selectidx);
+
             for ii = 1:numel(obj.freq)
                 if isempty(obj.iqWeight{ii})
                     for jj = 1:obj.n
@@ -210,6 +212,20 @@ classdef iq_ustc_ad < qes.measurement.iq
                     end
                 end
             end
+        end
+        function iqraw = demod_rawIQ(obj, Vi, Vq)
+            Vi = Vi(:,obj.selectidx);
+            Vq = Vq(:,obj.selectidx);
+            iqraw = zeros(numel(obj.freq),size(obj.kernel,2));
+            for ii = 1:numel(obj.freq)
+                for jj = 1:obj.n
+                    IQ_ = obj.kernel(ii,:).*(Vi(jj,:)+1j*Vq(jj,:));
+                    IQ_ = obj.Mc*[real(IQ_);imag(IQ_)]; % correct mixer imballance
+                    obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
+                    iqraw(ii,:) = iqraw(ii,:) + IQ_(1,:)+1j*IQ_(2,:);
+                end
+            end
+            iqraw = iqraw/obj.n;
         end
         function Amp = Amp(obj, Vi, Vq)
             Amp = sum(abs(Vi(:)))+ sum(abs(Vq(:)));

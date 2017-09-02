@@ -1,20 +1,16 @@
-% qubits = {'q9','q8'};
-% qubits = {'q9','q8'};
-% for ii = 1:numel(qubits)
-%     q = qubits{ii};
-%     setQSettings('r_avg',2000,q);
-%     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
-%     tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
-%     tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
-%     XYGate ={'X','X/2','X/4'};
-%     for jj = 1:numel(XYGate)
-%         tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',21,'gui',true,'save',true);
-%     end
-% end
-
-
-
 q = 'q9';
+
+setQSettings('r_avg',2000,q);
+tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
+tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
+tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+XYGate ={'X','X/2'};
+for jj = 1:numel(XYGate)
+    tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',21,'gui',true,'save',true);
+end
+
+
+
 setQSettings('r_avg',3000,q);
 numPts = 60;
 
@@ -63,7 +59,7 @@ setQSettings('qr_xy_dragPulse',true,q);
     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
     tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
     tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
-    XYGate ={'X','X/2','X/4'};
+    XYGate ={'X','X/2'};
     for jj = 1:numel(XYGate)
         tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',21,'gui',true,'save',true);
     end
