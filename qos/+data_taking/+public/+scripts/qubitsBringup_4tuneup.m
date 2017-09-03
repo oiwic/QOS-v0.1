@@ -18,7 +18,7 @@ for ii = 1:numel(qubits)
     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
     tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
     tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
-    XYGate ={'X','X/2','X/4'};
+    XYGate ={'X','X/2'};
     for jj = 1:numel(XYGate)
         tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',21,'gui',true,'save',true);
     end

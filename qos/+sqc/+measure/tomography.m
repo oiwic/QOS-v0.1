@@ -104,7 +104,7 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 	methods(Hidden = true)
 		function setProcess(obj,p)
 			% for process tomography
-			if ~isa(p,'sqc.op.physical.operator')
+			if ~isempty(p) && ~isa(p,'sqc.op.physical.operator')
 				throw(MException('QOS_stateTomography:invalidInput',...
 						'the input is not a valid quantum operator.'));
             end

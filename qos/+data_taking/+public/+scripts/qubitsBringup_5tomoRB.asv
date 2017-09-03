@@ -9,9 +9,9 @@ h = figure();bar3(real(rho));h = figure();bar3(imag(rho));
 
 %%
 q = 'q9';
-setQSettings('r_avg',5000,q);
-state = 'H';
-data = Tomo_1QState_animation('qubit',q,'state',state,'numPts',100,'notes','','save',true);
+setQSettings('r_avg',2000,q);
+state = '|1>';
+data = Tomo_1QState_animation('qubit',q,'state',state,'numPts',10,'notes','','save',true);
 %%
 gate = 'Z';
 data = Tomo_1QProcess('qubit','q8','process',gate,'gui',true);

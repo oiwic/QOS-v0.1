@@ -8,6 +8,7 @@ classdef Y4m < sqc.op.physical.gate.XY_base
         function obj = Y4m(qubit)
             obj = obj@sqc.op.physical.gate.XY_base(qubit);
 			obj.length = obj.qubits{1}.g_XY4_ln;
+            obj.amp = obj.qubits{1}.g_XY4_amp;
             obj.phase = -pi/2;
             obj.setGateClass('Y4m');
         end

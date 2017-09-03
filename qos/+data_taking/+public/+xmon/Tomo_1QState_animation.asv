@@ -101,13 +101,13 @@ function varargout = Tomo_1QState_animation(varargin)
             if ii <= args.numPts/4
             	Y4m.amp = amps1(ii);
             elseif ii <= 3*args.numPts/4
-                Y4m.amp = amps1(end);
                 X.amp = amps2(ii- args.numPts/4);
             else
-                X.amp = amps2(end);
                 Y4p.amp = amps3(ii - 3*args.numPts/4);
             end
             if ii == args.numPts
+                
+                X.amp = amps1(end);
                 Y4p.amp = amps3(end);
             end
             if strcmp(q.g_XY_typ,'pi')
