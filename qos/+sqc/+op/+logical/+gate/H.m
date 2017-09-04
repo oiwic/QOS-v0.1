@@ -5,7 +5,7 @@ classdef H < sqc.op.logical.operator
 % mail4ywu@gmail.com/mail4ywu@icloud.com
     methods
         function obj = H()
-            obj = obj@sqc.op.logical.operator(1/sqrt(2)*[-1,1;1,1]);
+            obj = obj@sqc.op.logical.operator(1/sqrt(2)*[1,1;1,-1]);
         end
     end
 end

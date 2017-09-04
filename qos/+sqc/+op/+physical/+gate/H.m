@@ -1,5 +1,5 @@
 function g = H(qubit)
-	% Hardmard
+	% Hardmard [1,1;1,-1], |0> -> |0>+|1>, |1> -> |0>-|1>
     
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com

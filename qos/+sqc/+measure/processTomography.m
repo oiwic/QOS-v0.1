@@ -90,6 +90,11 @@ classdef processTomography < qes.measurement.measurement
 						sprintf('Process tomography: %0.0f of %0.0f | ',idx,numShots);
 				end
 				pGates = lpr();
+                
+%                 if idx == 6
+%                     kkk = 1;
+%                 end
+                
 				if isempty(pGates)
 					break;
 				end

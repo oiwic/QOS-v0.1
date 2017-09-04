@@ -43,4 +43,16 @@ proc = g2*g3;
 R = phase(q1);
 R.setProcess(proc);
 data = R()
-
+%%
+q1 = qName2Obj('q9');
+q2 = qName2Obj('q8');
+X1 = gate.X(q1);
+X2 = gate.X(q2);
+ACZ = gate.CZ(q1,q2);
+mR1 = gate.I(q1);
+mR2 = gate.Y2m(q2);
+proc = (X1.*X2)*ACZ*(mR1.*mR2);
+R = resonatorReadout({q1,q2});
+R.delay = proc.length;
+proc.Run();
+data = R()

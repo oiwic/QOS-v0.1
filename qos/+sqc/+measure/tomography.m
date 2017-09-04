@@ -48,7 +48,8 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
             end
 			for ii = 1:numTomoQs
                 for jj = 1:obj.numReadouts
-                    obj.readoutGates{numTomoQs-ii+1}{jj} = feval(readoutGates{jj},obj.qubits{ii});
+                    % obj.readoutGates{numTomoQs-ii+1}{jj} = feval(readoutGates{jj},obj.qubits{ii});
+                    obj.readoutGates{ii}{jj} = feval(readoutGates{jj},obj.qubits{ii});
                 end
             end
             obj.numericscalardata = false;
@@ -83,10 +84,13 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
                         rGates{uu}.phaseOffset = obj.xyGatePhaseOffset(uu);
                     end
                 end
-                
-                
-                
+
 				P = rGates{1};
+                
+%                 if idx == 7
+%                     kkk = 1;
+%                 end
+                
 				for ii = 2:numTomoQs
 					P = P.*rGates{ii};
 				end

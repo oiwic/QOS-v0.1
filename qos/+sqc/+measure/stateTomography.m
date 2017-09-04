@@ -7,7 +7,8 @@ classdef stateTomography < sqc.measure.tomography
 
     methods
         function obj = stateTomography(qubits)
-            obj = obj@sqc.measure.tomography(qubits,{'Y2m','X2p','I'});
+            % -X, -Y, Z
+            obj = obj@sqc.measure.tomography(qubits,{'Y2m','X2p','I'}); 
         end
         function Run(obj)
             Run@sqc.measure.tomography(obj);

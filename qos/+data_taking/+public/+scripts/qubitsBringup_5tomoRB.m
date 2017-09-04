@@ -2,7 +2,7 @@
 %%
 q = 'q8';
 setQSettings('r_avg',5000,q);
-state = '|0>+i|1>';
+state = '|0>+|1>';
 data = Tomo_1QState('qubit',q,'state',state,'notes','','save',true);
 rho = sqc.qfcns.stateTomoData2Rho(data);
 h = figure();bar3(real(rho));h = figure();bar3(imag(rho));
@@ -15,7 +15,7 @@ data = Tomo_1QState_animation('qubit',q,'state',state,'numPts',100,'notes','','s
 %%
 gate = 'Z';
 data = Tomo_1QProcess('qubit','q8','process',gate,'gui',true);
-%% single qubit gate benchmarking
+%% 
 setQSettings('r_avg',5000,'q8');
 setQSettings('r_avg',5000,'q9');
 CZTomoData = Tomo_2QProcess('qubit1','q9','qubit2','q8',...
@@ -33,9 +33,9 @@ numGates = int16(unique(round(logspace(0,log10(100),5))));
        'process','X','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);
 %% two qubit gate benchmarking
-setQSettings('r_avg',250);
+setQSettings('r_avg',600);
 numGates = 1:1:10;
-[Pref,Pi] = randBenchMarking('qubit1','q9','qubit2','q8_7k',...
+[Pref,Pi] = randBenchMarking('qubit1','q9','qubit2','q8',...
        'process','CZ','numGates',numGates,'numReps',70,...
        'gui',true,'save',true);
 %%

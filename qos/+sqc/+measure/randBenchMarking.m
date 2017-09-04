@@ -235,10 +235,10 @@ classdef randBenchMarking < qes.measurement.measurement
                     % CZ, the only tow qubit gate that is supported
                     g_ = feval(str2func(['@(q1,q2)sqc.op.physical.gate.',gn{ii},'(q1,q2)']),q1,q2);
 					% the following is moved to cz gate creation
-%                    if ~isempty(g_.dynamicPhase)
-%                        q1.g_XY_phaseOffset = q1.g_XY_phaseOffset + g_.dynamicPhase(1);
-%                        q2.g_XY_phaseOffset = q2.g_XY_phaseOffset + g_.dynamicPhase(2);
-%                    end
+                   if ~isempty(g_.dynamicPhase)
+                       q1.g_XY_phaseOffset = q1.g_XY_phaseOffset + g_.dynamicPhase(1);
+                       q2.g_XY_phaseOffset = q2.g_XY_phaseOffset + g_.dynamicPhase(2);
+                   end
                 else
                     g_ = sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{1},q1);
                     g_ = g_.*sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{2},q2);
