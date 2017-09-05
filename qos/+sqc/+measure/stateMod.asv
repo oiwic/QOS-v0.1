@@ -1,12 +1,12 @@
-classdef phase < sqc.measure.phaseTomography
+classdef stateMod < sqc.measure.stateTomography
     % measure single qubit state phase
     
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
     methods
-        function obj = phase(qubit)
-            obj = obj@sqc.measure.phaseTomography(qubit);
+        function obj = stateMod(qubit)
+            obj = obj@sqc.measure.stateTomography(qubit);
             obj.numericscalardata = true;
             obj.name = [qubit.name,' phase(rad)'];
         end

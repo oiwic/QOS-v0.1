@@ -1,5 +1,7 @@
 classdef iq_ustc_ad < qes.measurement.iq
-    %
+    % data(m): IQ mean of demod frequency freq(m)
+    % extradata(num_demod_freq,n), n: num stats
+    % extradata(m,k), IQ of kth shot of demod frequency freq(m)
 
 % Copyright 2016 Yulin Wu, Institute of Physics, Chinese  Academy of Sciences
 % mail4ywu@gmail.com/mail4ywu@icloud.com

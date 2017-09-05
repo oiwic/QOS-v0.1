@@ -1,5 +1,8 @@
 classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
-    %
+    % rename this class to events_iq_ustc_ad
+    % this class measures the state of each shots(events)
+    % data(k,:) is a 1 by n(number of shots), the single shot events of
+    % the kth qubit: 0 for |0>,  1 for |1>, 2 for |2>
     
 % Copyright 2016 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
@@ -27,6 +30,80 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
             obj.numericscalardata = false;
             obj.qubits = qs;
         end
+        
+%         function obj = prob_iq_ustc_ad(qubits)
+%             if ~iscell(qubits)
+%                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')
+%                     throw(MException('prob_iq_ustc_ad:invalidInput',...
+% 						'the input qubits should be a cell array of qubit objects or qubit names.'));
+%                 else
+%                     qubits = {qubits};
+%                 end
+%             end
+% 			for ii = 1:numel(qubits)
+% 				if ischar(qubits{ii})
+% 					qubits{ii} = sqc.util.qName2Qubit(qubits{ii});
+% 				end
+%             end
+%             prop_names = {{'channels','r_ad_i','instru'},{'channels','r_ad_q','instru'},...
+%                 {'channels','r_ad_i','chnl'},{'channels','r_ad_q','chnl'}};
+%             b = sqc.util.samePropVal(qubits,prop_names);
+%             if ~all(b)
+%                 throw(MException('prob_iq_ustc_ad:settingsMismatch','the qubits to readout has different AD setting.'));
+%             end
+%             
+%             da_i_chnl_ = qubits{1}.channels.r_da_i.chnl;
+%             da_q_chnl_ = qubits{1}.channels.r_da_q.chnl;
+%             if da_i_chnl_ == da_q_chnl_
+%                 throw(MException('resonatorReadout:daChnlSettingError',...
+% 					'can not output I and Q on the same channel.'));
+%             end
+% 
+%             ad_i_names = qubits{1}.channels.r_ad_i.instru;
+%             ad_q_names = qubits{1}.channels.r_ad_q.instru;
+%             if ~strcmp(ad_q_names,ad_i_names)
+%                 throw(MException('resonatorReadout:adMismatch',...
+% 					'can not digitize I and Q on different ADs.'));
+%             end
+% 
+%             ad_i_chnl_ = qubits{1}.channels.r_ad_i.chnl;
+%             ad_q_chnl_ = qubits{1}.channels.r_ad_q.chnl;
+%             if ad_i_chnl_ == ad_q_chnl_
+%                 throw(MException('resonatorReadout:adChnlSettingError',...
+% 					'can not digitize I and Q with the same channel.'));
+%             end
+%             
+%             ad = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',ad_i_names);
+%             da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',da_i_names);
+% 			
+% 			ad_i_chnl_ = ad.GetChnl(ad_i_chnl_);
+% 			ad_q_chnl_ = ad.GetChnl(ad_q_chnl_);
+%             
+%             da_i_chnl_ = da.GetChnl(da_i_chnl_);
+%             da_q_chnl_ = da.GetChnl(da_q_chnl_);
+%             assert(da_i_chnl_.samplingRate == da_q_chnl_.samplingRate);
+% 			
+%             rs = ad_i_chnl_.samplingRate/da_i_chnl_.samplingRate;
+% 			rln = ceil(rs*(qubits{1}.r_ln+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
+%             ad_i_chnl_.recordLength = rln;
+%             ad_q_chnl_.recordLength = rln;
+%             
+%             iq_obj = sqc.measure.iq_ustc_ad(ad_i_chnl_,ad_q_chnl_);
+%             iq_obj.n = qubits{1}.r_avg;
+%             
+%             demod_freq = zeros(1,num_qubits);
+%             
+%             for ii = 1:num_qubits
+%                 demod_freq(ii) = qubits{ii}.r_freq- qubits{1}.r_fc;
+%             end
+%             iq_obj.freq = demod_freq;
+%             
+%             obj = obj@qes.measurement.prob(iq_ustc_ad_obj);
+%             obj.n = iq_ustc_ad_obj.n;
+%             obj.numericscalardata = false;
+%             obj.qubits = qs;
+%         end
+        
         function set.qubits(obj,val)
             if ~iscell(val) && ischar(val)
                 val = {val};
@@ -57,7 +134,7 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 			center0_ = zeros(1,num_qs_);
             center1_ = zeros(1,num_qs_);
             center2_ = zeros(1,num_qs_);
-            for ii = 1:num_qs_ 
+            for ii = 1:num_qs_
                 center0_(ii) = obj.qubits{ii}.r_iq2prob_center0;
                 center1_(ii) = obj.qubits{ii}.r_iq2prob_center1;
                 center2_(ii) = obj.qubits{ii}.r_iq2prob_center2;

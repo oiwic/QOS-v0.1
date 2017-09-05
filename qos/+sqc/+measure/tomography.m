@@ -48,8 +48,8 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
             end
 			for ii = 1:numTomoQs
                 for jj = 1:obj.numReadouts
-                    % obj.readoutGates{numTomoQs-ii+1}{jj} = feval(readoutGates{jj},obj.qubits{ii});
-                    obj.readoutGates{ii}{jj} = feval(readoutGates{jj},obj.qubits{ii});
+                    % in looper, the last element is swept first(the inner most loop index)
+                    obj.readoutGates{numTomoQs-ii+1}{jj} = feval(readoutGates{jj},obj.qubits{ii});
                 end
             end
             obj.numericscalardata = false;

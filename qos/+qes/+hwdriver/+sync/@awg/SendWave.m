@@ -8,6 +8,7 @@ function SendWave(obj,chnl,DASequence,isI)
 	DASequence.xfrFunc = obj.xfrFunc{chnl};
     DASequence.padLength = obj.padLength(chnl);
     TYP = lower(obj.drivertype);
+
     switch TYP % now we only support our DAC boards
         case {'ustc_da_v1'} % for ustc_da_v1, waveform vpp is -32768, 32768
 			if isI

@@ -29,33 +29,14 @@ function varargout = acz_ampLength(varargin)
     [qc,qt] = data_taking.public.util.getQubits(args,{'controlQ','targetQ'});
     if ~isempty(args.readoutQubit)
         rq = data_taking.public.util.getQubits(args,{'readoutQubit'});
-    else
-        rq = data_taking.public.util.getQubits(args,{'targetQ'});
     end
 
     switch args.dataTyp
         case 'P'
-            if rq == qt
-                if args.cState == '0'
-                    X = gate.I(qc);
-                else
-                    X = gate.X(qc);
-                end
-                Ip = gate.I(qt);
-                Ip.ln = X.length;
-                Y2m = gate.Y2m(qt);
-                Y2p = gate.Y2p(qt);
+            if ~isempty(args.readoutQubit)
+                
             else
-                if args.cState == '0'
-                    X = gate.I(qc);
-                else
-                    X = gate.X(qc);
-                end
-                Ip = gate.I(qc);
-                Ip.ln = X.length;
-                Y2m = gate.Y2m(qc);
-                Y2p = gate.Y2p(qc);
-            end
+                
         case 'Phase'
             if args.cState == '0'
                 X = gate.I(qc);
@@ -88,8 +69,6 @@ function varargout = acz_ampLength(varargin)
             throw(MException('QOS_ramsey_dp:unrcognizedDataTyp',...
             'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
     end
-    
-    X_ = gate.X(qt);
 
     czLength = qes.util.hvar(0);
     function procFactory(amp)
@@ -97,15 +76,10 @@ function varargout = acz_ampLength(varargin)
         CZ.amp = amp;
         % proc = (X.*Y2m)*Id*CZ*Id*Y2p;
         if isPhase
-            proc = ((X.*Ip)*Y2m)*CZ;
+            proc = ((X.*Ip)*Y2m)*CZ;  % CNOT
             R.setProcess(proc);
         else
-            proc = ((X.*Ip)*Y2m)*CZ*Y2p;
-            
-            
-            proc = (X.*X_)*CZ;
-            R.state = 1;
-
+            proc = ((X.*Ip)*Y2m)*CZ*Y2p;  % CNOT
             proc.Run();
             R.delay = proc.length;
         end

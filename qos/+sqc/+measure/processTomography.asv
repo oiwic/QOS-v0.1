@@ -4,13 +4,7 @@ classdef processTomography < qes.measurement.measurement
     % stateTomography for details.
     % {|0>, |1>, |0>+|1>, |0>+i|1>} abbr. => {0,1,+,i}:
     % for 2 qubits: processTomography({q1,q2},1), data:
-    % |q2:0, q1:0> : data(1,:,:);
-    % |q2:0, q1:1> : data(2,:,:);
-    % |q2:0, q1:+> : data(3,:,:);
-    % |q2:0, q1:i> : data(4,:,:);
-    % |q2:1, q1:0> : data(5,:,:);
-    % |q2:1, q1:1> : data(6,:,:);
-    % ...
+    %
     
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com

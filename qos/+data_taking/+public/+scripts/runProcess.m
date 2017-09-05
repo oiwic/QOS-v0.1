@@ -56,3 +56,21 @@ R = resonatorReadout({q1,q2});
 R.delay = proc.length;
 proc.Run();
 data = R()
+%%
+q1 = qName2Obj('q9');
+q2 = qName2Obj('q8');
+X1 = gate.X(q1);
+X2 = gate.X(q2);
+ACZ = gate.CZ(q1,q2);
+
+ACZ_ = gate.I(q1);
+ACZ_.ln = ACZ.length;
+
+ACZ_ = ACZ;
+
+mR1 = gate.I(q1);
+mR2 = gate.Y2m(q2);
+proc = (X1.*X2)*ACZ_;
+R = stateTomography({q1,q2});
+R.setProcess(proc);
+data = R()

@@ -13,7 +13,7 @@ classdef prob_iq_ustc_ad_j < sqc.measure.prob_iq_ustc_ad
         % convert to intrinsic state probability by using measurement
         % fidelity or not, this property can only be set by registry
         % setting: r_iq2prob_intrinsic
-        intrinsic = false 
+        intrinsic = false
     end
 	properties (SetAccess = private, GetAccess = private)
         invFMat % to convert the measured probability to intrinsic state probability: P = invFMat*Pm; 
