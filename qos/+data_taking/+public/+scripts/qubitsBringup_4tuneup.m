@@ -85,3 +85,49 @@ zPulseRipplePhase_beta('qubit','q9_1k','delayTime',delayTime,...
        'xfrFunc',[xfrFunc_f],'zAmp',20e3,'s',s,...
        'notes','no xfrFunc','gui',true,'save',true);
 %%
+temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
+      'phase_c',[-pi:pi/2:pi],'phase_t',[-pi:pi/2:pi],'czAmp',2.662e4,...
+      'numGates',2,'numReps',70,...
+      'notes','','gui',true,'save',true);
+%%
+qubits = {'q9','q8'};
+for ii = 1:numel(qubits)
+    q = qubits{ii};
+    setQSettings('r_avg',2000,q);
+    tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
+    tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+    XYGate ={'X','X/2'};
+    for jj = 1:numel(XYGate)
+        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
+    end
+end
+
+setQSettings('r_avg',800,'q8');
+setQSettings('r_avg',800,'q9');
+temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
+      'phase_c',[-pi:2*pi/20:pi],'phase_t',[-pi:pi/20:pi],'czAmp',2.662e4,...
+      'numGates',2,'numReps',50,...
+      'notes','','gui',true,'save',true);
+  
+qubits = {'q9','q8'};
+for ii = 1:numel(qubits)
+    q = qubits{ii};
+    setQSettings('r_avg',2000,q);
+    tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
+    tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+    XYGate ={'X','X/2'};
+    for jj = 1:numel(XYGate)
+        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
+    end
+end
+
+setQSettings('r_avg',800,'q8');
+setQSettings('r_avg',800,'q9');
+temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
+      'phase_c',[-pi:2*pi/20:pi],'phase_t',[-pi:2*pi/20:pi],'czAmp',26858,...
+      'numGates',2,'numReps',50,...
+      'notes','','gui',true,'save',true);
+  
+

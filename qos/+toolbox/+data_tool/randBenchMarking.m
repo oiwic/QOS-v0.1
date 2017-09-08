@@ -1,9 +1,12 @@
-function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
+function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName,ax)
 
     numGates = double(numGates); % numGates could be int16
 
     if nargin < 5
         gateName = '';
+    end
+    if nargin < 6
+        ax = [];
     end
 
     function y_ = fitFcn(p,x_)
@@ -25,10 +28,12 @@ function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
     
     fidelity = 1-(1-Cgate(2)/Cref(2))*(2^numQs-1)/(2^numQs);
     
-    h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', gateName),false);
-    ax = axes('parent',h,'FontSize',16);
-%     ax = gca;
-%     hold on;
+    if isempty(ax) || ~isgraphics(ax)
+        h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', gateName),false);
+        ax = axes('parent',h,'FontSize',16);
+    else
+        hold(ax,'on');
+    end
     
     plot(ax,numGates,Pref,'.b','MarkerSize',8);
     hold on;

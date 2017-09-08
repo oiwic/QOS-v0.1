@@ -232,7 +232,7 @@ classdef randBenchMarking < qes.measurement.measurement
             for ii = 1:numel(gn) % *
                 if ~iscell(gn{ii})
                     % temp
-                    % CZ, the only tow qubit gate that is supported
+                    % CZ, the only two qubit gate that is supported
                     g_ = feval(str2func(['@(q1,q2)sqc.op.physical.gate.',gn{ii},'(q1,q2)']),q1,q2);
 					% the following is moved to cz gate creation
                    if ~isempty(g_.dynamicPhase)

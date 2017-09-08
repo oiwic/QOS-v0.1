@@ -73,9 +73,9 @@ function varargout = randBenchMarking(varargin)
     Pgate = NaN(args.numReps,N);
     Gates = cell(N,args.numReps,2);
 	if numel(q) == 1
-		dataFileName = ['RB_',q.name,'_',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+		dataFileName = ['RB_',q.name,datestr(now,'_yymmddTHHMMSS_'),'.mat'];
 	else
-		dataFileName = ['RB_',q1.name,q2.name,'_',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+		dataFileName = ['RB_',q1.name,q2.name,datestr(now,'_yymmddTHHMMSS_'),'.mat'];
 	end
     QS = qes.qSettings.GetInstance();
     dataPath = QS.loadSSettings('data_path');
@@ -86,16 +86,38 @@ function varargout = randBenchMarking(varargin)
         data = R();
         Pref(:,ii) = data(:,1);
         Pgate(:,ii) = data(:,2);
+
+        % C2Gates = sqc.measure.randBenchMarking.C2Gates();
+        % C2Gates(Gates{n,k,1}) is the reference gate
+        % series of the kth random series of n th Cliford Gates
+        % C2Gates(Gates{n,k,2}) is the interleaved gate
+        % series of the kth random series of n th Cliford Gates
+        % to count CZ gates(in nth gate reference):
+        % g1_ref = cell2mat(Gates(n,:,1).');
+        % czCount = zeros(1,size(g1_ref,1));
+        % for ii = 1:size(g1_ref,1)
+        %     for jj = 1:size(g1_ref,2)
+        %         g = C2Gates{g1_ref(ii,jj)};
+        %         for kk = 1: length(g)
+        %             if ischar(g{kk})
+        %                 czCount(ii) = czCount(ii) + 1;
+        %             end
+        %         end
+        %     end
+        % end
+        
         Gates(ii,:,:) = R.extradata;
+
         if args.gui
             if ~ishghandle(ax)
                 h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', args.process),false);
                 ax = axes('parent',h);
             end
             try
-                plot(ax,...
-                args.numGates(1:ii),mean(Pref(:,1:ii),1),...
-                args.numGates(1:ii),mean(Pgate(:,1:ii),1));
+                plot(ax,args.numGates(1:ii),mean(Pref(:,1:ii),1),'b-s');
+                hold(ax,'on');
+                plot(ax,args.numGates(1:ii),mean(Pgate(:,1:ii),1),'r-s');
+                hold(ax,'off');
             catch
             end
             xlabel(ax,'number of gates');

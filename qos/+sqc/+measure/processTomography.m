@@ -1,6 +1,6 @@
 classdef processTomography < qes.measurement.measurement
     % process tomography
-    % data: 4^n M(3^n by 2^n), M is state tomography data, see
+    % data: 4^n by M(3^n by 2^n), M is state tomography data, see
     % stateTomography for details.
     % {|0>, |1>, |0>+|1>, |0>+i|1>} abbr. => {0,1,+,i}:
     % for 2 qubits: processTomography({q1,q2},1), data:
@@ -71,7 +71,7 @@ classdef processTomography < qes.measurement.measurement
             if strcmp(class(obj.process),'CZ')
                 obj.stateTomoObj.xyGatePhaseOffset = obj.process.dynamicPhase;
             else
-                obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
+%                 obj.stateTomoObj.xyGatePhaseOffset = 3*[1.37735, -1.930];
             end
             % temp
 %             % q9 - q8 one cz 
@@ -80,9 +80,8 @@ classdef processTomography < qes.measurement.measurement
 %             obj.stateTomoObj.xyGatePhaseOffset = [2.743867, -3.44946];
 %             % q9 - q8 3 cz 
 %             obj.stateTomoObj.xyGatePhaseOffset = [4.22984,  -4.99199];
-%              % q9 - q8 4 cz 
+%             % q9 - q8 4 cz 
 %             obj.stateTomoObj.xyGatePhaseOffset = [5.715813,  -6.534512];
-%             
 %             
 %             obj.numericscalardata = false;
         end

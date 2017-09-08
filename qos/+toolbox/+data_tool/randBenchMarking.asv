@@ -1,9 +1,12 @@
-function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
+function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName,ax)
 
-    numGates = double(numGates); % numGates could be unit16
+    numGates = double(numGates); % numGates could be int16
 
     if nargin < 5
         gateName = '';
+    end
+    if nargin < 6
+        ax = [];
     end
 
     function y_ = fitFcn(p,x_)
@@ -25,6 +28,7 @@ function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
     
     fidelity = 1-(1-Cgate(2)/Cref(2))*(2^numQs-1)/(2^numQs);
     
+    if isempty
     h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', gateName),false);
     ax = axes('parent',h,'FontSize',16);
     
@@ -36,7 +40,7 @@ function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName)
     legend(ax,{'reference',[gateName, ' interleaved']},'FontSize',12);
     title(ax,[gateName,' fidelity: ',num2str(fidelity,'%0.4f')],...
         'FontSize',12,'FontWeight','normal');
-    xf = 0.5:0.1:numGates(end)+0.5;
+    xf = 0.5:0.1:1*numGates(end)+0.5;
     plot(ax,xf,fitFcn(Cref,xf),'-b','LineWidth',1);
     plot(ax,xf,fitFcn(Cgate,xf),'-r','LineWidth',1);
     

@@ -71,15 +71,15 @@ tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
 sqc.qfcns.gateOptimizer.xyGateOptWithDrag(q,100,50,500,20);
 tuneup.iq2prob_01('qubit','q8','numSamples',1e4,'gui',true,'save',true);
 tuneup.iq2prob_01('qubit','q9','numSamples',1e4,'gui',true,'save',true);
-sqc.qfcns.gateOptimizer.czOptPhaseAmp({'q9','q8'},3,50,500,25);
+sqc.qfcns.gateOptimizer.czOptPhaseAmp({'q9','q8'},3,70,600,25);
 
 tuneup.iq2prob_01('qubit','q8','numSamples',1e4,'gui',true,'save',true);
 tuneup.iq2prob_01('qubit','q9','numSamples',1e4,'gui',true,'save',true);
-setQSettings('r_avg',500,'q8');
-setQSettings('r_avg',500,'q9');
-numGates = 1:1:30;
+setQSettings('r_avg',600,'q8');
+setQSettings('r_avg',600,'q9');
+numGates = 1:1:15;
 [Pref,Pi] = randBenchMarking('qubit1','q9','qubit2','q8',...
-       'process','CZ','numGates',numGates,'numReps',50,...
+       'process','CZ','numGates',numGates,'numReps',70,...
        'gui',true,'save',true);
 
 

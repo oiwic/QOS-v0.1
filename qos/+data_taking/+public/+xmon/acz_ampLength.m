@@ -56,7 +56,7 @@ function varargout = acz_ampLength(varargin)
                 Y2m = gate.Y2m(qc);
                 Y2p = gate.Y2p(qc);
             end
-        case 'Phase'
+        case {'Phase','Tomography'}
             if args.cState == '0'
                 X = gate.I(qc);
             else
@@ -71,11 +71,10 @@ function varargout = acz_ampLength(varargin)
             'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
     end
     
-    
     % H = gate.
     CZ = gate.CZ(qc,qt);
 
-    isPhase = false;
+    isTomography = false;
     switch args.dataTyp
         case 'P'
             R = measure.resonatorReadout_ss(rq); 
@@ -83,12 +82,15 @@ function varargout = acz_ampLength(varargin)
             R.name = [rq.name,' ',R.name];
         case 'Phase'
             R = measure.phase(qt);
-            isPhase = true;
+            isTomography = true;
+        case 'Tomography'
+            R = measure.stateTomography(qt);
+            isTomography = true;
         otherwise
             throw(MException('QOS_ramsey_dp:unrcognizedDataTyp',...
             'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
     end
-    
+
     X_ = gate.X(qt);
 
     czLength = qes.util.hvar(0);
@@ -96,7 +98,7 @@ function varargout = acz_ampLength(varargin)
         CZ.aczLn = czLength.val;
         CZ.amp = amp;
         % proc = (X.*Y2m)*Id*CZ*Id*Y2p;
-        if isPhase
+        if isTomography
             proc = ((X.*Ip)*Y2m)*CZ;
             R.setProcess(proc);
         else

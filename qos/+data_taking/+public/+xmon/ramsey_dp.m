@@ -61,7 +61,7 @@ function varargout = ramsey_dp(varargin)
         phaseOffset = -2*pi*detuning.val*delay/daSamplingRate+args.phaseOffset;
         if isPhase
             proc = X2_*I;
-            R.singleQXYGatePhaseOffset = phaseOffset;
+            R.xyGatePhaseOffset = phaseOffset;
             R.setProcess(proc);
         else
             proc = X2_*I*X2;

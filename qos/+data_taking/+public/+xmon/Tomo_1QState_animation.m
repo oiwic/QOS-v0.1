@@ -120,7 +120,8 @@ function varargout = Tomo_1QState_animation(varargin)
             p.amp = amps(ii);
         end
         P = R();
-        data(:,ii) = P*[-1;1]; % {'Y2m','X2p','I'}
+        % data(:,ii) = P*[-1;1]; % {'Y2m','X2p','I'}
+        data(:,ii) = P*[1;-1]; % {'Y2p','X2m','I'}, |0> state on +z direction 
         blochSphere.addStateXYZ(data(1,ii),data(2,ii),data(3,ii),1,true);
         drawnow();
     end
