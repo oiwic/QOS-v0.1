@@ -161,6 +161,12 @@ classdef randBenchMarking < qes.measurement.measurement
                     ridx = randi(11520,1,obj.numGates);
                     for ii = 1:obj.numGates
                         g{ii} = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2});
+                        if strcmp(obj.process.class(),'CZ')
+%                            if ~isempty(obj.process.dynamicPhase)
+%                                obj.qubits{1}.g_XY_phaseOffset = obj.qubits{1}.g_XY_phaseOffset + obj.process.dynamicPhase(1);
+%                                obj.qubits{2}.g_XY_phaseOffset = obj.qubits{2}.g_XY_phaseOffset + obj.process.dynamicPhase(2);
+%                            end
+                        end
                     end
             end
             [gf_ref, gf_idx] = obj.finalGate(ridx);
