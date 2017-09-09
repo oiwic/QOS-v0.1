@@ -1,4 +1,4 @@
-function [ x_opt, n_feval ] = NelderMead (function_handle, x0, tolX, tolY, max_feval, plotObj)
+function [ x_opt, x_trace, y_trace, n_feval] = NelderMead (function_handle, x0, tolX, tolY, max_feval, axs)
 
 %*****************************************************************************80
 %
@@ -50,10 +50,6 @@ function [ x_opt, n_feval ] = NelderMead (function_handle, x0, tolX, tolY, max_f
 
 % modified by Yulin Wu
 
-if nargin < 5
-    plotObj = [];
-end
-
 x = x0;
 tolerance = tolY;
 
@@ -69,6 +65,15 @@ tolerance = tolY;
 %
 
   [ temp, n_dim ] = size ( x );
+  
+  plotTrace = false;
+  if nargin < 6
+     axs = [];
+  elseif numel(axs) < n_dim + 1
+     error('number of axes must equal to number of dimmension +1.');
+  else
+      plotTrace = true;
+  end
 
   if ( temp ~= n_dim + 1 )
     fprintf ( 1, '\n' );
@@ -107,20 +112,37 @@ tolerance = tolY;
 %   end
 
   index = 1 : n_dim + 1;
-
+  
   [f    ] = evaluate ( x, function_handle ); 
   n_feval = n_dim + 1;
 
   [ f, index ] = sort ( f );
   x = x(index,:);
+  % Yulin Wu
+  x_trace = x(1,:); 
+  y_trace = f(1);
+  traces = NaN(1,n_dim);
+  if plotTrace
+      for ww = 1:n_dim
+          if isgraphics(axs(ww))
+            traces(ww) = line('parent',axs(ww),'XData',1,'YData',x_trace(:,ww),'Marker','.','Color','b');
+            ylabel(axs(ww),'variable value');
+          end
+      end
+      if isgraphics(axs(n_dim+1))
+        traces(n_dim+1) = line('parent',axs(n_dim+1),'XData',1,'YData',y_trace,'Marker','.','Color','r');
+        title(axs(n_dim+1),[num2str(n_feval),'th evaluation.']);
+        ylabel(axs(n_dim+1),'function value');
+      end
+      drawnow;
+  end
+
 %  
 %  Begin the Nelder Mead iteration.
 %
   converged = false;
   diverged  = false;
-  reduceDim = false;
-  
-  while ( ~converged && ~diverged && ~reduceDim)
+  while ( ~converged && ~diverged)
 %    
 %  Compute the midpoint of the simplex opposite the worst point.
 %
@@ -133,6 +155,24 @@ tolerance = tolY;
 
     f_r   = feval(function_handle,x_r); 
     n_feval = n_feval + 1;
+    
+    % Yulin Wu
+  x_trace = [x_trace;x_r]; 
+  y_trace = [y_trace,f_r];
+  if plotTrace
+      for ww = 1:n_dim
+          if isgraphics(traces(ww))
+            set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+          end
+      end
+      if isgraphics(traces(n_dim+1))
+            set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+            title(axs(n_dim+1),[num2str(n_feval),'th evaluation, reflection.']);
+      end
+      drawnow;
+  end
+
+    
 %
 %  Accept the point:
 %    
@@ -154,6 +194,22 @@ tolerance = tolY;
 
       f_e = feval(function_handle,x_e); 
       n_feval = n_feval+1;
+      
+      % Yulin Wu
+  x_trace = [x_trace;x_e]; 
+  y_trace = [y_trace,f_e];
+  if plotTrace
+      for ww = 1:n_dim
+          if isgraphics(traces(ww))
+            set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+          end
+      end
+      if isgraphics(traces(n_dim+1))
+            set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+            title(axs(n_dim+1),[num2str(n_feval),'th evaluation, expansion.'])
+      end
+      drawnow;
+  end
 %
 %  Can we accept the expanded point?
 %
@@ -172,15 +228,53 @@ tolerance = tolY;
     elseif ( f(n_dim) <= f_r && f_r < f(n_dim+1) )
 
       x_c = (1+rho*gam)*x_bar - rho*gam*x(n_dim+1,:);
-      f_c = feval(function_handle,x_c); n_feval = n_feval+1;
+      f_c = feval(function_handle,x_c);
+      n_feval = n_feval+1;
+      
+      % Yulin Wu
+          x_trace = [x_trace;x_c]; 
+          y_trace = [y_trace,f_c];
+          if plotTrace
+              for ww = 1:n_dim
+                  if isgraphics(traces(ww))
+                    set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+                  end
+              end
+              if isgraphics(traces(n_dim+1))
+                    set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+                    title(axs(n_dim+1),[num2str(n_feval),'th evaluation, outside contraction.'])
+              end
+              drawnow;
+          end
       
       if (f_c <= f_r) % accept the contracted point
         x(n_dim+1,:) = x_c;
         f(n_dim+1  ) = f_c;
 %         if (flag), title('outside contraction'), end
+
       else
-        [x,f] = shrink(x,function_handle,sig); n_feval = n_feval+n_dim;
+        [x,f] = shrink(x,function_handle,sig);
+        n_feval = n_feval+n_dim;
 %         if (flag), title('shrink'), end
+
+        % Yulin Wu
+        [ f_, index_ ] = sort ( f );
+        x_ = x(index_,:);
+          x_trace = [x_trace;x_(1,:)]; 
+          y_trace = [y_trace,f_(1)];
+          if plotTrace
+              for ww = 1:n_dim
+                  if isgraphics(traces(ww))
+                    set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+                  end
+              end
+              if isgraphics(traces(n_dim+1))
+                    set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+                    title(axs(n_dim+1),[num2str(n_feval),'th evaluation, shrink.'])
+              end
+              drawnow;
+          end
+
       end
 %
 %  F_R must be >= F(N_DIM+1).
@@ -193,6 +287,7 @@ tolerance = tolY;
 
       f_c = feval(function_handle,x_c); 
       n_feval = n_feval+1;
+
 %
 %  Can we accept the contracted point?
 %
@@ -200,9 +295,45 @@ tolerance = tolY;
         x(n_dim+1,:) = x_c;
         f(n_dim+1  ) = f_c;
 %         if (flag), title('inside contraction'), end
+
+        % Yulin Wu
+          x_trace = [x_trace;x_c]; 
+          y_trace = [y_trace,f_c];
+          if plotTrace
+              for ww = 1:n_dim
+                  if isgraphics(traces(ww))
+                    set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+                  end
+              end
+              if isgraphics(traces(n_dim+1))
+                    set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+                    title(axs(n_dim+1),[num2str(n_feval),'th evaluation, inside contraction.'])
+              end
+              drawnow;
+          end
+          
       else
         [x,f] = shrink(x,function_handle,sig); n_feval = n_feval+n_dim;
 %         if (flag), title('shrink'), end
+        
+         % Yulin Wu
+        [ f_, index_ ] = sort ( f );
+        x_ = x(index_,:);
+          x_trace = [x_trace;x_(1,:)]; 
+          y_trace = [y_trace,f_(1)];
+          if plotTrace
+              for ww = 1:n_dim
+                  if isgraphics(traces(ww))
+                    set(traces(ww),'XData',1:length(y_trace),'YData',x_trace(:,ww));
+                  end
+              end
+              if isgraphics(traces(n_dim+1))
+                    set(traces(n_dim+1),'XData',1:length(y_trace),'YData',y_trace);
+                    title(axs(n_dim+1),[num2str(n_feval),'th evaluation, shrink.'])
+              end
+              drawnow;
+          end
+         
       end
 
     end
@@ -214,11 +345,13 @@ tolerance = tolY;
     [ f, index ] = sort ( f );
     x = x(index,:);
     
-    % remove dimensions with convergence smaller than tolerance, Yulin Wu
-    dInd = abs(f(n_dim+1)-f(1)) - tolX > 0;
-    if ~all(dInd)
-        reduceDim = true;
-        continue;
+    % convergence smaller than tolerance, break, Yulin Wu
+    if all(range(x) - tolX < 0)
+        % Yulin Wu
+        if isgraphics(traces(n_dim+1))
+            title(axs(n_dim+1),[num2str(n_feval),'th evaluation, tolX reached for all variables, optimization done.'])
+        end
+        break;
     end
 %
 %  Test for convergence
@@ -240,12 +373,9 @@ tolerance = tolY;
 %     end
 
   end
-  
-%   % remove dimensions with convergence smaller than tolerance, Yulin Wu
-%   if reduceDim && numel(find(dInd)) > 0 
-%       function_handle_ = 
-%       [ x_opt, n_feval ] = qes.util.NelderMead (function_handle_, x(:,dInd), tolX(dInd), tolY, max_feval, plotObj);
-%   end
+  if isgraphics(traces(n_dim+1))
+    title(axs(n_dim+1),[num2str(n_feval),'th evaluation, tolX reached for all variables, optimization done.'])
+  end
 
   if ( 0 )
     fprintf('The best point x^* was: %d %d\n',x(1,:));
