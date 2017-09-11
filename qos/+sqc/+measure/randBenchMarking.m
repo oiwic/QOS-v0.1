@@ -11,9 +11,11 @@ classdef randBenchMarking < qes.measurement.measurement
         numGates
         numShots
     end
+    properties (SetAccess = protected,GetAccess = protected)
+        R
+    end
     properties (GetAccess = private, SetAccess = private)
         processIdx
-        R
         C1
         C1m
         C2
@@ -114,27 +116,30 @@ classdef randBenchMarking < qes.measurement.measurement
             obj.data = NaN(obj.numShots,2);
             obj.extradata = cell(obj.numShots,2);
             for nn = 1:obj.numShots
+  
+                % 4 seconds  for 20 2 qubit clifords
                 [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates();
-				
+
 				if obj.noReference
 					pa = NaN;
-				else
-					PR = gs{1};
+                else % 0.13 seconds for 20 2 qubit clifords
+					PR = gs{1,1};
 					for ii = 2:obj.numGates
-						PR = PR*gs{ii};
+						PR = PR*gs{1,ii};
 					end
 					PR = PR*gf_ref;
 				
 					obj.R.state = 1;
 					obj.R.delay = PR.length;
+
 					PR.Run();
 					pa = obj.R();
-				end
-				
+                end
+
 				if obj.processIdx
-					Pi = gs{1};
+					Pi = gs{2,1};
 					for ii = 2:obj.numGates
-						Pi = Pi*obj.process*gs{ii};
+						Pi = Pi*obj.process*gs{2,ii};
 					end
 					Pi = Pi*obj.process*gf_i;
 					obj.R.delay = Pi.length;
@@ -145,42 +150,65 @@ classdef randBenchMarking < qes.measurement.measurement
 				end
                 obj.data(nn,:) = [pa, pb];
                 obj.extradata(nn,:) = {gref_idx,gint_idx};
+                obj.dataready = true;
             end
         end
     end
-	methods (Access = private)
-		function [g,gf_ref,gf_i,gref_idx,gint_idx] = randGates(obj)
-            g = cell(1,obj.numGates);
+	methods (Access = protected)
+		function [g,gf_ref,gf_i,gref_idx,gint_idx] = randGates(obj,ridx)
 			switch obj.numQs
                 case 1
-                    ridx = randi(24,1,obj.numGates);
+                    g = cell(2,obj.numGates);
+                    if nargin < 2
+                        ridx = randi(24,1,obj.numGates);
+                    end
                     for ii = 1:obj.numGates
-                        g{ii} = sqc.measure.randBenchMarking.generate1Qgates(obj.C1{ridx(ii)},obj.qubits{1});
+                        g{1,ii} = sqc.measure.randBenchMarking.generate1Qgates(obj.C1{ridx(ii)},obj.qubits{1});
+                        g{2,ii} = g{1,ii};
                     end
                 case 2
-                    ridx = randi(11520,1,obj.numGates);
+                    g = cell(2,obj.numGates);
+                    if nargin < 2
+                        ridx = randi(11520,1,obj.numGates);
+                    end
+                    phaseOffset0 = 0; % reference
+                    phaseOffset1 = 0; % interleaved
                     for ii = 1:obj.numGates
-                        g{ii} = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2});
-                        if strcmp(obj.process.class(),'CZ')
-%                            if ~isempty(obj.process.dynamicPhase)
-%                                obj.qubits{1}.g_XY_phaseOffset = obj.qubits{1}.g_XY_phaseOffset + obj.process.dynamicPhase(1);
-%                                obj.qubits{2}.g_XY_phaseOffset = obj.qubits{2}.g_XY_phaseOffset + obj.process.dynamicPhase(2);
-%                            end
+                        if all(phaseOffset1 == phaseOffset0)
+                            [g_, phaseOffset0] = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2},phaseOffset0);
+                            g{1,ii} = g_;
+                            g{2,ii} = g_;
+                            phaseOffset1 = phaseOffset0;
+                        else
+                            % ~0.22 seconds
+                            [g_, phaseOffset0] = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2},phaseOffset0);
+                            g{1,ii} = g_;
+                            if ~isempty(obj.process)
+                                [g_, phaseOffset1] = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2},phaseOffset1);
+                                g{2,ii} = g_;
+                            end
+                        end
+                        if ~isempty(obj.process) && strcmp(obj.process.class(),'CZ')
+                            phaseOffset1 = phaseOffset1 + obj.process.dynamicPhase;
                         end
                     end
+                otherwise
+                    error('more than 2 qubits RB is not supported.');
             end
-            [gf_ref, gf_idx] = obj.finalGate(ridx);
+            [gf_ref, gf_idx] = obj.finalGate(ridx,phaseOffset0);
 			gref_idx = [ridx,gf_idx];
 			if obj.processIdx
 				iidx = reshape([ridx; obj.processIdx*ones(1,obj.numGates)],1,[]);
-				[gf_i, gf_i_idx] = obj.finalGate(iidx);
+				[gf_i, gf_i_idx] = obj.finalGate(iidx,phaseOffset1);
 				gint_idx = [iidx,gf_i_idx];
 			else
 				gf_i = [];
 				gint_idx = [];
 			end
         end
-		function [g, gidx] = finalGate(obj,gidx)
+    end
+    methods (Access = private)
+		function [g, gidx] = finalGate(obj,gidx,phaseOffset)
             if obj.numQs == 1
                 gm = obj.C1m(gidx);
                 gm_ = gm{1};
@@ -220,7 +248,7 @@ classdef randBenchMarking < qes.measurement.measurement
                         error('final gate not found error.');
                     end
                 end
-                g = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ii},obj.qubits{1},obj.qubits{2});
+                g = sqc.measure.randBenchMarking.generate2Qgates(obj.C2{ii},obj.qubits{1},obj.qubits{2},phaseOffset);
             end
             gidx = ii;
         end
@@ -233,17 +261,24 @@ classdef randBenchMarking < qes.measurement.measurement
                 g = g*feval(str2func(['@(q)sqc.op.physical.gate.',gn{ii},'(q)']),q);
             end
         end
-        function g = generate2Qgates(gn,q1,q2)
+        function [g, phaseOffset0] = generate2Qgates(gn,q1,q2,phaseOffset0)
+            if nargin < 4
+                phaseOffset0 = [0,0];
+            end
+            qubits_phaseOffset_backup = [q1.g_XY_phaseOffset, q2.g_XY_phaseOffset];
+            g_XY_phaseOffset = qubits_phaseOffset_backup + phaseOffset0;
             g = [];
-            for ii = 1:numel(gn) % *
+            for ii = 1:numel(gn) %
+                q1.g_XY_phaseOffset = g_XY_phaseOffset(1);
+                q2.g_XY_phaseOffset = g_XY_phaseOffset(2);
                 if ~iscell(gn{ii})
                     % temp
                     % CZ, the only two qubit gate that is supported
                     g_ = feval(str2func(['@(q1,q2)sqc.op.physical.gate.',gn{ii},'(q1,q2)']),q1,q2);
 					% the following is moved to cz gate creation
                    if ~isempty(g_.dynamicPhase)
-                       q1.g_XY_phaseOffset = q1.g_XY_phaseOffset + g_.dynamicPhase(1);
-                       q2.g_XY_phaseOffset = q2.g_XY_phaseOffset + g_.dynamicPhase(2);
+                       g_XY_phaseOffset = g_XY_phaseOffset + g_.dynamicPhase;
+                       phaseOffset0 = phaseOffset0 + g_.dynamicPhase;
                    end
                 else
                     g_ = sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{1},q1);
@@ -255,6 +290,8 @@ classdef randBenchMarking < qes.measurement.measurement
                     g = g*g_;
                 end
             end
+            q1.g_XY_phaseOffset = qubits_phaseOffset_backup(1);
+            q2.g_XY_phaseOffset = qubits_phaseOffset_backup(2);
         end
         function gates = C1Gates()
             persistent C1;

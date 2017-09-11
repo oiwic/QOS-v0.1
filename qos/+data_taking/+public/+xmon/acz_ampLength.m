@@ -103,8 +103,7 @@ function varargout = acz_ampLength(varargin)
             R.setProcess(proc);
         else
             proc = ((X.*Ip)*Y2m)*CZ*Y2p;
-            
-            
+
             proc = (X.*X_)*CZ;
             R.state = 1;
 

@@ -32,6 +32,8 @@ function [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, numQs, gateName,
         h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', gateName),false);
         ax = axes('parent',h,'FontSize',16);
     else
+        axes(ax);
+        h = gcf;
         hold(ax,'on');
     end
     

@@ -474,16 +474,11 @@ classdef gateOptimizer < qes.measurement.measurement
             
 			f = qes.expFcn([phase1,phase2,amplitude,thf,thi,lam2,lam3],R);
 
-            x0 = [-0.1,-0.1,-0.02*aczSettings.amp,-0.2,-0.2,-0.2,-0.2;...
-                    -0.1,-0.1,-0.02*aczSettings.amp,-0.2,-0.2,-0.2,0.2;...
-                    -0.1,-0.1,-0.02*aczSettings.amp,-0.2,-0.2,0.2,0.2;...
-                    -0.1,-0.1,-0.02*aczSettings.amp,-0.2,0.2,0.2,0.2;...
-                    -0.1,-0.1,-0.02*aczSettings.amp,0.2,0.2,0.2,0.2;...
+            x0 = [-0.1,-0.1,-0.02*aczSettings.amp,0.2,0.2,0.2,0.2;...
                     -0.1,-0.1,0.02*aczSettings.amp,0.2,0.2,0.2,0.2;...
-                    -0.1,0.1,0.02*aczSettings.amp,0.2,0.2,0.2,0.2;...
-                    0.1,0.1,0.02*aczSettings.amp,0.2,0.2,0.2,0.2];
-            
-            tolX = [pi/5e4,pi/5e4,1,1e-4,1e-4,1e-4,1e-4];
+                    -0.1,0.1,0.02*aczSettings.amp;...
+                    0.1,0.1,0.02*aczSettings.amp];
+            tolX = [pi/5e4,pi/5e4,1];
             tolY = [1e-4];
             
             h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s%s CZ', qubits{1}.name, qubits{2}.name),false);
@@ -506,12 +501,9 @@ classdef gateOptimizer < qes.measurement.measurement
             aczSettings.dynamicPhase = aczSettings.dynamicPhase - 2*pi*floor(aczSettings.dynamicPhase/(2*pi));
 			QS.saveSSettings({'shared','g_cz',aczSettingsKey,'dynamicPhase'},...
 								aczSettings.dynamicPhase);
-            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'},aczSettings.amp);
-            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'thf'},aczSettings.thf);
-            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'thi'},aczSettings.thi);
-            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'lam2'},aczSettings.lam2);
-            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'lam3'},aczSettings.lam3);
-
+            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'},...
+								aczSettings.amp);
+			
 			dataPath = QS.loadSSettings('data_path');
 			TimeStamp = datestr(now,'_yymmddTHHMMSS_');
 			dataFileName = ['CZGateOpt',TimeStamp,'.mat'];

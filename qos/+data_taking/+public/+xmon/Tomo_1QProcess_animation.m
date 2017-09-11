@@ -1,4 +1,4 @@
-function varargout = Tomo_1QState_animation(varargin)
+function varargout = Tomo_1QProcess_animation(varargin)
 % demonstration of state tomography on single qubit.
 % state tomography is a measurement, it is not used alone in real
 % applications, this simple function is just a demonstration/test to show
@@ -6,8 +6,8 @@ function varargout = Tomo_1QState_animation(varargin)
 % prepares a a state(options are: '|0>', '|1>','|0>+|1>','|0>-|1>','|0>+i|1>','|0>-i|1>')
 % and do state tomography.
 %
-% <_o_> = Tomo_1QState('qubit',_c&o_,...
-%       'state',<_c_>,'numPts',_i_,...
+% <_o_> = Tomo_1QProcess_animation('qubit',_c&o_,...
+%       'process',<_c_>,'numPts',_i_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -32,35 +32,35 @@ function varargout = Tomo_1QState_animation(varargin)
     R = measure.stateTomography(q);
     
     isXhPi = false;
-    switch args.state
-        case {'|1>','|1>x'}
+    switch args.process
+        case {'X'}
             if strcmp(q.g_XY_typ,'pi')
                 p = gate.X(q);
             else
                 p = gate.X2p(q);
                 isXhPi = true;
             end
-        case {'|1>y'}
+        case {'Y'}
             if strcmp(q.g_XY_typ,'pi')
                 p = gate.Y(q);
             else
                 p = gate.Y2p(q);
                 isXhPi = true;
             end
-        case '|0>+|1>'
+        case {'-Y/2','Y2m'}
             p = gate.Y2m(q);
-        case '|0>-|1>'
+        case {'Y/2','Y2p'}
             p = gate.Y2p(q);
-        case '|0>+i|1>'
+        case {'X/2','X2p'}
             p = gate.X2p(q);
-        case '|0>-i|1>'
+        case {'-X/2','X2m'}
             p = gate.X2m(q);
         case 'H'
             p = [];
         otherwise
-            throw(MException('QOS_singleQStateTomo',...
-                sprintf('available state options for singleQStateTomo is %s, %s given.',...
-                '|0> |1> |0>+|1> |0>-|1> |0>+i|1> |0>-i|1>',args.state)));
+            throw(MException('Tomo_1QProcess_animation:unsupportedGate',...
+                sprintf('available process options for singleQProcessTomo is %s, %s given.',...
+                '''X'',''Y'',''X/2'',''-X/2'',''Y/2'',''-Y/2'',''H''',args.process)));
     end
     R.setProcess(p);
     h = qes.ui.qosFigure(sprintf('State tomography | %s', q.name),false);

@@ -22,6 +22,7 @@ function [] = showprocesstomo(pexp,pideal)
 % ÁÐÅÅÐò£º 
 %       1Q: P|0>, P|1> 
 %       2Q: P|q2:0, q1:0>£¬P|q2:0, q1:1>£¬ P|q2:1, q1:0>£¬ P|q2:1, q1:1>
+FONT_SIZE = 10;
 pexp = real(pexp);
 pideal = real(pideal);
 h = figure;
@@ -179,9 +180,9 @@ function showchi(haxreal,haximage,chiexp,chiid)
     end
     title('Real(\chi)');
     set(gca,'XTick',1:16);
-    set(gca,'XTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'});
+    set(gca,'XTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'},'FontSize',6);
     set(gca,'YTick',1:16);
-    set(gca,'YTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'});
+    set(gca,'YTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'},'FontSize',6);
     xlabel('\sigma_2\sigma_1'); ylabel('\sigma_2\sigma_1');
     colorbar('position',[0.45 0.3 0.01 0.4]);
     colormap jet
@@ -205,9 +206,9 @@ function showchi(haxreal,haximage,chiexp,chiid)
     end
     title('Image(\chi)');
     set(gca,'XTick',1:16);
-    set(gca,'XTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'});
+    set(gca,'XTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'},'FontSize',6);
     set(gca,'YTick',1:16);
-    set(gca,'YTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'});
+    set(gca,'YTickLabel',{'II','IX','IY','IZ','XI','XX','XY','XZ','YI','YX','YY','YZ','ZI','ZX','ZY','ZZ'},'FontSize',6);
     xlabel('\sigma_2\sigma_1'); ylabel('\sigma_2\sigma_1');
     colorbar('position',[0.95 0.3 0.01 0.4]);
     hold off;

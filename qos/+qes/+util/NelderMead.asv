@@ -126,14 +126,14 @@ tolerance = tolY;
       for ww = 1:n_dim
           if isgraphics(axs(ww))
             traces(ww) = line('parent',axs(ww),'XData',1,'YData',x_trace(:,ww),'Marker','.','Color','b');
-            ylabel(axs(ww),['X(',num2str(ww,'%0.0f'),')']);
+            ylabel(axs(ww),'variable value');
             xlabel(axs(ww),num2str(x_trace(end,ww),'%0.4e'));
           end
       end
       if isgraphics(axs(n_dim+1))
         traces(n_dim+1) = line('parent',axs(n_dim+1),'XData',1,'YData',y_trace,'Marker','.','Color','r');
         title(axs(n_dim+1),[num2str(n_feval),'th evaluation.']);
-        ylabel(axs(n_dim+1),'Y');
+        ylabel(axs(n_dim+1),'function value');
       end
       drawnow;
   end
@@ -356,7 +356,7 @@ tolerance = tolY;
     if all(range(x) - tolX < 0)
         % Yulin Wu
         if isgraphics(traces(n_dim+1))
-            title(axs(n_dim+1),[num2str(n_feval),'th evaluation, optimization terminate: X tolerance reached.'])
+            title(axs(n_dim+1),[num2str(n_feval),'th evaluation, tolX reached for all variables, optimization done.'])
         end
         break;
     end
@@ -365,7 +365,7 @@ tolerance = tolY;
 %
     converged = f(n_dim+1)-f(1) < tolerance;
     if converged && isgraphics(traces(n_dim+1))
-        title(axs(n_dim+1),[num2str(n_feval),'th evaluation, optimization terminate: Y tolerance reached.'])
+        title(axs(n_dim+1),[num2str(n_feval),'th evaluation, optimization terminate: tolX reached.'])
     end
 %   
 %  Test for divergence
