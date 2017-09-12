@@ -86,7 +86,7 @@ classdef ACZ < sqc.op.physical.operator
             obj.z_daChnl{1} = da1.GetChnl(acz_q.channels.z_pulse.chnl);
 			
             persistent da2
-            if obj.meetUpDetuneFreq
+            if obj.meetUpDetuneFreq % currently meetUpDetuneFreq is the pulse amplitude
                 wvArgs = {obj.aczLn+2*obj.meetUpLonger,...
                     sqc.util.detune2zpa(meetUp_q,obj.meetUpDetuneFreq)};
                 wvSettings = struct(meetUp_q.g_detune_wvSettings); % use struct() so we won't fail in case of empty

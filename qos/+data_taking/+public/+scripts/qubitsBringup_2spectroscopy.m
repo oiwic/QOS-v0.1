@@ -1,8 +1,10 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-%% 
-f01 = getQSettings('f01',q);
-freq = f01-5e6:0.2e6:f01+5e6;
+%%
+q = 'q5';
+% f01 = getQSettings('f01',q);
+% freq = f01-5e6:0.2e6:f01+5e6;
+freq = 5.2e9:0.2e6:5.35e9;
 spectroscopy1_zpa('qubit',q,'biasAmp',[0:2000:2e4],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true);  % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode
