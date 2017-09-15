@@ -24,18 +24,18 @@ for ii = 1:numel(qubits)
     end
 end
 %%
-setQSettings('r_avg',5000,'q8');
-setQSettings('r_avg',5000,'q9');
+setQSettings('r_avg',1000,'q8');
+setQSettings('r_avg',1000,'q9');
 acz_ampLength('controlQ','q9','targetQ','q8',...
        'dataTyp','Phase',...
-       'czLength',[200],'czAmp',[2.662e4-200:5:2.662e4+200],'cState','0',...
+       'czLength',[200],'czAmp',[1.8e4-2000:100:1.8e4+2000],'cState','0',...
        'notes','','gui',true,'save',true);
 %%
-setQSettings('r_avg',5000,'q8');
-setQSettings('r_avg',5000,'q9');
+setQSettings('r_avg',1000,'q8');
+setQSettings('r_avg',1000,'q9');
 acz_ampLength('controlQ','q9','targetQ','q8',...
-       'dataTyp','P','readoutQubit','q8',...
-       'czLength',[90],'czAmp',[2.73e4:5:2.77e4],'cState','1',...
+       'dataTyp','Phase',...
+       'czLength',[200],'czAmp',[1.8e4-2000:100:1.8e4+2000],'cState','1',...
        'notes','','gui',true,'save',true);
 %%
 tuneup.APE('qubit','q8',...
@@ -86,7 +86,7 @@ zPulseRipplePhase_beta('qubit','q9_1k','delayTime',delayTime,...
        'notes','no xfrFunc','gui',true,'save',true);
 %%
 temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
-      'phase_c',[-pi:pi/2:pi],'phase_t',[-pi:pi/2:pi],'czAmp',2.662e4,...
+      'phase_c',[-pi:pi/20:pi],'phase_t',[-pi:pi/20:pi],'czAmp',2.662e4,...
       'numGates',2,'numReps',70,...
       'notes','','gui',true,'save',true);
 %%
@@ -106,8 +106,8 @@ end
 setQSettings('r_avg',800,'q8');
 setQSettings('r_avg',800,'q9');
 temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
-      'phase_c',[-pi:2*pi/20:pi],'phase_t',[-pi:pi/20:pi],'czAmp',2.662e4,...
-      'numGates',2,'numReps',50,...
+      'phase_c',[-pi:2*pi/25:pi],'phase_t',[-pi:pi/25:pi],'czAmp',2.662e4,...
+      'numGates',3,'numReps',50,...
       'notes','','gui',true,'save',true);
   
 qubits = {'q9','q8'};
@@ -129,5 +129,48 @@ temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
       'phase_c',[-pi:2*pi/20:pi],'phase_t',[-pi:2*pi/20:pi],'czAmp',26858,...
       'numGates',2,'numReps',50,...
       'notes','','gui',true,'save',true);
+%%
+qubits = {'q9','q8'};
+for ii = 1:numel(qubits)
+    q = qubits{ii};
+    setQSettings('r_avg',2000,q);
+    tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
+    tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+    XYGate ={'X','X/2'};
+    for jj = 1:numel(XYGate)
+        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
+    end
+end
+%%
+setQSettings('r_avg',1000,'q8');
+setQSettings('r_avg',1000,'q9'); 
+temp.czRBFidelityVsPlsCalParam('controlQ','q9','targetQ','q8',...
+       'rAmplitude',[0:0.002:0.016],'td',[500:100:1200],'calcControlQ',false,...
+       'numGates',4,'numReps',10,...
+       'notes','','gui',true,'save',true)
+   
+%%
+qubits = {'q9','q8'};
+for ii = 1:numel(qubits)
+    q = qubits{ii};
+    setQSettings('r_avg',2000,q);
+    tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
+    tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+    XYGate ={'X','X/2'};
+    for jj = 1:numel(XYGate)
+        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
+    end
+end
+
+sqc.measure.gateOptimizer.czOptPulseCal_2({'q9','q8'},false,4,15,1500, 40);
+
+setQSettings('r_avg',2000,'q8');
+setQSettings('r_avg',2000,'q9');
+numGates = 1:1:30;
+[Pref,Pi] = randBenchMarking('qubit1','q9','qubit2','q8',...
+'process','CZ','numGates',numGates,'numReps',70,...
+'gui',true,'save',true);
   
 

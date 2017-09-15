@@ -34,14 +34,20 @@ function SendWave(obj,chnl,DASequence,isI)
             WaveformData = uint16([zeros(1,software_delay),samples]+32768);
             
 %             % to plot the waveform data
+%             global OPERATOR_SHOW_WAVEDATA;
 %             persistent ax;
-%             if isempty(ax) || ~isvalid(ax)
-%                 h = figure();
-%                 ax = axes('parent',h);
+%             try
+%                 if OPERATOR_SHOW_WAVEDATA
+%                     if isempty(ax) || ~isvalid(ax)
+%                         h = figure();
+%                         ax = axes('parent',h);
+%                     end
+% 
+%                     hold(ax,'on');
+%                     plot(ax,WaveformData(1:end));
+%                 end
+%             catch
 %             end
-%             
-%             hold(ax,'on');
-%             plot(ax,WaveformData(1:end));
             
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:

@@ -53,12 +53,11 @@ xfrFunc = com.qos.waveform.XfrFuncNumeric(IMPR_f,real(IMPR_fa),imag(IMPR_fa));
 
 % fi = linspace(-0.5,0.5,100);
 % fi = IMPR_f;
-% figure();plot(IMPR_f);hold on; plot(fi);
-% fsamples = xfrFunc.eval(fi);
+% fsamples = xfrFunc.samples_t(fi);
 % fsamples = reshape(fsamples,2,[]);
 % fsamples = fsamples(1,:)+1j*fsamples(2,:);
-
-% figure();plot(IMPR_f(ind),real(IMPR_fa(ind)));
-% hold on;plot(fi, fsamples(1:2:end),'-+r');
+% 
+% figure();plot(fi,real(IMPR_fa));
+% hold on;plot(fi, abs(fsamples()),'-+r');
 
 end

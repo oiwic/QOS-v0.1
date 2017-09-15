@@ -9,10 +9,7 @@ classdef randBenchMarkingFS < sqc.measure.randBenchMarking
     end
     methods
         function obj = randBenchMarkingFS(qubits, numGates,ridx)
-            % the lowest fidelity reference sequence for n random gate: [~,idx] = min(Pref(:,n)); Gates{n,idx,1}
-            if nargin > 2
-                numGates = length(ridx)-1;
-            end
+            % the worst for: n = 4; [~,idx] = min(Pref(:,n)); Gates{n,idx,1}
             obj = obj@sqc.measure.randBenchMarking(qubits, [], numGates, 1, false);
             if nargin < 3
                 if numel(qubits) == 1
@@ -22,8 +19,6 @@ classdef randBenchMarkingFS < sqc.measure.randBenchMarking
                 else
                     error('randBenchMarking on more than 2 qubits is not implemented.');
                 end
-            else
-                obj.ridx = ridx;
             end
             obj.numericscalardata = true;
             obj.name = 'Sequence Error';

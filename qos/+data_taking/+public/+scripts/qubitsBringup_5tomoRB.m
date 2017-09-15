@@ -33,9 +33,9 @@ numGates = int16(unique(round(logspace(0,log10(100),5))));
        'process','X','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);
 %% two qubit gate benchmarking
-setQSettings('r_avg',600,'q9');
-setQSettings('r_avg',600,'q8');
-numGates = 1:1:10;
+setQSettings('r_avg',3000,'q9');
+setQSettings('r_avg',3000,'q8');
+numGates = 1:1:30;
 [Pref,Pi] = randBenchMarking('qubit1','q9','qubit2','q8',...
        'process','CZ','numGates',numGates,'numReps',70,...
        'gui',true,'save',true);

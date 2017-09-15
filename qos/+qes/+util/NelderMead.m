@@ -121,7 +121,7 @@ tolerance = tolY;
   % Yulin Wu
   x_trace = x(1,:); 
   y_trace = f(1);
-  traces = NaN(1,n_dim);
+  traces = NaN(1,n_dim+1);
   if plotTrace
       for ww = 1:n_dim
           if isgraphics(axs(ww))

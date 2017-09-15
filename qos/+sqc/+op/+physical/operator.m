@@ -400,7 +400,15 @@ classdef operator < handle & matlab.mixin.Copyable
                 end
 				DASequence = qes.waveform.DASequence(obj.z_daChnl{1,ii}.chnl,obj.z_wv{ii});
 				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0];
+                
+                % temp
+                global OPERATOR_SHOW_WAVEDATA;
+                OPERATOR_SHOW_WAVEDATA = true;
+                
 				obj.z_daChnl{1,ii}.SendWave(DASequence,true);
+                
+                % temp
+                 OPERATOR_SHOW_WAVEDATA = false;
             end
 			zWv2Add = {};
 			addedZWvDAChnls = {};
