@@ -10,8 +10,8 @@ tuneup.correctf01bySpc('qubit',q,'gui',true,'save','askMe'); % measure f01 by sp
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',true,'gui',true,'save','askMe');
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 %% fully auto callibration
-% qubits = {'q7','q8'};
-qubits = {'q9','q8'};
+qubits = {'q7','q8'};
+% qubits = {'q9','q8'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000,q);
@@ -20,15 +20,15 @@ for ii = 1:numel(qubits)
     tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
     XYGate ={'X','X/2'};
     for jj = 1:numel(XYGate)
-        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',21,'gui',true,'save',true);
+        tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
     end
 end
 %%
+setQSettings('r_avg',1000,'q7');
 setQSettings('r_avg',1000,'q8');
-setQSettings('r_avg',1000,'q9');
-acz_ampLength('controlQ','q9','targetQ','q8',...
+acz_ampLength('controlQ','q7','targetQ','q8',...
        'dataTyp','Phase',...
-       'czLength',[200],'czAmp',[1.8e4-2000:100:1.8e4+2000],'cState','0',...
+       'czLength',[200],'czAmp',[3e4-2000:100:3e4],'cState','0',...
        'notes','','gui',true,'save',true);
 %%
 setQSettings('r_avg',1000,'q8');
@@ -42,8 +42,8 @@ tuneup.APE('qubit','q8',...
       'phase',-pi:pi/40:pi,'numI',4,...
       'gui',true,'save',true);
 %%
-tuneup.DRAGAlphaAPE('qubit','q8','alpha',[1.1:0.02:2.2],...
-    'phase',0,'numI',10,...
+tuneup.DRAGAlphaAPE('qubit','q7','alpha',[0:0.025:1],...
+    'phase',0,'numI',30,...
     'gui',true,'save',true);
 %%
 photonNumberCal('qubit','q1',...
@@ -57,7 +57,7 @@ zDelay('qubit','q7','zAmp',2000,'zLn',[],'zDelay',[-50:1:50],...
 %%
 % delayTime = [[0:1:20],[21:2:50],[51:5:100],[101:10:500],[501:50:3000]];
 delayTime = [-300:10:2e3];
-zPulseRipple('qubit','q9_1k',...
+zPulseRipple('qubit','q8',...
         'delayTime',delayTime,...
        'zAmp',4e3,'gui',true,'save',true);
 %%
@@ -65,7 +65,7 @@ zPulseRipple('qubit','q9_1k',...
     s.type = 'function';
     s.funcName = 'qes.waveform.xfrFunc.gaussianExp';
     s.bandWidht = 0.25;
-    s.r = [0.0155];
+    s.r = [0.01];
     s.td = [800];
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
@@ -80,8 +80,9 @@ zPulseRipple('qubit','q9_1k',...
 %     fsamples = xfrFunc_f.eval(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-b');
 
-delayTime = [0:1:1.5e3];
-zPulseRipplePhase_beta('qubit','q9_1k','delayTime',delayTime,...
+delayTime = [0:50:1.5e3];
+setQSettings('r_avg',5000,'q8');
+zPulseRipplePhase_beta('qubit','q8','delayTime',delayTime,...
        'xfrFunc',[xfrFunc_f],'zAmp',20e3,'s',s,...
        'notes','no xfrFunc','gui',true,'save',true);
 %%
@@ -90,7 +91,9 @@ temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
       'numGates',2,'numReps',70,...
       'notes','','gui',true,'save',true);
 %%
-qubits = {'q9','q8'};
+tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
+%%
+qubits = {'q7'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000,q);
@@ -110,7 +113,7 @@ temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
       'numGates',3,'numReps',50,...
       'notes','','gui',true,'save',true);
   
-qubits = {'q9','q8'};
+qubits = {'q7','q8'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000,q);
@@ -130,7 +133,7 @@ temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
       'numGates',2,'numReps',50,...
       'notes','','gui',true,'save',true);
 %%
-qubits = {'q9','q8'};
+qubits = {'q7'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000,q);
@@ -146,7 +149,7 @@ end
 setQSettings('r_avg',1000,'q8');
 setQSettings('r_avg',1000,'q9'); 
 temp.czRBFidelityVsPlsCalParam('controlQ','q9','targetQ','q8',...
-       'rAmplitude',[0:0.002:0.016],'td',[500:100:1200],'calcControlQ',false,...
+       'rAmplitude',[-0.01:0.002:0.03],'td',[650],'calcControlQ',false,...
        'numGates',4,'numReps',10,...
        'notes','','gui',true,'save',true)
    

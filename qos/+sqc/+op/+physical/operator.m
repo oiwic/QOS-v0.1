@@ -40,7 +40,7 @@ classdef operator < handle & matlab.mixin.Copyable
 		% buffer time in sampling points between gates, loaded from settings: session#/global/g_buffer.key
 		gate_buffer
     end
-    properties (SetAccess = protected, GetAccess = protected)
+    properties (SetAccess = protected, GetAccess = public)
 %         isStatic = false;
 %         wvGenerated = false;
 		xy_wv = {}       % order: first applied first to follow the pulse generation time order convention
@@ -502,6 +502,8 @@ classdef operator < handle & matlab.mixin.Copyable
 %            % convention: U1U2|s>, U2 is applied to state |s> first
 
 % checking removed for efficiency, the caller has to gaurante the validity
+            
+
             if ~isa(obj1,'sqc.op.physical.operator') || ~isa(obj2,'sqc.op.physical.operator')
                 throw(MException('sqc_op_pysical_operator:invalidInput',...
                     'at least one of obj1, obj2 is not a sqc.op.physical.operator class object.'));
@@ -513,8 +515,8 @@ classdef operator < handle & matlab.mixin.Copyable
 			elseif isempty(obj1)
 				obj = obj2;
 				return;
-			end
-
+            end
+            
             GB = obj1.gate_buffer; % gate_buffer is global
             obj1.GenWave();
             obj = sqc.op.physical.operator(obj2);
@@ -585,21 +587,26 @@ classdef operator < handle & matlab.mixin.Copyable
                                 qes.waveform.spacer(GB+obj1.length)];
                 end
             end
+            ind = numel(obj.qubits);
             obj.qubits = [obj.qubits,obj1.qubits(addIdx)];
             obj.delay_xy_i = [obj.delay_xy_i, obj1.delay_xy_i(addIdx)];
             obj.delay_xy_q = [obj.delay_xy_q, obj1.delay_xy_q(addIdx)];
             obj.delay_z = [obj.delay_z, obj1.delay_z(addIdx)];
+            obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
+            obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
+            obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
+            obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
             for ii = 1:numel(addIdx)
                 if ~isempty(obj1.xy_wv{addIdx(ii)})
-                    obj.xy_wv{end+1} = [qes.waveform.spacer(GB+obj2ln),...
+                    obj.xy_wv{ind+ii} = [qes.waveform.spacer(GB+obj2ln),...
                         obj1.xy_wv{addIdx(ii)}];
-					obj.xy_daChnl{1,end+1} = obj1.xy_daChnl{1,addIdx(ii)};
-					obj.xy_daChnl{2,end+1} = obj1.xy_daChnl{2,addIdx(ii)};
+					obj.xy_daChnl{1,ind+ii} = obj1.xy_daChnl{1,addIdx(ii)};
+					obj.xy_daChnl{2,ind+ii} = obj1.xy_daChnl{2,addIdx(ii)};
                 end
                 if ~isempty(obj1.z_wv{addIdx(ii)})
-                    obj.z_wv{end+1} = [qes.waveform.spacer(GB+obj2ln),...
+                    obj.z_wv{ind+ii} = [qes.waveform.spacer(GB+obj2ln),...
                         obj1.z_wv{addIdx(ii)}];
-                    obj.z_daChnl{1,end+1} = obj1.z_daChnl{1,addIdx(ii)};
+                    obj.z_daChnl{1,ind+ii} = obj1.z_daChnl{1,addIdx(ii)};
                 end
             end
 
@@ -778,6 +785,8 @@ classdef operator < handle & matlab.mixin.Copyable
             obj2numQ = numel(obj.xy_wv);
             obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
             obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
+            obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
+            obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
             for ii = 1:numel(addIdx)
                 wvInd = obj2numQ+ii;
                 if ~isempty(obj1.xy_wv{addIdx(ii)})

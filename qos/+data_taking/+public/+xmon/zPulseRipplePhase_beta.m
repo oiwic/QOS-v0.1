@@ -61,8 +61,9 @@ function varargout = zPulseRipplePhase_beta(varargin)
     Z2 = gate.I(q);
     Z2.ln = Z_LENGTH;
     
-    R = measure.resonatorReadout_ss(q);
-    R.state = 2;
+%     R = measure.resonatorReadout_ss(q);
+%     R.state = 2;
+    R = measure.phase(q);
     
     maxDelayTime = max(args.delayTime);
     function procFactory1(delay)
@@ -70,25 +71,24 @@ function varargout = zPulseRipplePhase_beta(varargin)
         I1.ln = Z_LENGTH+delay;
         I2.ln = maxDelayTime - delay;
         % proc = Z*I1*X2*I2*Y2;
-        proc = Z1.*(I1*X2*I2*Y2); % now minus delay is allowed
-        proc.Run();
-        R.delay = proc.length;
+        proc = Z1.*(I1*X2*I2*Y2); % minus delay is allowed
+        R.setProcess(proc);
     end
     function procFactory2(delay)
         % I1.ln = delay;
         I1.ln = Z_LENGTH+delay;
         I2.ln = maxDelayTime - delay;
         % proc = Z*I1*X2*I2*Y2;
-        proc = Z2.*(I1*X2*I2*Y2); % now minus delay is allowed
+        proc = Z2.*(I1*X2*I2*Y2); % minus delay is allowed
         proc.Run();
-        R.delay = proc.length;
+        R.setProcess(proc);
     end
 
     da = qHandle.FindByClassProp('qes.hwdriver.hardware','name',...
             q.channels.z_pulse.instru);
     daChnl = da.GetChnl(q.channels.z_pulse.chnl);
-%     xfrFunc_backup = daChnl.xfrFunc;
-%     daChnl.xfrFunc = args.xfrFunc;
+    xfrFunc_backup = daChnl.xfrFunc;
+    daChnl.xfrFunc = args.xfrFunc;
 
     if args.gui
         h = qes.ui.qosFigure(sprintf('Z pulse ripple | %s', q.name),false);
@@ -100,11 +100,9 @@ function varargout = zPulseRipplePhase_beta(varargin)
     data_phase = NaN(2,numDelayTime);
     for ii = 1:numDelayTime
         procFactory1(args.delayTime(ii));
-        data_prob(1,ii) = R();
-        data_phase(1,ii) = asin(data_prob(1,ii)-0.5);
+        data_phase(1,ii) = R();
         procFactory2(args.delayTime(ii));
-        data_prob(2,ii) = R();
-        data_phase(2,ii) = asin(data_prob(2,ii)-0.5);
+        data_phase(2,ii) = R();
         
         if args.gui && ishghandle(ax)
             plot(ax,args.delayTime,data_phase(2,:),'--b',...
@@ -117,17 +115,18 @@ function varargout = zPulseRipplePhase_beta(varargin)
         end
     end
     
-%     daChnl.xfrFunc = xfrFunc_backup;
+    daChnl.xfrFunc = xfrFunc_backup;
 
     if args.save
         QS = qes.qSettings.GetInstance();
         dataPath = QS.loadSSettings('data_path');
-        dataFileName = ['ZpulseCal',datestr(now,'_yymmddTHHMMSS_'),'.mat'];
-        figFileName = ['ZpulseCal',datestr(now,'_yymmddTHHMMSS_'),'.fig'];
+        timeStamp = datestr(now,'_yymmddTHHMMSS_');
+        dataFileName = ['ZpulseCal',q.name,timeStamp,'.mat'];
+        figFileName = ['ZpulseCal',q.name,timeStamp,'.fig'];
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
         args.xfrFunc = [];
-        save(fullfile(dataPath,dataFileName),'data_prob','data_phase','args','sessionSettings','hwSettings');
+        save(fullfile(dataPath,dataFileName),'data_phase','args','sessionSettings','hwSettings');
         try
             saveas(h, fullfile(dataPath,figFileName));
         catch

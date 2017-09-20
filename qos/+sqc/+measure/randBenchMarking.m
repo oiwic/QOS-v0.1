@@ -158,6 +158,8 @@ classdef randBenchMarking < qes.measurement.measurement
 		function [g,gf_ref,gf_i,gref_idx,gint_idx] = randGates(obj,ridx)
 			switch obj.numQs
                 case 1
+                    phaseOffset0 = 0; % reference
+                    phaseOffset1 = 0; % interleaved
                     g = cell(2,obj.numGates);
                     if nargin < 2
                         ridx = randi(24,1,obj.numGates);
@@ -284,11 +286,13 @@ classdef randBenchMarking < qes.measurement.measurement
                     g_ = sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{1},q1);
                     g_ = g_.*sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{2},q2);
                 end
+       
                 if isempty(g)
                     g = g_;
                 else
                     g = g*g_;
                 end
+
             end
             q1.g_XY_phaseOffset = qubits_phaseOffset_backup(1);
             q2.g_XY_phaseOffset = qubits_phaseOffset_backup(2);
