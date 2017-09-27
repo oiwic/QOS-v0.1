@@ -377,6 +377,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     end
                     xQ = obj.all_qubits{idx};
 					xtalk = xTalkData{2,jj};
+                    if xtalk == 0
+                        continue;
+                    end
 					q2c_idx = qes.util.find(xTalk_zQubit_names{jj},obj.qubits);
 					if isempty(q2c_idx)
 						zXTalkQubits2Add = [zXTalkQubits2Add,{xQ}];
@@ -579,8 +582,7 @@ classdef operator < handle & matlab.mixin.Copyable
 						end
                     else
                         obj.z_wv{idx} = [qes.waveform.spacer(GB+obj2ln),...
-                            obj1.z_wv{ii}];
-                        obj.z_daChnl{1,idx} = obj1.z_daChnl{1,ii};
+                            obj1.z_wv{ii}];                        obj.z_daChnl{1,idx} = obj1.z_daChnl{1,ii};
                     end
                 elseif ~isempty(obj.z_wv{idx})
                     obj.z_wv{idx} = [obj.z_wv{idx},...

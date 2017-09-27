@@ -529,7 +529,7 @@ classdef gateOptimizer < qes.measurement.measurement
         end
 
         % function czOptPhase(qubits,numGates,numReps, rAvg, maxFEval)
-        function czOptPhase(qubits,numGates, rAvg, maxFEval)
+        function czOptPhase(qubits,numGates, numReps, rAvg, maxFEval)
             if nargin < 5
                 maxFEval = 100;
             end
@@ -555,8 +555,8 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubits{1}.aczSettings = aczSettings;
 			
-			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
-            R = sqc.measure.randBenchMarkingFS(qubits,numGates);
+			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+            % R = sqc.measure.randBenchMarkingFS(qubits,numGates);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
 			phase1.offset = aczSettings.dynamicPhase(1);

@@ -43,23 +43,21 @@ classdef randBenchMarkingFS < sqc.measure.randBenchMarking
         end
         function Run(obj)
             Run@qes.measurement.measurement(obj);
-            data = NaN(1,obj.numShots);
-            extradata = NaN(obj.numShots,obj.numGates+1);
+            data = ()
             for ii = 1:obj.numShots
-                [gs,gf_ref,~,gref_idx,~] = obj.randGates(obj.ridx(ii,:));
+                [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates(obj.ridx(ii,:));
                 PR = gs{1,1};
-                for ww = 2:obj.numGates
-                    PR = PR*gs{1,ww};
+                for ii = 2:obj.numGates
+                    PR = PR*gs{1,ii};
                 end
                 PR = PR*gf_ref;
                 obj.R.state = 1;
                 obj.R.delay = PR.length;
                 PR.Run();
-                data(ii) = obj.R();
-                extradata(ii,:) = gref_idx;
             end
-			obj.data = 1 - mean(data);
-            obj.extradata = extradata;
+
+			obj.data = 1 - obj.R();
+            obj.extradata = gref_idx;
             obj.dataready = true;
         end
     end

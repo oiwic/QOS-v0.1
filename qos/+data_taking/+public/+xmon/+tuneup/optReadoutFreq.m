@@ -93,6 +93,12 @@ function varargout = optReadoutFreq(varargin)
     if args.save
         QS = qes.qSettings.GetInstance();
         QS.saveSSettings({q.name,'r_freq'},optFreq);
+        if ~isempty(hf) && isvalid(hf)
+            dataSvName = fullfile(QS.loadSSettings('data_path'),...
+                ['optReadoutFreq_',q.name,'_',datestr(now,'yymmddTHHMMSS'),...
+                num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
+            saveas(hf,dataSvName);
+        end
     end
 	varargout{1} = optFreq;
 end

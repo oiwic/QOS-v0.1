@@ -1,11 +1,11 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
 %%
-q = 'q5';
-% f01 = getQSettings('f01',q);
-% freq = f01-5e6:0.2e6:f01+5e6;
-freq = 5.2e9:0.2e6:5.35e9;
-spectroscopy1_zpa('qubit',q,'biasAmp',[0:2000:2e4],'driveFreq',[freq],...
+q = 'q8';
+f01 = getQSettings('f01',q);
+freq = f01-30e6:0.2e6:f01+30e6;
+% freq = 5.2e9:0.2e6:5.35e9;
+spectroscopy1_zpa('qubit',q,'biasAmp',[0],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true);  % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode
 %%
@@ -14,14 +14,15 @@ spectroscopy1_power('qubit','q6',...
        'uSrcPower',[5:1:20],...
        'dataTyp','P','gui',true,'save',true); % dataTyp: S21 or P
 %%
-spectroscopy111_zpa('biasQubit','q9','biasAmp',[-5000:1000:5000],...
+spectroscopy111_zpa('biasQubit','q6','biasAmp',[-5000:1000:5000],...
        'driveQubit','q8','driveFreq',[],...
        'readoutQubit','q8''dataTyp','P',...
-       'notes','q9->q8 zpls cross talk','gui',true,'save',true);
+       'notes','q6->q8 zpls cross talk','gui',true,'save',true);
 %%
 f01 = getQSettings('f01',q);
 freq = f01-10e6:0.5e6:f01+3e6;
-spectroscopy1_zdc('qubit',q,'biasAmp',[-0e4:200:0.4e4],'driveFreq',[freq],...
+freq = 4.2e9:0.5e6:4.43e9;
+spectroscopy1_zdc('qubit',q,'biasAmp',[-8000:-1000:-12000],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 %%
 setQSettings('r_avg',500,'q9');

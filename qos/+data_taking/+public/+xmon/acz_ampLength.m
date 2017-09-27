@@ -78,7 +78,7 @@ function varargout = acz_ampLength(varargin)
     switch args.dataTyp
         case 'P'
             R = measure.resonatorReadout_ss(rq); 
-            R.state = 2;
+            R.state = 1;
             R.name = [rq.name,' ',R.name];
         case 'Phase'
             R = measure.phase(qt);
@@ -102,10 +102,9 @@ function varargout = acz_ampLength(varargin)
             proc = ((X.*Ip)*Y2m)*CZ;
             R.setProcess(proc);
         else
-            proc = ((X.*Ip)*Y2m)*CZ*Y2p;
-
-            proc = (X.*X_)*CZ;
-            R.state = 1;
+            proc = (X.*X_)*CZ; % for |11> state leakage
+            
+            % proc = ((X.*Ip)*Y2m)*CZ*Y2p; % CNOT
 
             proc.Run();
             R.delay = proc.length;

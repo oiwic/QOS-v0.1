@@ -176,8 +176,8 @@ function varargout = correctf01byRamsey(varargin)
     f01 = q.f01+(freqn - freqp)/2;
     
     if args.gui
-        h = qes.ui.qosFigure(sprintf('Correct f01 by ramsey | %s', q.name),true);
-		ax = axes('parent',h);
+        hf = qes.ui.qosFigure(sprintf('Correct f01 by ramsey | %s', q.name),true);
+		ax = axes('parent',hf);
         plot(ax,tf/1e-6,Ppf,'-b',tf/1e-6,Pnf,'-r');
         hold on;
 		plot(ax,t/1e-6,Pp,'.',t/1e-6,Pn,'.');
@@ -199,6 +199,12 @@ function varargout = correctf01byRamsey(varargin)
 	if args.save
         QS = qes.qSettings.GetInstance();
         QS.saveSSettings({q.name,'f01'},f01);
+        if ~isempty(hf) && isvalid(hf)
+            dataSvName = fullfile(QS.loadSSettings('data_path'),...
+                ['corrF01_',q.name,'_',datestr(now,'yymmddTHHMMSS'),...
+                num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
+            saveas(hf,dataSvName);
+        end
     end
 	varargout{2} = f01;
 end

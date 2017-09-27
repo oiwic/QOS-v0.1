@@ -116,8 +116,9 @@ classdef randBenchMarking < qes.measurement.measurement
             obj.data = NaN(obj.numShots,2);
             obj.extradata = cell(obj.numShots,2);
             for nn = 1:obj.numShots
-  
-                % 4 seconds  for 20 2 qubit clifords
+
+                % 4 seconds for 20 2 qubit clifords
+
                 [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates();
 
 				if obj.noReference
@@ -136,7 +137,7 @@ classdef randBenchMarking < qes.measurement.measurement
 					pa = obj.R();
                 end
 
-				if obj.processIdx
+				if obj.processIdx > 0 
 					Pi = gs{2,1};
 					for ii = 2:obj.numGates
 						Pi = Pi*obj.process*gs{2,ii};
@@ -199,7 +200,7 @@ classdef randBenchMarking < qes.measurement.measurement
             end
             [gf_ref, gf_idx] = obj.finalGate(ridx,phaseOffset0);
 			gref_idx = [ridx,gf_idx];
-			if obj.processIdx
+			if obj.processIdx > 0
 				iidx = reshape([ridx; obj.processIdx*ones(1,obj.numGates)],1,[]);
 				[gf_i, gf_i_idx] = obj.finalGate(iidx,phaseOffset1);
 				gint_idx = [iidx,gf_i_idx];
@@ -396,6 +397,10 @@ classdef randBenchMarking < qes.measurement.measurement
             gates = C2;
         end
         function gm = C2matrix()
+            % 0 cz: 576
+            % 1 cz: 5184
+            % 2 cz: 5184
+            % 3 cz: 576
             persistent C2;
             if isempty(C2)
                 C1 = sqc.measure.randBenchMarking.C1matrix();

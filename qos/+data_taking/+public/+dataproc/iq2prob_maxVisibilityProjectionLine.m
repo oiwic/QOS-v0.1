@@ -74,9 +74,9 @@ function [rPoint, ang, threshold, polarity, hf] =...
         if ~auto
             x = binEdges(1:end-1)+binSize/2;
             try 
-                plot(ax1,iq_raw_0,'b.');
+                plot(ax1,iq_raw_0,'b.','MarkerSize',4);
                 hold(ax1,'on');
-                plot(ax1,iq_raw_1,'r.');
+                plot(ax1,iq_raw_1,'r.','MarkerSize',4);
                 XL = get(ax1,'XLim');
                 YL = get(ax1,'YLim');
                 legend(ax1,{'|0>','|1>'},'Location','southeast');
