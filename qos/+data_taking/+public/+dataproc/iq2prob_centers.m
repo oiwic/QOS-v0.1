@@ -18,7 +18,7 @@ function [center0, center1, F00,F11,hf] =...
 
 % Yulin Wu, 2017
 
-    [~, ang, ~, ~,hf] =... 
+    [~, ang, ~, ~,hf,axs] =... 
 		data_taking.public.dataproc.iq2prob_maxVisibilityProjectionLine(iq_raw_0,iq_raw_1,auto);
     iq_raw_0_ = iq_raw_0*exp(-1j*ang);
     iq_raw_1_ = iq_raw_1*exp(-1j*ang);
@@ -111,4 +111,10 @@ function [center0, center1, F00,F11,hf] =...
 	end
 %	F01 = 1-F00; % the probability of |0> erroneously measured as |1>
 %	F10 = 1-F11; % the probability of |1> erroneously measured as |0>
+    try 
+        hold(axs(1),'on');
+        plot(axs(1),center0,'+','Color','w','MarkerSize',15,'LineWidth',1);
+        plot(axs(1),center1,'+','Color','g','MarkerSize',15,'LineWidth',1);
+    catch
+    end
 end

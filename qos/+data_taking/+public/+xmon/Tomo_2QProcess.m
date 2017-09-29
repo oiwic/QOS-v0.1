@@ -1,5 +1,5 @@
 function varargout = Tomo_2QProcess(varargin)
-% demonstration of process tomography on single qubit.
+% demonstration of process tomography on 2 qubits.
 % process tomography is a measurement, it is not used alone in real
 % applications, this simple function is just a demonstration/test to show
 % that process tomography is working properly.

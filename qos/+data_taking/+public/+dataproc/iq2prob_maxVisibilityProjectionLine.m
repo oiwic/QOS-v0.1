@@ -1,4 +1,4 @@
-function [rPoint, ang, threshold, polarity, hf] =...
+function [rPoint, ang, threshold, polarity, hf,axs] =...
 			iq2prob_maxVisibilityProjectionLine(iq_raw_0,iq_raw_1,auto)
 % iq2prob_maxVisibilityProjectionLine: finds the raw iq
 % projection line which produces the maximum state probability visibility
@@ -123,5 +123,6 @@ function [rPoint, ang, threshold, polarity, hf] =...
 
     rPoint = xsol(1)+1j*xsol(2);
     ang = xsol(3);
-
+    
+    axs = [ax1,ax2,ax3];
 end

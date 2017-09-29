@@ -36,8 +36,9 @@ function SendWave(obj,chnl,DASequence,isI)
             % version specific
             WaveformData(32e3:end) = [];
             
-%             % to plot the waveform data
+            % to plot the waveform data
 %             global OPERATOR_SHOW_WAVEDATA;
+%             OPERATOR_SHOW_WAVEDATA = true;
 %             persistent ax;
 %             try
 %                 if OPERATOR_SHOW_WAVEDATA

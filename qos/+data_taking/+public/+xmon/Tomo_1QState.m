@@ -52,8 +52,10 @@ function varargout = Tomo_1QState(varargin)
     R.setProcess(p);
     P = R();
 
-    if ~args.gui
-        
+    if args.gui
+        hf = qes.ui.qosFigure(sprintf('State tomography' ),true);
+        ax = axes('parent',hf);
+        qes.util.plotfcn.StateTomographyLine(P,ax,sprintf('1Q State tomography | %s', args.state));
     end
     if args.save
         QS = qes.qSettings.GetInstance();
@@ -62,6 +64,9 @@ function varargout = Tomo_1QState(varargin)
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
         save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');
+        if args.gui && isgraphics(hf)
+            saveas(hf,fullfile(dataPath,[dataFileName,'.fig']));
+        end
     end
     varargout{1} = P;
 end

@@ -1,5 +1,5 @@
 function varargout = Tomo_2QState(varargin)
-% demonstration of state tomography on single qubit.
+% demonstration of state tomography on 2 qubits.
 % state tomography is a measurement, it is not used alone in real
 % applications, this simple function is just a demonstration/test to show
 % that state tomography is working properly.
@@ -46,6 +46,8 @@ function varargout = Tomo_2QState(varargin)
             p = gate.Y2m(q1).*gate.Y2m(q2);
         case {'ii'}
             p = gate.X2m(q1).*gate.X2m(q2);
+        case {'-i-i'}
+            p = gate.X2p(q1).*gate.X2p(q2);
         case {'GHZ'}
             p = (gate.H(q1).*gate.Y2m(q2))*gate.CZ(q1,q2)*(gate.H(q1).*gate.Y2p(q2));
 %         case '|01>+|1>'
@@ -64,16 +66,21 @@ function varargout = Tomo_2QState(varargin)
     R.setProcess(p);
     P = R();
 
-    if ~args.gui
-        
+    if args.gui
+        hf = qes.ui.qosFigure(sprintf('State tomography' ),true);
+        ax = axes('parent',hf);
+        qes.util.plotfcn.StateTomographyLine(P,ax,sprintf('2Q State tomography | %s', args.state));
     end
     if args.save
         QS = qes.qSettings.GetInstance();
         dataPath = QS.loadSSettings('data_path');
-        dataFileName = ['STomo2_',q1.name,q2.name,datestr(now,'_yymmddTHHMMSS_'),'.mat'];
+        dataFileName = ['STomo2_',q1.name,q2.name,datestr(now,'_yymmddTHHMMSS_')];
         sessionSettings = QS.loadSSettings;
         hwSettings = QS.loadHwSettings;
-        save(fullfile(dataPath,dataFileName),'P','args','sessionSettings','hwSettings');
+        save(fullfile(dataPath,[dataFileName,'.mat']),'P','args','sessionSettings','hwSettings');
+        if args.gui && isgraphics(hf)
+            saveas(hf,fullfile(dataPath,[dataFileName,'.fig']));
+        end
     end
     varargout{1} = P;
 end
