@@ -13,9 +13,9 @@ ustcaddaObj = ustcadda_v1.GetInstance();
 ustcaddaObj.close()
 %% run all channels
 numChnls = 44;
-numRuns = 10;
-wavedata=[zeros(1,4000),65535*ones(1,4000)];
-ustcaddaObj.runReps = 1e3;
+numRuns = 5000;
+wavedata=[zeros(1,2000),65535*ones(1,2000)];
+ustcaddaObj.runReps = 3e3;
 tic
 for jj = 1:numRuns
     for ii = 1:numChnls

@@ -24,11 +24,8 @@ function varargout = czRBFidelityVsPlsCalParam(varargin)
     args = util.processArgs(varargin,{'gui',false,'notes','','detuning',0,'save',true});
     [qc,qt] = data_taking.public.util.getQubits(args,{'controlQ','targetQ'});
 
-    % the lowest fidelity reference sequence for n random gate: [~,idx] = min(Pref(:,n)); Gates{n,idx,1}
-    idx = [2660,9307,6669,11272,637]; % the lowest F = 0.096
-	% idx = [10471,11494,4825,3064,6348]; % 0.22
-    % R = sqc.measure.randBenchMarkingFS({qc,qt},[],idx);
-    R = sqc.measure.randBenchMarking4Opt({qc,qt},args.numGates,args.numReps);
+    args.ridx = sqc.measure.randBenchMarkingFS.CZRndSeq(args.numGates,args.numReps);
+    R = sqc.measure.randBenchMarkingFS({qc,qt},args.numGates,args.numReps,args.ridx);
     
     if args.calcControlQ
         da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...

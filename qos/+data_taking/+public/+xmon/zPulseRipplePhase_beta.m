@@ -50,8 +50,8 @@ function varargout = zPulseRipplePhase_beta(varargin)
 	end
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
-    X2 = gate.X2p(q);
     Y2 = gate.Y2p(q);
+    X = gate.X(q);
     I1 = gate.I(q);
     I2 = gate.I(q);
     
@@ -67,21 +67,17 @@ function varargout = zPulseRipplePhase_beta(varargin)
     
     maxDelayTime = max(args.delayTime);
     function procFactory1(delay)
-        % I1.ln = delay;
         I1.ln = Z_LENGTH+delay;
         I2.ln = maxDelayTime - delay;
-        % proc = Z*I1*X2*I2*Y2;
-        proc = Z1.*(I1*X2*I2*Y2); % minus delay is allowed
+        proc = Z1.*(I1*Y2*I2); % minus delay is allowed
         R.setProcess(proc);
     end
     function procFactory2(delay)
-        % I1.ln = delay;
         I1.ln = Z_LENGTH+delay;
         I2.ln = maxDelayTime - delay;
-        % proc = Z*I1*X2*I2*Y2;
-        proc = Z2.*(I1*X2*I2*Y2); % minus delay is allowed
-        proc.Run();
+        proc = I1*Y2*I2; % minus delay is allowed
         R.setProcess(proc);
+        proc.Run();
     end
 
     da = qHandle.FindByClassProp('qes.hwdriver.hardware','name',...
@@ -105,9 +101,9 @@ function varargout = zPulseRipplePhase_beta(varargin)
         data_phase(2,ii) = R();
         
         if args.gui && ishghandle(ax)
-            plot(ax,args.delayTime,data_phase(2,:),'--b',...
-                args.delayTime,data_phase(1,:),'--r',...
-                args.delayTime,data_phase(1,:)-data_phase(2,:),'-k');
+            plot(ax,args.delayTime,unwrap(data_phase(2,:)),'--b',...
+                args.delayTime,unwrap(data_phase(1,:)),'--r',...
+                args.delayTime,unwrap(data_phase(1,:))-unwrap(data_phase(2,:)),'-k');
             xlabel(ax,'delay time(DA sampling interval)');
             ylabel(ax,'\theta(rad)');
             legend({'no z pulse','with zpulse','difference'});

@@ -7,12 +7,12 @@ classdef iq_ustc_ad < qes.measurement.iq
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
     properties
-        n % number of averages
+        n = 100 % number of averages
         % raw voltage is truncated to only keep data in range of
         % startidx:endidx, if not specified, no truncation
         % use ShowVoltSignal to show the voltage signal and choose the
         % correct truncation index.
-        startidx = 1
+        startidx
         endidx
         freq % demod frequency, Hz
 %         singlechnl@logical  = true % use single channel or use both I chnl and Q chnl
@@ -27,7 +27,8 @@ classdef iq_ustc_ad < qes.measurement.iq
     end
     properties (SetAccess = private, GetAccess = private)
         % Cached variables
-        Mc = [1, 0; 0, 1]          % mixer correction matrix
+        Mc = [];
+        % Mc = [1, 0; 0, 1]          % mixer correction matrix
         IQ          % IQ = NaN*zeros(numFreq,obj.n); % numFreq = numel(obj.freq);
 
         selectidx   % selectidx = obj.startidx:obj.eidx;
@@ -55,9 +56,16 @@ classdef iq_ustc_ad < qes.measurement.iq
             if ~isempty(obj.freq)
                 obj.IQ = NaN*zeros(numel(obj.freq),obj.n);
             end
+            calcCachedVar(obj);
         end
         function set.freq(obj,val)
             obj.freq = val;
+            numFreqs = numel(obj.freq);
+            obj.iqWeight = cell(1,numFreqs);
+            obj.selectidx = cell(1,numFreqs);
+            if ~isempty(obj.startidx)
+                assert(numel(obj.startidx) == numFreqs);
+            end
 			if obj.adI.demodMode
 				obj.adI.demodFreq = obj.freq;
 				obj.adQ.demodFreq = obj.freq;
@@ -67,7 +75,7 @@ classdef iq_ustc_ad < qes.measurement.iq
 				end
 				calcCachedVar(obj);
             end
-            obj.iqWeight = cell(1,numel(obj.freq));
+            
         end
 %        function set.upSampleNum(obj,val)
 %            if isempty(val)
@@ -87,6 +95,10 @@ classdef iq_ustc_ad < qes.measurement.iq
 %                     'startidx should be an interger greater than 0 and smaller than AD recordLength and endidx!'));
 %             end
             obj.startidx = val;
+            
+            if ~isempty(obj.endidx)
+                assert(numel(obj.startidx) == numel(obj.endidx));
+            end
             calcCachedVar(obj);
         end
         function set.endidx(obj,val)
@@ -96,6 +108,10 @@ classdef iq_ustc_ad < qes.measurement.iq
 %                     'endidx should be an interger greater than startidx and not exceeding AD recordLength!'));
 %             end
             obj.endidx = val;
+            
+            if ~isempty(obj.endidx)
+                assert(numel(obj.startidx) == numel(obj.endidx));
+            end
             calcCachedVar(obj);
         end
         function set.eps_a(obj,val)
@@ -158,7 +174,7 @@ classdef iq_ustc_ad < qes.measurement.iq
 				
 			end           
                % toc 
-            obj.data = mean(obj.IQ);
+            obj.data = mean(obj.IQ,2);
             obj.extradata = obj.IQ;
             
             obj.dataready = true;
@@ -166,34 +182,38 @@ classdef iq_ustc_ad < qes.measurement.iq
     end
     methods (Access = private,Hidden = true)
         function calcCachedVar(obj)
-            if ~isempty(obj.startidx) && ~isempty(obj.freq)
-                NperSeg = obj.adI.recordLength;
-                if isempty(obj.endidx)
-					eidx = NperSeg;
-                    % eidx = obj.upSampleNum*NperSeg;
-                else
-                    eidx = obj.endidx;
-                end
+            if isempty(obj.freq) || isempty(obj.startidx)
+                return;
+            end
+            numFreqs = numel(obj.freq);
+            recordLn = obj.adI.recordLength;
+            if isempty(obj.endidx)
+                eidx = recordLn*ones(1,numFreqs);
+            else
+                eidx = obj.endidx;
+            end
+            adSamplingRate = obj.adI.samplingRate;
+            t_ = 1:obj.adI.recordLength;
+            obj.kernel = cell(1,numFreqs);
+            for ii = 1:numFreqs
                 % typically, one needs to remove a few data points at the
                 % beginning or at the end of each segament due to trigger
                 % and signal may not be exactly syncronized.
-                
-                obj.selectidx = [];
-                if obj.startidx > 1 ||...
-                        eidx < obj.adQ.recordLength
-                    obj.selectidx = obj.startidx:1:eidx;
+                if obj.startidx(ii) > 1 ||...
+                        eidx(ii) < recordLn
+                    obj.selectidx{ii} = obj.startidx(ii):eidx(ii);
+                    t = (obj.selectidx{ii}-obj.startidx(ii))/adSamplingRate;
+                else
+                    t = t_;
                 end
-                    
-				
+                
+                t = t.';
+
                 % obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
                 % t = (obj.selectidx-obj.startidx)/...
                 %     (obj.adI.samplingRate*obj.upSampleNum);
-				t = (obj.selectidx-obj.startidx)/...
-                    (obj.adI.samplingRate);
-                obj.kernel = zeros(numel(obj.freq),numel(t));
-                for ii = 1:numel(obj.freq)
-                    obj.kernel(ii,:) = exp(-2j*pi*obj.freq(ii).*t);
-                end
+				
+                obj.kernel{ii} = exp(-2j*pi*obj.freq(ii).*t);
             end
         end
         
@@ -203,46 +223,27 @@ classdef iq_ustc_ad < qes.measurement.iq
 		  % interpolate the raw data, but interpolation is expensive, thus removed in later versions
             % Vi = qes.util.upsample_c(Vi,obj.upSampleNum);
             % Vq = qes.util.upsample_c(Vq,obj.upSampleNum);
-            
-            tic
-            v = Vi+1j*Vq;
-            if ~isempty(obj.selectidx)
-                v = v(:,obj.selectidx);
-            end
-            toc
 
-            tic
+            v = Vi+1j*Vq;
+
             for ii = 1:numel(obj.freq)
-                if isempty(obj.iqWeight{ii})
-                    for jj = 1:obj.n
-                        IQ_ = obj.kernel(ii,:).*v(jj,:);
-                        IQ_ = mean(obj.Mc*[real(IQ_);imag(IQ_)],2); % correct mixer imballance
-                        obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
-                    end
+                if ~isempty(obj.selectidx{ii})
+                    v_ = v(:,obj.selectidx{ii});
                 else
-                    for jj = 1:obj.n
-                        IQ_ = obj.kernel(ii,:).*v(jj,:);
-                        IQ_ = mean(obj.Mc*[real(IQ_)*obj.iqWeight{ii}(1,:);...
-                            imag(IQ_)*obj.iqWeight{ii}(2,:)],2); % correct mixer imballance
-                        obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
+                    v_ = v;
+                end
+                if isempty(obj.iqWeight{ii})
+                    IQ_ = (v_*obj.kernel{ii})/numel(obj.selectidx{ii});
+                    IQ_ = IQ_.';
+                    if ~isempty(obj.Mc)
+                        IQ_ = obj.Mc*[real(IQ_);imag(IQ_)];
                     end
+                    obj.IQ(ii,:) = IQ_;
+                else
+                    error('to be implemented');
                 end
             end
-            toc
-        end
-        function iqraw = demod_rawIQ(obj, Vi, Vq)
-            Vi = Vi(:,obj.selectidx);
-            Vq = Vq(:,obj.selectidx);
-            iqraw = zeros(numel(obj.freq),size(obj.kernel,2));
-            for ii = 1:numel(obj.freq)
-                for jj = 1:obj.n
-                    IQ_ = obj.kernel(ii,:).*(Vi(jj,:)+1j*Vq(jj,:));
-                    IQ_ = obj.Mc*[real(IQ_);imag(IQ_)]; % correct mixer imballance
-                    obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
-                    iqraw(ii,:) = iqraw(ii,:) + IQ_(1,:)+1j*IQ_(2,:);
-                end
-            end
-            iqraw = iqraw/obj.n;
+            
         end
         function Amp = Amp(obj, Vi, Vq)
             Amp = sum(abs(Vi(:)))+ sum(abs(Vq(:)));

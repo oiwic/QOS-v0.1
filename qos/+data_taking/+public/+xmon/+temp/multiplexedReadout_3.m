@@ -1,12 +1,13 @@
-function multiplexedReadout()
+function multiplexedReadout_3()
 
     import qes.*
     import sqc.*
     import sqc.op.physical.*
 
     qubits = {'q7','q8','q9'};
-    legends = {'multiplexed','single 100','single 110','single 101'};
-    numSamples = 30;
+    legends = {'q7|0>','q8|0>','q9|0>',...
+        '|000>','|001>','|010>','|011>','|100>','|101>','|110>','|111>'};
+    numSamples = 20;
     
     numQs = numel(qubits);
     for ii = 1:numQs
@@ -21,34 +22,27 @@ function multiplexedReadout()
         XYGates{ii} = gate.Y2p(qubits{ii});
     end
     
-    Rs = measure.resonatorReadout(qubits{1});
-    Rs.delay = XYGates{1}.length+50;
-    
-    Rm = measure.resonatorReadout(fliplr(qubits));
+    Rm = measure.resonatorReadout(qubits);
+%     Rm = measure.resonatorReadout(fliplr(qubits));
     Rm.delay = XYGates{1}.length+50;
     
     hf = qes.ui.qosFigure(sprintf('Multiplexed readout test' ),false);
     ax = axes('parent',hf);
 
-    DataSQ = NaN(numSamples,1);
     DataMQ = NaN(numSamples,numQs);
+    DataMQ_1 = NaN(numSamples,2^numQs);
     x = 1:numSamples;
     for ii = 1:numSamples
-        XYGates{1}.Run();
-        data_ = Rm();
-        DataMQ(ii,:) = sum(data_(1:2^(numQs-1)));
         for jj = 1:numQs
-            XYGates{1}.Run();
             XYGates{jj}.Run();
-            data_ = Rs();
-            DataSQ(ii,jj) = data_(1);
         end
+        data_ = Rm();
+        DataMQ(ii,:) = [sum(data_([1,3,5,7])), sum(data_([1,2,5,6])), sum(data_([1,2,3,4]))];
+        DataMQ_1(ii,:) = data_;
         try
-            plot(ax,x,DataMQ,'--');
+            plot(ax,x,DataMQ,'-');
             hold(ax,'on');
-            for jj = 1:numQs
-                plot(ax,x,DataSQ(:,jj));
-            end
+            plot(ax,x,DataMQ_1,'--');
             hold(ax,'off');
             xlabel('Nth repeatition');
             ylabel('P|0>');

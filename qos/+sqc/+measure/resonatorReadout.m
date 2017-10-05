@@ -16,12 +16,16 @@ classdef resonatorReadout < qes.measurement.prob
         
         iqRaw = false;
     end
-    properties (SetAccess = protected)
+    properties (SetAccess = private)
         qubits
 		jpa
 		adDelayStep
+        
+        allReadoutQubits
     end
     properties (SetAccess = private, GetAccess = protected)
+        qubitInd
+%         allReadoutQubits
         delayStep
         
         % da
@@ -39,10 +43,20 @@ classdef resonatorReadout < qes.measurement.prob
         daSamplingRate
         adRecordLength
         
+        readoutLength
+        
         jpaRunner
     end
     methods
         function obj = resonatorReadout(qubits)
+            QS = qes.qSettings.GetInstance();
+            allReadoutQubits = QS.loadSSettings({'shared','readoutQubits'});
+            for ii = 1:numel(allReadoutQubits)
+				if ischar(allReadoutQubits{ii})
+					allReadoutQubits{ii} = sqc.util.qName2Obj(allReadoutQubits{ii});
+				end
+            end
+ 
             if ~iscell(qubits)
                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')
                     throw(MException('resonatorReadout:invalidInput',...
@@ -51,19 +65,29 @@ classdef resonatorReadout < qes.measurement.prob
                     qubits = {qubits};
                 end
             end
-			for ii = 1:numel(qubits)
+            num_qubits = numel(qubits);
+            qubitInd = NaN(1,num_qubits);
+			for ii = 1:num_qubits
 				if ischar(qubits{ii})
 					qubits{ii} = sqc.util.qName2Qubit(qubits{ii});
-				end
-			end
-            prop_names = {'syncDelay_r','r_avg','r_fc','r_ln','r_truncatePts','r_uSrcPower',...
+                end
+                ind = qes.util.find(qubits{ii}, allReadoutQubits);
+                if isempty(ind)
+                    throw(MException('resonatorReadout:invalidInput',...
+						sprintf('the input qubit %s is not a readout qubit, check settings: shared.readoutQubits',qubits{ii}.name)));
+                else
+                    qubitInd(ii) = ind;
+                end
+            end
+
+            prop_names = {'syncDelay_r','r_avg','r_fc','r_truncatePts','r_uSrcPower',...
                 {'channels','r_da_i','instru'},{'channels','r_da_q','instru'},...
                 {'channels','r_da_i','chnl'},{'channels','r_da_q','chnl'},...
                 {'channels','r_ad_i','instru'},{'channels','r_ad_q','instru'},...
                 {'channels','r_ad_i','chnl'},{'channels','r_ad_q','chnl'},...
                 {'channels','r_mw','instru'},{'channels','r_mw','chnl'},...
                 'r_jpa'};
-            b = sqc.util.samePropVal(qubits,prop_names);
+            b = sqc.util.samePropVal(allReadoutQubits,prop_names);
             for ii = 1:numel(prop_names)
                 if b(ii)
                     continue;
@@ -78,8 +102,6 @@ classdef resonatorReadout < qes.measurement.prob
 						'the qubits to readout has different %s setting.',prop_names{ii}));
 				end
             end
-            
-            num_qubits = numel(qubits);
 
             da_i_names = qubits{1}.channels.r_da_i.instru;
             da_q_names = qubits{1}.channels.r_da_q.instru;
@@ -120,7 +142,14 @@ classdef resonatorReadout < qes.measurement.prob
             assert(da_i_chnl_.samplingRate == da_q_chnl_.samplingRate);
 			
             rs = ad_i_chnl_.samplingRate/da_i_chnl_.samplingRate;
-			rln = ceil(rs*(qubits{1}.r_ln+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
+            
+            numReaoutQs = numel(allReadoutQubits);
+            readoutLength = NaN(1,numReaoutQs);
+            for ii = 1:numReaoutQs
+                readoutLength(ii) = allReadoutQubits{ii}.r_ln;
+            end
+            
+			rln = ceil(rs*(max(readoutLength)+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
             ad_i_chnl_.recordLength = rln;
             ad_q_chnl_.recordLength = rln;
 			
@@ -145,9 +174,12 @@ classdef resonatorReadout < qes.measurement.prob
             obj = obj@qes.measurement.prob(prob_obj);
             obj.delayStep = lcm(round(ad_i_chnl_.samplingRate),...
                 round(da_i_chnl_.samplingRate))/ad_i_chnl_.samplingRate;
-
+            
+            obj.readoutLength = readoutLength;
+            obj.qubitInd = qubitInd;
             obj.n = prob_obj.n;
             obj.qubits = qubits;
+            obj.allReadoutQubits = allReadoutQubits;
             obj.stateNames = prob_obj.stateNames;
             obj.iq_obj = iq_obj;
             obj.adSamplingRate = ad_i_chnl_.samplingRate;
@@ -194,18 +226,18 @@ classdef resonatorReadout < qes.measurement.prob
             obj.delay = 0;
             obj.numericscalardata = false;
         end
-        function set.qubits(obj,val)
-            if ~iscell(val)
-                val = {val};
-            end
-            for ii = 1:numel(val)
-                if ~isa(val{ii},'sqc.qobj.qubit')
-                    throw(MException('resonatorReadout:invalidInput',...
-						'at least one of qubits is not a sqc.qobj.qubit class object.'));
-                end
-            end
-            obj.qubits = val;
-        end
+%         function set.qubits(obj,val)
+%             if ~iscell(val)
+%                 val = {val};
+%             end
+%             for ii = 1:numel(val)
+%                 if ~isa(val{ii},'sqc.qobj.qubit')
+%                     throw(MException('resonatorReadout:invalidInput',...
+% 						'at least one of qubits is not a sqc.qobj.qubit class object.'));
+%                 end
+%             end
+%             obj.qubits = val;
+%         end
         function set.mw_src_power(obj,val)
             if numel(val) ~= numel(obj.mw_src)
                 throw(MException('resonatorReadout:invalidInput',...
@@ -243,12 +275,24 @@ classdef resonatorReadout < qes.measurement.prob
 			% for odd delay, we need to interpolate
  			obj.delay = obj.delayStep*ceil(val/obj.delayStep);
             
-            dd = (obj.delay - obj.adDelayStep*floor(obj.delay/obj.adDelayStep))*...
-                obj.adSamplingRate/obj.daSamplingRate;
+            rs = obj.adSamplingRate/obj.daSamplingRate;
             
-            obj.iq_obj.startidx = obj.qubits{1}.r_truncatePts(1)+dd+1;
-            obj.iq_obj.endidx = obj.adRecordLength-obj.qubits{1}.r_truncatePts(2)...
-                -obj.adDelayStep+dd;
+            dd = (obj.delay - obj.adDelayStep*floor(obj.delay/obj.adDelayStep))*rs;
+            
+            numQs = numel(obj.qubits);
+            r_truncatePts = ones(2,numQs);
+            for ii = 1:numQs
+                r_truncatePts(1,ii) = obj.qubits{ii}.r_truncatePts(1);
+                r_truncatePts(2,ii) = obj.qubits{ii}.r_truncatePts(2);
+            end
+            obj.iq_obj.startidx = r_truncatePts(1,:) +dd+1;
+            maxReadoutLength = max(obj.readoutLength);
+            endidx = obj.adRecordLength-r_truncatePts(2,:)-obj.adDelayStep+dd;
+            for ii = 1:numQs
+                endidx(ii) = endidx(ii) - ...
+                    obj.delayStep*ceil((maxReadoutLength - obj.readoutLength(ii))/obj.delayStep)*rs;
+            end
+            obj.iq_obj.endidx = endidx;
 
 % in case of using interpolation:
 %			obj.delay = val
@@ -315,21 +359,27 @@ classdef resonatorReadout < qes.measurement.prob
     end
     methods (Access = private)
         function GenWave(obj)
-            num_qubits = numel(obj.qubits);
+            num_qubits = numel(obj.allReadoutQubits);
             wv_ = cell(1,num_qubits);
 			for ii = 1:num_qubits
-                wvArgs = {obj.qubits{ii}.r_ln,obj.r_amp(ii)};
-                wvSettings = struct(obj.qubits{ii}.r_wvSettings); % use struct() so we won't fail in case of empty
+                ind = find(obj.qubitInd == ii,1);
+                if isempty(ind)
+                    wvArgs = {obj.allReadoutQubits{ii}.r_ln, obj.allReadoutQubits{ii}.r_amp};
+                else
+                    wvArgs = {obj.allReadoutQubits{ii}.r_ln, obj.r_amp(ind)};
+                end
+                
+                wvSettings = struct(obj.allReadoutQubits{ii}.r_wvSettings); % use struct() so we won't fail in case of empty
                 fnames = fieldnames(wvSettings);
                 for jj = 1:numel(fnames)
                     wvArgs{end+1} = wvSettings.(fnames{jj});
                 end
-                wv_{ii} = feval(['qes.waveform.',obj.qubits{ii}.r_wvTyp],wvArgs{:});
-                carrierFrequency = (obj.qubits{ii}.r_freq - obj.qubits{ii}.r_fc)/obj.da_i_chnl.samplingRate;
-                
+                wv_{ii} = feval(['qes.waveform.',obj.allReadoutQubits{ii}.r_wvTyp],wvArgs{:});
+                carrierFrequency = (obj.allReadoutQubits{ii}.r_freq - obj.allReadoutQubits{ii}.r_fc)/obj.da_i_chnl.samplingRate;
+
                 wv_{ii}.carrierFrequency = carrierFrequency;
                 if ~isempty(obj.startWv)
-                    df = (obj.qubits{ii}.r_freq - obj.qubits{ii}.r_fc)/obj.da.samplingRate;
+                    df = (obj.allReadoutQubits{ii}.r_freq - obj.allReadoutQubits{ii}.r_fc)/obj.da.samplingRate;
                     wv_{ii}.phase = 2*pi*df*obj.startWv.length;
                 end
                 

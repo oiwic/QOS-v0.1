@@ -12,7 +12,7 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
 	
 	% to future version, these properties must be a channel properties, Yulin Wu
 	properties (SetAccess = private, GetAccess = private)
-		adRecordLength = 1
+		adRecordLength = 1000;
 		adRange
         adDelayStep % unit: DA sampling points
 	end

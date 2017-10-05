@@ -39,13 +39,11 @@ classdef (Sealed = true) sequence < handle & matlab.mixin.Copyable
                     'a sequence can only be multiplied with an numeric scalar.'));
             end
         end
-        function obj = plus(obj1,obj2)
-            obj = obj1.copy();
+        function obj = plus(obj,obj2)
 			obj.jSequence.add(obj2.jSequence);
 		end
-		function obj = minus(obj1,obj2)
+		function obj = minus(obj,obj2)
             obj2.jSequence.scale(-1);
-            obj = obj1.copy();
 			obj.jSequence.add(obj2.jSequence);
 		end
 		function obj = uminus(obj)

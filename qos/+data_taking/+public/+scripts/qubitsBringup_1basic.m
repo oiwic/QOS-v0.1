@@ -46,16 +46,15 @@ s21_zdc_networkAnalyzer('qubit',qNames{qubitIndex},...% 'NAName' can be ommitted
       'gui',true,'save',true);
 end
 %% s21 with DAC, a coarse scan to find all the qubit readoutFreqs
-amp = logspace(log10(1000),log10(32768),20);
-freq = 6.79851e9-0.5e6:0.02e6:6.79851e9+0.5e6;
-s21_rAmp('qubit','q6','freq',freq,'amp',amp,...
-      'notes','attenuation:20dB','gui',true,'save',true);
+% amp = logspace(log10(1000),log10(32768),20);
+amp = 3.8e3;
+freq = 6.88128e9-02e6:0.1e6:6.88128e9+2e6;
+s21_rAmp('qubit','q8','freq',freq,'amp',amp,...
+      'notes','q7,q8,q9 joint readout','gui',true,'save',true);
 %% finds all qubit readoutFreqs automatically by fine s21 scan, session/public/autoConfig.readoutResonators.* has to be properly set for it to work
 [readoutFreqs, pkWithd] = auto.qubitreadoutFreqs();
 % after this you need to order readoutFreqs in accordance with qNames
 % the upadate the readoutFreqs value to r_fr in registry for each qubit:
-%% if all readoutFreqs are found correctly, save them to r_fr and r_freq in registry for each qubit:
-readoutFreqs = [6.5922000,6.6331600,6.6773200,6.7239600,6.761480,6.798480,6.839720,6.881200,6.9242400]*1e9;
 %%
 for ii = 1:numel(qNames)
     % r_fr, the qubit dip frequency, it's exact value changes with qubit state and readout power,

@@ -91,7 +91,7 @@ classdef USTCDAC < handle
                throw(MException('USTCDAC:OpenError',...
                    sprintf('Open DAC %s failed!',obj.name))); % Yulin Wu
             end
-             obj.Init();
+            obj.Init();
         end
          
         function Init(obj)
@@ -110,10 +110,10 @@ classdef USTCDAC < handle
             try_count = 10;
             isDACReady = 0;
             
-            obj.InitBoard();
-            ret = obj.GetReturn(1);
-            data = double(ret(2))*65536 + double(ret(1));
-            qes.hwdriver.sync.ustcadda_backend.WriteLog(obj.ip,data);
+%             obj.InitBoard();
+%             ret = obj.GetReturn(1);
+%             data = double(ret(2))*65536 + double(ret(1));
+%             qes.hwdriver.sync.ustcadda_backend.WriteLog(obj.ip,data);
             
             while(try_count > 0 && ~isDACReady)
                 obj.isblock = 1;

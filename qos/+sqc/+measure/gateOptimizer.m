@@ -555,14 +555,13 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubits{1}.aczSettings = aczSettings;
 			
-			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
-            % R = sqc.measure.randBenchMarkingFS(qubits,numGates);
+			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
-			phase1.offset = aczSettings.dynamicPhase(1);
 			
 			phase2 = qes.expParam(aczSettings,'dynamicPhase(2)');
-			phase2.offset = aczSettings.dynamicPhase(2);
             
 			f = qes.expFcn([phase1,phase2],R);
             
@@ -574,13 +573,12 @@ classdef gateOptimizer < qes.measurement.measurement
 % 					[-pi,-pi],...
 % 					[pi,pi],...
 % 					opts);
-                
-            
+
             x0 = [-pi,-pi;...
                     -pi,pi;...
-                    0,pi]/2;
-            tolX = [pi,pi]/5e4;
-            tolY = [1e-4];
+                    0,pi]/3;
+            tolX = [pi,pi]/1e3;
+            tolY = [5e-4];
             
             h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s%s CZ', qubits{1}.name, qubits{2}.name),false);
             axs(1) = subplot(3,1,3,'Parent',h);
@@ -639,26 +637,23 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubits{1}.aczSettings = aczSettings;
 			
-			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
-            % R = sqc.measure.randBenchMarkingFS(qubits,numGates);
+			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
-			phase1.offset = aczSettings.dynamicPhase(1);
-			
 			phase2 = qes.expParam(aczSettings,'dynamicPhase(2)');
-			phase2.offset = aczSettings.dynamicPhase(2);
             
             amplitude = qes.expParam(aczSettings,'amp');
 			amplitude.offset = aczSettings.amp;
             
 			f = qes.expFcn([phase1,phase2,amplitude],R);
 
-            x0 = [-0.1,-0.1,-0.02*aczSettings.amp;...
-                    -0.1,-0.1,0.02*aczSettings.amp;...
-                    -0.1,0.1,0.02*aczSettings.amp;...
-                    0.1,0.1,0.02*aczSettings.amp];
-            tolX = [pi/5e4,pi/5e4,1];
-            tolY = [1e-4];
+            x0 = [-0.5,-0.5,-0.05*aczSettings.amp;...
+                    -0.5,-0.5,0.05*aczSettings.amp;...
+                    -0.5,0.5,0.05*aczSettings.amp;...
+                    0.5,0.5,0.05*aczSettings.amp];
+            tolX = [pi/1e3,pi/1e3,1];
+            tolY = [1e-3];
             
             h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s%s CZ', qubits{1}.name, qubits{2}.name),false);
             axs(1) = subplot(4,1,4,'Parent',h);
@@ -720,7 +715,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			qubits{1}.aczSettings = aczSettings;
 			
 			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,10);
-            R = sqc.measure.randBenchMarkingFS(qubits,numGates);
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
 			phase1.offset = aczSettings.dynamicPhase(1);

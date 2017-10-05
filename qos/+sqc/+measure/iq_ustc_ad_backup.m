@@ -1,7 +1,5 @@
 classdef iq_ustc_ad < qes.measurement.iq
-    % data(m): IQ mean of demod frequency freq(m)
-    % extradata(num_demod_freq,n), n: num stats
-    % extradata(m,k), IQ of kth shot of demod frequency freq(m)
+    %
 
 % Copyright 2016 Yulin Wu, Institute of Physics, Chinese  Academy of Sciences
 % mail4ywu@gmail.com/mail4ywu@icloud.com
@@ -177,14 +175,7 @@ classdef iq_ustc_ad < qes.measurement.iq
                 % typically, one needs to remove a few data points at the
                 % beginning or at the end of each segament due to trigger
                 % and signal may not be exactly syncronized.
-                
-                obj.selectidx = [];
-                if obj.startidx > 1 ||...
-                        eidx < obj.adQ.recordLength
-                    obj.selectidx = obj.startidx:1:eidx;
-                end
-                    
-				
+				obj.selectidx = obj.startidx:1:eidx;
                 % obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
                 % t = (obj.selectidx-obj.startidx)/...
                 %     (obj.adI.samplingRate*obj.upSampleNum);
@@ -196,39 +187,31 @@ classdef iq_ustc_ad < qes.measurement.iq
                 end
             end
         end
-        
 %         function IQ = demod(obj,Vi, Vq)
         function demod(obj, Vi, Vq)
 		  % iq_ustc_ad used to suporrted the minimum delay step of one DA point, for that we need to
 		  % interpolate the raw data, but interpolation is expensive, thus removed in later versions
             % Vi = qes.util.upsample_c(Vi,obj.upSampleNum);
             % Vq = qes.util.upsample_c(Vq,obj.upSampleNum);
-            
-            tic
-            v = Vi+1j*Vq;
-            if ~isempty(obj.selectidx)
-                v = v(:,obj.selectidx);
-            end
-            toc
+            Vi = Vi(:,obj.selectidx);
+            Vq = Vq(:,obj.selectidx);
 
-            tic
             for ii = 1:numel(obj.freq)
                 if isempty(obj.iqWeight{ii})
                     for jj = 1:obj.n
-                        IQ_ = obj.kernel(ii,:).*v(jj,:);
+                        IQ_ = obj.kernel(ii,:).*(Vi(jj,:)+1j*Vq(jj,:));
                         IQ_ = mean(obj.Mc*[real(IQ_);imag(IQ_)],2); % correct mixer imballance
                         obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
                     end
                 else
                     for jj = 1:obj.n
-                        IQ_ = obj.kernel(ii,:).*v(jj,:);
+                        IQ_ = obj.kernel(ii,:).*(Vi(jj,:)+1j*Vq(jj,:));
                         IQ_ = mean(obj.Mc*[real(IQ_)*obj.iqWeight{ii}(1,:);...
                             imag(IQ_)*obj.iqWeight{ii}(2,:)],2); % correct mixer imballance
                         obj.IQ(ii,jj) = IQ_(1)+1j*IQ_(2);
                     end
                 end
             end
-            toc
         end
         function iqraw = demod_rawIQ(obj, Vi, Vq)
             Vi = Vi(:,obj.selectidx);
