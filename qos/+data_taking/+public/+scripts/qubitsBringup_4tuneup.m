@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q8';
+q = 'q1';
 
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
@@ -11,10 +11,11 @@ tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',true,'gui',true,'save','askMe');
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 %% fully auto callibration
-qubits = {'q7','q8','q9','q6'};
+qubits = {'q9','q7','q6','q8'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000); 
+    tuneup.iq2prob_01('qubit',q,'numSamples',2e4,'gui',true,'save',true);
     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
 %     tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
     XYGate ={'X/2'};

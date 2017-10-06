@@ -37,21 +37,21 @@ function SendWave(obj,chnl,DASequence,isI)
             WaveformData(32e3:end) = [];
             
             % to plot the waveform data
-            global OPERATOR_SHOW_WAVEDATA;
-            OPERATOR_SHOW_WAVEDATA = true;
-            persistent ax;
-            try
-                if OPERATOR_SHOW_WAVEDATA
-                    if isempty(ax) || ~isvalid(ax)
-                        h = figure();
-                        ax = axes('parent',h);
-                    end
-
-                    hold(ax,'on');
-                    plot(ax,WaveformData(1:end));
-                end
-            catch
-            end
+%             global OPERATOR_SHOW_WAVEDATA;
+%             OPERATOR_SHOW_WAVEDATA = true;
+%             persistent ax;
+%             try
+%                 if OPERATOR_SHOW_WAVEDATA
+%                     if isempty(ax) || ~isvalid(ax)
+%                         h = figure();
+%                         ax = axes('parent',h);
+%                     end
+% 
+%                     hold(ax,'on');
+%                     plot(ax,WaveformData(1:end));
+%                 end
+%             catch
+%             end
             
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:

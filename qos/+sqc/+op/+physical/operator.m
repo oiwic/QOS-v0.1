@@ -504,18 +504,29 @@ classdef operator < handle & matlab.mixin.Copyable
 %            % order: second applied first to follow the quantum mechanics
 %            % convention: U1U2|s>, U2 is applied to state |s> first
 
-% checking removed for efficiency, the caller has to gaurante the validity
+% checking removed for efficiency, the caller has to gaurante the validity      
+%             if ~isa(obj1,'sqc.op.physical.operator') || ~isa(obj2,'sqc.op.physical.operator')
+%                 throw(MException('sqc_op_pysical_operator:invalidInput',...
+%                     'at least one of obj1, obj2 is not a sqc.op.physical.operator class object.'));
+%             end
             
-
-            if ~isa(obj1,'sqc.op.physical.operator') || ~isa(obj2,'sqc.op.physical.operator')
-                throw(MException('sqc_op_pysical_operator:invalidInput',...
-                    'at least one of obj1, obj2 is not a sqc.op.physical.operator class object.'));
-            end
-
-			if isempty(obj2)
+            if isempty(obj2)
 				obj =  obj1;
 				return;
-			elseif isempty(obj1)
+            end
+            if isempty(obj1)
+				obj = obj2;
+				return;
+            end
+
+            obj1ln = obj1.length;
+            obj2ln = obj2.length;
+            
+			if obj2ln == 0
+				obj =  obj1;
+				return;
+            end
+            if  obj1ln == 0
 				obj = obj2;
 				return;
             end
@@ -526,10 +537,8 @@ classdef operator < handle & matlab.mixin.Copyable
             obj.gateClass = 'operator';
             
             addIdx = [];
-            obj1ln = obj1.length;
-            obj2ln = obj2.length;
             
-            
+      
             
             %%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%
