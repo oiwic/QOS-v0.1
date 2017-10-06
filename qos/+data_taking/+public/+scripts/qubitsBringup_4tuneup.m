@@ -11,13 +11,13 @@ tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',true,'gui',true,'save','askMe');
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 %% fully auto callibration
-qubits = {'q7','q9','q8','q6'};
+qubits = {'q7','q8','q9','q6'};
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000); 
     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
 %     tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',false,'gui',true,'save',true);
-    XYGate ={'X','X/2'};
+    XYGate ={'X/2'};
     for jj = 1:numel(XYGate)
         tuneup.xyGateAmpTuner('qubit',q,'gateTyp',XYGate{jj},'AE',true,'AENumPi',41,'gui',true,'save',true);
     end
@@ -56,8 +56,10 @@ zPulseRipple('qubit','q8',...
     s.type = 'function';
     s.funcName = 'qes.waveform.xfrFunc.gaussianExp';
     s.bandWidht = 0.25;
-    s.r = [0.0130];
-    s.td = [464];
+%     s.r = [0.0130]; % q8
+%     s.td = [464]; % q8
+    s.r = [0.0130]; % q6
+    s.td = [260];  % q6
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
     xfrFunc_inv = xfrFunc.inv();
@@ -71,13 +73,32 @@ zPulseRipple('qubit','q8',...
 %     fsamples = xfrFunc_f.eval(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-b');
 
-delayTime = [0:20:1.5e3];
+q = 'q6';
+
+delayTime = [0:50:1.0e3];
 setQSettings('r_avg',5000);
-zPulseRipplePhase_beta('qubit','q8','delayTime',delayTime,...
+zPulseRipplePhase_beta('qubit',q,'delayTime',delayTime,...
        'xfrFunc',[xfrFunc_f],'zAmp',20e3,'s',s,...
-       'notes','no xfrFunc','gui',true,'save',true);
+       'notes','','gui',true,'save',true);
 %%
-sqc.util.setZXfrFunc(q,xfrFunc);
+s = struct();
+s.type = 'function';
+s.funcName = 'qes.waveform.xfrFunc.gaussianExp';
+s.bandWidht = 0.25;
+
+% s.r = [0.0130]; % q8
+% s.td = [464]; % q8
+
+s.r = [0.0130]; % q6
+s.td = [260];  % q6
+
+xfrFunc = qes.util.xfrFuncBuilder(s);
+xfrFunc_inv = xfrFunc.inv();
+xfrFunc_lp = com.qos.waveform.XfrFuncFastGaussianFilter(0.13);
+xfrFunc_f = xfrFunc_lp.add(xfrFunc_inv);
+
+q = 'q6';
+sqc.util.setZXfrFunc(q,xfrFunc_f);
 %%
 sqc.measure.gateOptimizer.czOptPulseCal_2({'q9','q8'},false,4,15,1500, 40);
 

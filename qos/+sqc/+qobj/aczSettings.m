@@ -14,5 +14,6 @@ classdef aczSettings < handle
 		padLn
 		detuneQubits
 		detuneFreq
+        detuneLonger
     end
 end

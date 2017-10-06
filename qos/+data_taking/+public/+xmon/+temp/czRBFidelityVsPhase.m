@@ -35,8 +35,13 @@ function varargout = czRBFidelityVsPhase(varargin)
     qc.aczSettings = aczSettings;
 
     % R = sqc.measure.randBenchMarking4Opt({qc,qt},args.numGates,args.numReps);
-    args.ridx = sqc.measure.randBenchMarkingFS.CZRndSeq(args.numGates,args.numReps);
-    R = sqc.measure.randBenchMarkingFS({qc,qt},args.numGates,args.numReps,args.ridx);
+    persistent ridx;
+    if isfield(args,'ridx')
+        ridx = args.ridx;
+    elseif isempty(ridx)
+        ridx = sqc.measure.randBenchMarkingFS.CZRndSeq(args.numGates,args.numReps);
+    end
+    R = sqc.measure.randBenchMarkingFS({qc,qt},args.numGates,args.numReps,ridx);
 
     x = qes.expParam(aczSettings,'dynamicPhase(1)');
     x.name = [qc.name,' phase(rad)'];

@@ -404,14 +404,14 @@ classdef operator < handle & matlab.mixin.Copyable
 				DASequence = qes.waveform.DASequence(obj.z_daChnl{1,ii}.chnl,obj.z_wv{ii});
 				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0];
                 
-                % temp
-                global OPERATOR_SHOW_WAVEDATA;
-                OPERATOR_SHOW_WAVEDATA = true;
+%                 % temp
+%                 global OPERATOR_SHOW_WAVEDATA;
+%                 OPERATOR_SHOW_WAVEDATA = true;
                 
 				obj.z_daChnl{1,ii}.SendWave(DASequence,true);
                 
-                % temp
-                 OPERATOR_SHOW_WAVEDATA = false;
+%                 % temp
+%                  OPERATOR_SHOW_WAVEDATA = false;
             end
 			zWv2Add = {};
 			addedZWvDAChnls = {};
@@ -524,33 +524,72 @@ classdef operator < handle & matlab.mixin.Copyable
             obj1.GenWave();
             obj = sqc.op.physical.operator(obj2);
             obj.gateClass = 'operator';
-            obj.length = obj.length + obj1.length + GB;
+            
             addIdx = [];
+            obj1ln = obj1.length;
             obj2ln = obj2.length;
+            
+            
+            
+            %%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%
+            for jj = 1:numel(obj.xy_wv)
+                if ~isempty(obj.xy_wv{jj}) && obj.xy_wv{jj}.length < obj.length
+                    % this will never happen if the gates are properly implemented, that is a fudamental gate
+                    % eight has empty waveforms or the waveform length equals to the length of the gate.
+                    % its is added just in case some one implemented a gate not knowing the above rule
+                    error('bug!');
+                    % obj.xy_wv{jj} = [obj.xy_wv{jj},qes.waveform.spacer(obj.length-obj.xy_wv{jj}.length)];
+                end
+            end
+            for jj = 1:numel(obj.z_wv)
+                if ~isempty(obj.z_wv{jj}) && obj.z_wv{jj}.length < obj.length
+                    % this will never happen if the gates are properly implemented, that is a fudamental gate
+                    % eighter has empty waveforms or the waveform length equals to the length of the gate.
+                    % its is added just in case some one implemented a gate not knowing the above rule
+                    error('bug!');
+%                     obj.z_wv{jj} = [obj.z_wv{jj},qes.waveform.spacer(obj.length-obj.z_wv{jj}.length)];
+                end
+            end
+            for jj = 1:numel(obj1.xy_wv)
+                if ~isempty(obj1.xy_wv{jj}) && obj1.xy_wv{jj}.length < obj1.length
+                    % this will never happen if the gates are properly implemented, that is a fudamental gate
+                    % eight has empty waveforms or the waveform length equals to the length of the gate.
+                    % its is added just in case some one implemented a gate not knowing the above rule
+                    error('bug!');
+                    % obj1.xy_wv{jj} = [obj1.xy_wv{jj},qes.waveform.spacer(obj1.length-obj1.xy_wv{jj}.length)];
+                end
+            end
+            for jj = 1:numel(obj1.z_wv)
+                if ~isempty(obj1.z_wv{jj}) && obj1.z_wv{jj}.length < obj1.length
+                    % this will never happen if the gates are properly implemented, that is a fudamental gate
+                    % eighter has empty waveforms or the waveform length equals to the length of the gate.
+                    % its is added just in case some one implemented a gate not knowing the above rule
+                    error('bug!');
+%                     obj1.z_wv{jj} = [obj1.z_wv{jj},qes.waveform.spacer(obj1.length-obj1.z_wv{jj}.length)];
+                end
+            end
+            %%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%
+            
+            
+            
+            
+            
+            if GB+obj1ln < 1
+                error('zeros wavelength is not supported anymore');
+            end
+            padWv = qes.waveform.spacer(GB+obj1ln);
+            Obj2QInds = 1:numel(obj2.qubits);
             for ii = 1:numel(obj1.qubits)
-			
-				for jj = 1:numel(obj1.xy_wv)
-					if ~isempty(obj1.xy_wv{jj}) && obj1.xy_wv{jj}.length < obj1.length
-						% this will never happen if the gates are properly implemented, that is a fudamental gate
-						% eight has empty waveforms or the waveform length equals to the length of the gate.
-						% its is added just in case some one implemented a gate not knowing the above rule
-						obj1.xy_wv{jj} = [obj1.xy_wv{jj},qes.waveform.spacer(obj1.length-obj1.xy_wv{jj}.length)];
-					end
-				end
-				for jj = 1:numel(obj1.z_wv)
-					if ~isempty(obj1.z_wv{jj}) && obj1.z_wv{jj}.length < obj1.length
-						% this will never happen if the gates are properly implemented, that is a fudamental gate
-						% eighter has empty waveforms or the waveform length equals to the length of the gate.
-						% its is added just in case some one implemented a gate not knowing the above rule
-						obj1.z_wv{jj} = [obj1.z_wv{jj},qes.waveform.spacer(obj1.length-obj1.z_wv{jj}.length)];
-					end
-				end
-				
 				idx = qes.util.find(obj1.qubits{ii},obj.qubits);
                 if isempty(idx)
 					addIdx = [addIdx, ii];
 					continue;
-				end
+                end
+                Obj2QInds(Obj2QInds == idx) = [];
                 if ~isempty(obj1.xy_wv{ii})
 					if ~isempty(obj.xy_wv{idx})
 						if GB
@@ -566,11 +605,7 @@ classdef operator < handle & matlab.mixin.Copyable
                         obj.xy_daChnl{2,idx} = obj1.xy_daChnl{2,ii};
                     end
                 elseif ~isempty(obj.xy_wv{idx})
-                    sln = GB+obj1.length;
-                    if sln > 0  % I gate could be zeros length, fix this in the future version
-                        obj.xy_wv{idx} = [obj.xy_wv{idx},...
-                            qes.waveform.spacer(sln)];
-                    end
+                    obj.xy_wv{idx} = [obj.xy_wv{idx},padWv];
                 end
                 if ~isempty(obj1.z_wv{ii})
                     if ~isempty(obj.z_wv{idx})
@@ -582,11 +617,20 @@ classdef operator < handle & matlab.mixin.Copyable
 						end
                     else
                         obj.z_wv{idx} = [qes.waveform.spacer(GB+obj2ln),...
-                            obj1.z_wv{ii}];                        obj.z_daChnl{1,idx} = obj1.z_daChnl{1,ii};
+                            obj1.z_wv{ii}];
+                        obj.z_daChnl{1,idx} = obj1.z_daChnl{1,ii};
                     end
                 elseif ~isempty(obj.z_wv{idx})
-                    obj.z_wv{idx} = [obj.z_wv{idx},...
-                                qes.waveform.spacer(GB+obj1.length)];
+                    obj.z_wv{idx} = [obj.z_wv{idx},padWv];
+                end
+            end
+            
+            for ii = 1:numel(Obj2QInds)
+                if ~isempty(obj.xy_wv{Obj2QInds(ii)})
+                    obj.xy_wv{Obj2QInds(ii)} = [obj.xy_wv{Obj2QInds(ii)},padWv];
+                end
+                if ~isempty(obj.z_wv{Obj2QInds(ii)})
+                    obj.z_wv{Obj2QInds(ii)} = [obj.z_wv{Obj2QInds(ii)},padWv];
                 end
             end
             ind = numel(obj.qubits);
@@ -668,6 +712,8 @@ classdef operator < handle & matlab.mixin.Copyable
                 % obj.logical_op = obj1.logical_op*obj2.logical_op;
 				% obj.logical_op = obj2.logical_op*obj1.logical_op;
             % end
+            
+            obj.length = obj.length + obj1.length + GB;
             
         end
         function obj = times(obj1, obj2)

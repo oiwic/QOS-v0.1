@@ -20,6 +20,7 @@ classdef ACZ < sqc.op.physical.operator
         dynamicPhase
         % detuneQubits
         detuneFreq
+        detuneLonger
     end
     properties (SetAccess = private, GetAccess = private)
         aczQ
@@ -56,7 +57,7 @@ classdef ACZ < sqc.op.physical.operator
 
             obj.meetUpLonger = scz.meetUpLonger;
             obj.padLn = scz.padLn;
-            obj.aczLn = scz.aczLn; % must be after the setting of meetUpLonger and padLn
+            
             if scz.aczFirstQ
                 obj.aczQ = 1;
                 obj.meetUpQ = 2;
@@ -75,18 +76,22 @@ classdef ACZ < sqc.op.physical.operator
 %                 obj.detuneQubits{ii} = sqc.util.qName2Obj(scz.detuneQubits{ii});
 %             end
             obj.detuneFreq = scz.detuneFreq;
+            obj.detuneLonger = scz.detuneLonger;
+            
+            obj.aczLn = scz.aczLn; % must be after the setting of meetUpLonger, padLn and detuneLonger
+            %obj.length = val+sum(obj.padLn)+2*obj.meetUpLonger + 2*obj.detuneLonger;
             obj.gateClass = 'CZ';
         end
         function set.aczLn(obj,val)
             obj.aczLn = val;
-            obj.length = val+sum(obj.padLn)+2*obj.meetUpLonger;
+            obj.length = val+sum(obj.padLn)+2*obj.meetUpLonger + 2*obj.detuneLonger;
         end
     end
 	methods (Hidden = true)
         function GenWave(obj)
             aczWv = qes.waveform.acz(obj.aczLn, obj.amp, obj.thf, obj.thi, obj.lam2, obj.lam3);
-            padWv1 = qes.waveform.spacer(obj.padLn(1)+obj.meetUpLonger);
-            padWv2 = qes.waveform.spacer(obj.padLn(2)+obj.meetUpLonger);
+            padWv1 = qes.waveform.spacer(obj.padLn(1)+obj.meetUpLonger+obj.detuneLonger);
+            padWv2 = qes.waveform.spacer(obj.padLn(2)+obj.meetUpLonger+obj.detuneLonger);
             obj.z_wv{1} = [padWv1, aczWv, padWv2];
 
             acz_q = obj.qubits{obj.aczQ};
@@ -108,9 +113,13 @@ classdef ACZ < sqc.op.physical.operator
                     wvArgs{end+1} = wvSettings.(fnames{ii});
                 end
                 meetupWv = feval(['qes.waveform.',meetUp_q.g_detune_wvTyp],wvArgs{:});
+                
+%                 meetupWv = qes.waveform.rect(obj.aczLn+2*obj.meetUpLonger,...
+%                     sqc.util.detune2zpa(meetUp_q,obj.meetUpDetuneFreq));
 
-                padWv3 = qes.waveform.spacer(obj.padLn(1));
-                padWv4 = qes.waveform.spacer(obj.padLn(2));
+                padWv3 = qes.waveform.spacer(obj.padLn(1)+obj.detuneLonger);
+                padWv4 = qes.waveform.spacer(obj.padLn(2)+obj.detuneLonger);
+                
                 obj.z_wv{2} = [padWv3,meetupWv,padWv4];
                 if isempty(da2)
                     da2 = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
@@ -120,7 +129,7 @@ classdef ACZ < sqc.op.physical.operator
             end
             for ii = 3:numel(obj.qubits)
                 if obj.detuneFreq(ii-2) ~= 0
-                    wvArgs = {obj.aczLn+2*obj.meetUpLonger,...
+                    wvArgs = {obj.aczLn+2*obj.meetUpLonger+2*obj.detuneLonger,...
                         sqc.util.detune2zpa(obj.qubits{ii},obj.detuneFreq(ii-2))};
                     wvSettings = struct(obj.qubits{ii}.g_detune_wvSettings); % use struct() so we won't fail in case of empty
                     fnames = fieldnames(wvSettings);
@@ -128,10 +137,14 @@ classdef ACZ < sqc.op.physical.operator
                         wvArgs{end+1} = wvSettings.(fnames{jj});
                     end
                     meetupWv = feval(['qes.waveform.',obj.qubits{ii}.g_detune_wvTyp],wvArgs{:});
+                    
+%                     meetupWv = qes.waveform.rect(obj.aczLn+2*obj.meetUpLonger+2*obj.detuneLonger,...
+%                         sqc.util.detune2zpa(obj.qubits{ii},obj.detuneFreq(ii-2)));
 
                     padWv3 = qes.waveform.spacer(obj.padLn(1));
                     padWv4 = qes.waveform.spacer(obj.padLn(2));
                     obj.z_wv{ii} = [padWv3,meetupWv,padWv4];
+                    % obj.z_wv{ii} = meetupWv ;
                     if isempty(da2)
                         da2 = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
                                 'name',obj.qubits{ii}.channels.z_pulse.instru);
