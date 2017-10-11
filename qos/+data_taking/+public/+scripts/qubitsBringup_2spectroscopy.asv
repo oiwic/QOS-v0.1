@@ -1,12 +1,12 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
 %%
-setQSettings('r_avg',500);
+setQSettings('r_avg',800);
 q = 'q6';
 f01 = getQSettings('f01',q);
-freq = f01-50e6:0.3e6:f01+50e6;
+freq = f01-15e6:0.2e6:f01+15e6;
 spectroscopy1_zpa('qubit',q,'biasAmp',[0],'driveFreq',[freq],...
-       'dataTyp','S21','gui',true,'save',true);  % dataTyp: S21 or P
+       'dataTyp','P','gui',true,'save',true);  % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode
 %%
 spectroscopy1_power('qubit','q7',...
@@ -15,18 +15,19 @@ spectroscopy1_power('qubit','q7',...
        'dataTyp','P','gui',true,'save',true); % dataTyp: S21 or P
 %%
 setQSettings('r_avg',500);
-f01 = getQSettings('f01','q6');
+f01 = getQSettings('f01','q5');
 freq = f01-3e6:0.3e6:f01+3e6;
-spectroscopy111_zpa('biasQubit','q6','biasAmp',[-200:50:200],...
-       'driveQubit','q6','driveFreq',[freq],...
-       'readoutQubit','q6','dataTyp','P',...
-       'notes','q6->q6 zpls cross talk','gui',true,'save',true);
+spectroscopy111_zpa('biasQubit','q5','biasAmp',[-300:50:300],...
+       'driveQubit','q5','driveFreq',[freq],...
+       'readoutQubit','q5','dataTyp','P',...
+       'notes','q5->q5 zpls cross talk','gui',true,'save',true);
 %%
-q = 'q6';
+setQSettings('r_avg',500);
+q = 'q4';
 % f01 = getQSettings('f01',q);
-% freq = f01-10e6:0.5e6:f01+3e6;
-freq = 4.6e9:0.5e6:4.8e9;
-spectroscopy1_zdc('qubit',q,'biasAmp',[-5000:1000:10000],'driveFreq',[freq],...
+% freq = f01-120e6:0.5e6:f01-10e6;
+freq = 4.1e9:0.5e6:4.4e9;
+spectroscopy1_zdc('qubit',q,'biasAmp',[-19000:1000:-13000],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 %%
 setQSettings('r_avg',500);
@@ -56,4 +57,8 @@ spectroscopy1_zpa_bndSwp('qubit',q,...
 %        'biasAmp',[6000:50:9750],'driveFreq',[5.56e9:0.2e6:5.77e9],...
 %        'gui',false,'save',true);
 %%
- spectroscopy1_zpa_auto('qubit','q6','biasAmp',-3e4:1e3:3e4,'swpBandWdth',40e6,'r_avg',500,'gui',true)
+spectroscopy1_zpa_auto('qubit','q6','biasAmp',-3e4:500:3e4,...
+    'swpBandWdth',40e6,'swpBandStep',1e6,...
+    'r_avg',500,'gui',true);
+
+

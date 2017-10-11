@@ -457,3 +457,22 @@ R.delay = proc.length;
 
 proc.Run();
 data = R()
+
+%%
+import sqc.util.qName2Obj;
+q1 = qName2Obj('q5');
+q2 = qName2Obj('q6');
+
+X1 = gate.X(q1);
+% X1 = gate.I(q1);
+CZ = gate.CZ(q1,q2);
+
+proc =  X1*CZ;
+% proc =  X1;
+
+R = resonatorReadout_ss(q1);
+R.state = 1;
+R.delay = proc.length;
+
+proc.Run();
+data = R()

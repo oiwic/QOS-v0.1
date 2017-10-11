@@ -33,10 +33,10 @@ function SendWave(obj,chnl,DASequence,isI)
             end
             WaveformData = uint16([zeros(1,software_delay),samples]+32768);
             
-            % version specific
+             % version specific
             WaveformData(32e3:end) = [];
             
-            % to plot the waveform data
+%             % to plot the waveform data
 %             global OPERATOR_SHOW_WAVEDATA;
 %             OPERATOR_SHOW_WAVEDATA = true;
 %             persistent ax;

@@ -5,7 +5,7 @@ classdef gateOptimizer < qes.measurement.measurement
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
 	methods(Static = true)
-		function xyGateOptWithDrag(qubit,numGates,numReps,rAvg,maxIter)
+		function xyGateOptWithDrag(qubit,numGates,numShots,rAvg,maxIter)
             if nargin < 5
                 maxIter = 20;
             end
@@ -19,7 +19,8 @@ classdef gateOptimizer < qes.measurement.measurement
             end
 			qubit.r_avg = rAvg;
             
-			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numReps);
+            R = sqc.measure.randBenchMarkingFS(qubit,numGates,numShots);
+% 			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numShots);
 			
 			detune = qes.expParam(qubit,'f01');
 			detune.offset = qubit.f01;
@@ -84,7 +85,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			catch
 			end
 		end
-		function xyGateOptNoDrag(qubit,numGates,numReps,rAvg,maxIter)
+		function xyGateOptNoDrag(qubit,numGates,numShots,rAvg,maxIter)
             if nargin < 4
                 maxIter = 20;
             end
@@ -97,7 +98,7 @@ classdef gateOptimizer < qes.measurement.measurement
 				error('DRAG enable, can not do no DRAG optimization, checking qubit settings.');
 			end
 			qubit.r_avg = rAvg;
-			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numReps);
+			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numShots);
 			
 			detune = qes.expParam(qubit,'f01');
 			detune.offset = qubit.f01;
@@ -158,7 +159,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
         end
 		
-		function zGateOpt(qubit,numGates,numReps,rAvg,maxIter)
+		function zGateOpt(qubit,numGates,numShots,rAvg,maxIter)
             if nargin < 4
                 maxIter = 20;
             end
@@ -172,7 +173,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubit.r_avg = rAvg;
 			Z = sqc.op.physical.gate.Z(qubit);
-			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numReps,Z);
+			R = sqc.measure.randBenchMarking4Opt(qubit,numGates,numShots,Z);
             
             QS = qes.qSettings.GetInstance();
 			
@@ -258,7 +259,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
         end
         
-        function czOptPulseCal_oneDecay(qubits,isACZQ,numGates,numReps,rAvg,maxIter,...
+        function czOptPulseCal_oneDecay(qubits,isACZQ,numGates,numShots,rAvg,maxIter,...
                 useFminsearch,fixedSequence)
             maxFEval = maxIter;
  
@@ -273,7 +274,7 @@ classdef gateOptimizer < qes.measurement.measurement
             if fixedSequence
                 R = sqc.measure.randBenchMarkingFS(qubits,numGates);
             else
-                R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+                R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numShots);
             end
 
             QS = qes.qSettings.GetInstance();
@@ -391,7 +392,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
         end
         
-        function czOptPulseCal_2Decay(qubits,isACZQ,numGates,numReps,rAvg,maxIter,useFminsearc)
+        function czOptPulseCal_2Decay(qubits,isACZQ,numGates,numShots,rAvg,maxIter,useFminsearc)
             maxFEval = maxIter;
  
 			import sqc.op.physical.*
@@ -402,7 +403,7 @@ classdef gateOptimizer < qes.measurement.measurement
                 qubits{ii}.r_avg = rAvg;
             end
 			
-			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+			R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numShots);
             
             QS = qes.qSettings.GetInstance();
 
@@ -528,8 +529,8 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
         end
 
-        % function czOptPhase(qubits,numGates,numReps, rAvg, maxFEval)
-        function czOptPhase(qubits,numGates, numReps, rAvg, maxFEval)
+        % function czOptPhase(qubits,numGates,numShots, rAvg, maxFEval)
+        function czOptPhase(qubits,numGates, numShots, rAvg, maxFEval)
             if nargin < 5
                 maxFEval = 100;
             end
@@ -555,9 +556,9 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubits{1}.aczSettings = aczSettings;
 			
-			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
+			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numShots);
 
-            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numShots);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
 			
@@ -574,9 +575,12 @@ classdef gateOptimizer < qes.measurement.measurement
 % 					[pi,pi],...
 % 					opts);
 
-            x0 = [-pi,-pi;...
-                    -pi,pi;...
-                    0,pi]/3;
+%             x0 = [-pi,-pi;...
+%                     -pi,pi;...
+%                     0,pi]/3;
+            x0 = [scz.dynamicPhase(1),scz.dynamicPhase(2)+pi/3;...
+                    scz.dynamicPhase(1)-pi/4,scz.dynamicPhase(2)-pi/4;...
+                    scz.dynamicPhase(1)+pi/4,scz.dynamicPhase(2)-pi/4];
             tolX = [pi,pi]/1e3;
             tolY = [5e-4];
             
@@ -611,7 +615,7 @@ classdef gateOptimizer < qes.measurement.measurement
         end
         
         % function czOptPhaseAmp(qubits,numGates, rAvg, maxFEval)
-        function czOptPhaseAmp(qubits,numGates, numReps,rAvg, maxFEval)
+        function czOptPhaseAmp(qubits,numGates, numShots,rAvg, maxFEval)
             if nargin < 5
                 maxFEval = 100;
             end
@@ -637,8 +641,8 @@ classdef gateOptimizer < qes.measurement.measurement
 			end
 			qubits{1}.aczSettings = aczSettings;
 			
-			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numReps);
-            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
+			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,numShots);
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numShots);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
 			phase2 = qes.expParam(aczSettings,'dynamicPhase(2)');
@@ -715,7 +719,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			qubits{1}.aczSettings = aczSettings;
 			
 			% R = sqc.measure.randBenchMarking4Opt(qubits,numGates,10);
-            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numReps);
+            R = sqc.measure.randBenchMarkingFS(qubits,numGates,numShots);
 			
 			phase1 = qes.expParam(aczSettings,'dynamicPhase(1)');
 			phase1.offset = aczSettings.dynamicPhase(1);

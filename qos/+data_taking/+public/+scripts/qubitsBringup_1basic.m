@@ -46,11 +46,12 @@ s21_zdc_networkAnalyzer('qubit',qNames{qubitIndex},...% 'NAName' can be ommitted
       'gui',true,'save',true);
 end
 %% s21 with DAC, a coarse scan to find all the qubit readoutFreqs
-% amp = logspace(log10(1000),log10(32768),20);
-amp = 3.8e3;
-freq = 6.88128e9-02e6:0.1e6:6.88128e9+2e6;
-s21_rAmp('qubit','q8','freq',freq,'amp',amp,...
-      'notes','q7,q8,q9 joint readout','gui',true,'save',true);
+amp = logspace(log10(1000),log10(32768),20);
+q = 'q5';
+fr0 = getQSettings('r_fr',q);
+freq = fr0-02e6:0.1e6:fr0+2e6;
+s21_rAmp('qubit',q,'freq',freq,'amp',amp,...
+      'notes','','gui',true,'save',true);
 %% finds all qubit readoutFreqs automatically by fine s21 scan, session/public/autoConfig.readoutResonators.* has to be properly set for it to work
 [readoutFreqs, pkWithd] = auto.qubitreadoutFreqs();
 % after this you need to order readoutFreqs in accordance with qNames

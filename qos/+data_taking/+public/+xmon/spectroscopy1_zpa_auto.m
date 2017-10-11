@@ -35,6 +35,8 @@ if ~isempty(args.r_avg)
     q.r_avg=args.r_avg;
 end
 
+II = 0;
+
 function [f_,f_fit] = sweepFreq(ind,biasselected,f0list)
     if ind==1
         f_center=args.swpInitf01;
@@ -48,7 +50,11 @@ function [f_,f_fit] = sweepFreq(ind,biasselected,f0list)
         f_fit=polyfit(biasselected,f0list,2);
         f_center=polyval(f_fit,bias0(inx(ind)))*1e9;
     end
-    f_=floor((f_center-args.swpBandWdth/2:args.swpBandStep:f_center+args.swpBandWdth/2)/args.swpBandStep)*args.swpBandStep;
+    if II <= 9
+        f_=floor((f_center-2*args.swpBandWdth/2:args.swpBandStep:f_center+2*args.swpBandWdth/2)/args.swpBandStep)*args.swpBandStep;
+    else
+        f_=floor((f_center-args.swpBandWdth/2:args.swpBandStep:f_center+args.swpBandWdth/2)/args.swpBandStep)*args.swpBandStep;
+    end
 end
 
 bias0=args.biasAmp;
@@ -62,6 +68,22 @@ Frequency=f_;
 Bias=args.biasAmp;
 f0list=zeros(1,length(inx));
 biasselected=[];
+
+if args.gui
+    hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name),true);
+    ax = axes('parent',hf);
+end
+
+QS = qes.qSettings.GetInstance();
+
+timeStamp = datestr(now,'yymmddTHHMMSS');
+dataSvName = fullfile(QS.loadSSettings('data_path'),...
+    [args.qubit, '_specAuto_',timeStamp,...
+    num2str(ceil(99*rand(1,1)),'%0.0f'),'_.mat']);
+
+figSvName = fullfile(QS.loadSSettings('data_path'),...
+    [args.qubit, '_specAuto_',timeStamp,...
+    num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
 
 for II=1:length(inx)
     [f,f_fit] = sweepFreq(II,biasselected,f0list);
@@ -89,14 +111,18 @@ for II=1:length(inx)
     else
         biasselected=[bias0(inx(II)) biasselected];
     end
+    save(dataSvName,'Bias','Frequency','P','f_fit');
     if args.gui
-        h=figure(15);
-        hf=imagesc(Bias,Frequency/1e9,P);
-        xlabel([q.name ' zpa amplitude'])
-        ylabel('Frequency (GHz)')
-        set(h.Children,'Ydir','normal');
+        if ~isgraphics(ax)
+            hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name),true);
+            ax = axes('parent',hf);
+        end
+        imagesc(Bias,Frequency/1e9,P,'Parent',ax);
+        xlabel(ax,[q.name ' zpa amplitude'])
+        ylabel(ax,'Frequency (GHz)')
+        set(ax,'Ydir','normal');
         fitval=polyval(f_fit,bias0(inx(II+1:end)));
-        hold on;plot(bias0(inx(II+1:end)),fitval,'.r','LineWidth',2);hold off
+        hold(ax,'on');plot(ax, bias0(inx(II+1:end)),fitval,'.r','LineWidth',2);hold(ax,'off');
         drawnow;
     end
 end
@@ -115,7 +141,7 @@ end
 % end
 
 param=polyfit(biasselected,f0list*1e9,2);
-title(h.Children,['q.name Param: ' num2str(param,'%.5e ') ])
+title(ax,[q.name ' Param: ' num2str(param,'%.5e ') ])
 
 QS = qes.qSettings.GetInstance();
 if ischar(args.save)
@@ -128,10 +154,9 @@ elseif args.save
     QS.saveSSettings({q.name,'zpls_amp2f01'},param);
 end
 
-dataSvName = fullfile(QS.loadSSettings('data_path'),...
-    [args.qubit '_spect_auto_',datestr(now,'yymmddTHHMMSS'),...
-    num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
-saveas(h,dataSvName);
+if args.gui && isgraphics(ax)
+    saveas(ax,figSvName);
+end
 
 varargout{1}=param;
 
