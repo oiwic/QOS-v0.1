@@ -2,9 +2,9 @@
 % Yulin Wu, 2017/3/11
 %%
 setQSettings('r_avg',800);
-q = 'q6';
+q = 'q7';
 f01 = getQSettings('f01',q);
-freq = f01-15e6:0.2e6:f01+15e6;
+freq = f01-5e6:0.2e6:f01+5e6;
 spectroscopy1_zpa('qubit',q,'biasAmp',[0],'driveFreq',[freq],...
        'dataTyp','P','gui',true,'save',true);  % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode
@@ -14,19 +14,20 @@ spectroscopy1_power('qubit','q7',...
        'uSrcPower',[5:1:20],...
        'dataTyp','P','gui',true,'save',true); % dataTyp: S21 or P
 %%
+biasQ = 'q4';
+targetQ = 'q8';
 setQSettings('r_avg',800);
-f01 = getQSettings('f01','q6');
-freq = f01-10e6:0.3e6:f01+10e6;
-spectroscopy111_zpa('biasQubit','q4','biasAmp',[-15000:5000:15000],...
-       'driveQubit','q6','driveFreq',[freq],...
-       'readoutQubit','q6','dataTyp','P',...
-       'notes','q4->q6 zpls cross talk','gui',true,'save',true);
+f01 = getQSettings('f01',targetQ);
+freq = f01-10e6:0.6e6:f01+10e6;
+spectroscopy111_zpa('biasQubit',biasQ,'biasAmp',[-30000:10000:30000],... % [-20000:6000:20000]
+       'driveQubit',targetQ,'driveFreq',[freq],...
+       'readoutQubit',targetQ,'dataTyp','P',...
+       'notes',[biasQ,'->',targetQ,' zpls cross talk'],'gui',true,'save',true);
 %%
 setQSettings('r_avg',500);
-q = 'q4';
-% f01 = getQSettings('f01',q);
-% freq = f01-120e6:0.5e6:f01-10e6;
-freq = 4.1e9:0.5e6:4.4e9;
+q = 'q5';
+f01 = getQSettings('f01',q);
+freq = f01-30e6:0.5e6:f01+30e6;
 spectroscopy1_zdc('qubit',q,'biasAmp',[-19000:1000:-13000],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 %%
@@ -41,7 +42,7 @@ temp.spectroscopy_zpa_withPi_driveDelay('qubit','q6','biasAmp',2.4287e+04,...
       'driveDelay',[-200:100:600],'zLength',200,...
       'notes','','gui',true,'save',true);
 %%
-setQSettings('r_avg',500,'q9');
+setQSettings('r_avg',500);
 % pf01 = [-0.55133,188.64,5.175e9];
 % q9zAmp2f01 = @(x) polyval(pf01,x);
 pf01 = [-0.46619,0.35418,5.2286e9];
@@ -57,8 +58,10 @@ spectroscopy1_zpa_bndSwp('qubit',q,...
 %        'biasAmp',[6000:50:9750],'driveFreq',[5.56e9:0.2e6:5.77e9],...
 %        'gui',false,'save',true);
 %%
-spectroscopy1_zpa_auto('qubit','q6','biasAmp',-3e4:500:3e4,...
-    'swpBandWdth',40e6,'swpBandStep',1e6,...
+setQSettings('r_avg',800);
+spectroscopy1_zpa_auto('qubit','q6','biasAmp',-2e4:400:0.5e4,...
+    'swpInitf01',4.29993e9,'swpInitBias',0,...
+    'swpBandWdth',40e6,'swpBandStep',0.5e6,...
     'r_avg',500,'gui',true);
 
 

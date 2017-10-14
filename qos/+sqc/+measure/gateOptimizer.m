@@ -1,5 +1,5 @@
 classdef gateOptimizer < qes.measurement.measurement
-	% do gate optimization
+	% gate optimization
     
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
@@ -39,13 +39,34 @@ classdef gateOptimizer < qes.measurement.measurement
 			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp,alpha],R);
-                x0 = [0,0,0,0];
-                fval0 = f(x0);
-				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					x0,...
-					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05,-0.25],...
-					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05,0.25],...
-					opts);
+                
+                
+                x0 = [-1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,0.25;...
+                    -1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,0.75;...
+                    -1e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75;...
+                    -1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75;...
+                    1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75];
+                tolX = [1e4,qubit.g_XY2_amp/1e4,qubit.g_XY_amp/1e4, 0.005];
+                tolY = [5e-4];
+
+                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+                axs(1) = subplot(4,1,4,'Parent',h);
+                axs(2) = subplot(4,1,3);
+                axs(3) = subplot(4,1,2);
+                axs(4) = subplot(4,1,1);
+                [optParams, x_trace, y_trace, n_feval] = qes.util.NelderMead(f.fcn, x0, tolX, tolY, maxFEval, axs);
+                fval = y_trace(end);
+                fval0 = y_trace(1);
+                
+%                 x0 = [0,0,0,0];
+%                 fval0 = f(x0);
+% 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+% 					x0,...
+% 					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05,-0.25],...
+% 					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05,0.25],...
+% 					opts);
+
+                
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
@@ -55,13 +76,30 @@ classdef gateOptimizer < qes.measurement.measurement
                 QS.saveSSettings({qubit.name,'qr_xy_dragAlpha'},qubit.qr_xy_dragAlpha+optParams(4));
 			elseif strcmp(qubit.g_XY_typ,'hPi')
 				f = qes.expFcn([detune,XY2_amp,alpha],R);
-                x0 = [0,0,0];
-                fval0 = f(x0);
-				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					x0,...
-					[-2e6,-qubit.g_XY2_amp*0.05,-0.25],...
-					[2e6,qubit.g_XY2_amp*0.05,0.25],...
-					opts);
+                
+                x0 = [-1e6,-0.05*qubit.g_XY2_amp,0.25;...
+                    -1e6,-0.05*qubit.g_XY2_amp,0.75;...
+                    -1e6,0.05*qubit.g_XY2_amp,0.75;...
+                    1e6,0.05*qubit.g_XY2_amp,0.75];
+                tolX = [1e4,qubit.g_XY2_amp/1e4, 0.005];
+                tolY = [5e-4];
+
+                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+                axs(1) = subplot(4,1,4,'Parent',h);
+                axs(2) = subplot(4,1,3);
+                axs(3) = subplot(4,1,2);
+                axs(4) = subplot(4,1,1);
+                [optParams, x_trace, y_trace, n_feval] = qes.util.NelderMead(f.fcn, x0, tolX, tolY, maxFEval, axs);
+                fval = y_trace(end);
+                fval0 = y_trace(1);
+                
+%                 x0 = [0,0,0];
+%                 fval0 = f(x0);
+% 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+% 					x0,...
+% 					[-2e6,-qubit.g_XY2_amp*0.05,-0.25],...
+% 					[2e6,qubit.g_XY2_amp*0.05,0.25],...
+% 					opts);
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
@@ -114,13 +152,30 @@ classdef gateOptimizer < qes.measurement.measurement
 			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp],R);
-                x0 = [0,0,0];
-                fval0 = f(x0);
-				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					x0,...
-					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05],...
-					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05],...
-					opts);
+                
+                x0 = [-1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp;...
+                    -1e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
+                    -1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
+                    1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp];
+                tolX = [1e4,qubit.g_XY2_amp/1e4, qubit.g_XY_amp/1e4];
+                tolY = [5e-4];
+
+                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+                axs(1) = subplot(4,1,4,'Parent',h);
+                axs(2) = subplot(4,1,3);
+                axs(3) = subplot(4,1,2);
+                axs(4) = subplot(4,1,1);
+                [optParams, x_trace, y_trace, n_feval] = qes.util.NelderMead(f.fcn, x0, tolX, tolY, maxFEval, axs);
+                fval = y_trace(end);
+                fval0 = y_trace(1);
+                
+%                 x0 = [0,0,0];
+%                 fval0 = f(x0);
+% 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+% 					x0,...
+% 					[-2e6,-qubit.g_XY2_amp*0.05,-qubit.g_XY_amp*0.05],...
+% 					[2e6,qubit.g_XY2_amp*0.05,qubit.g_XY_amp*0.05],...
+% 					opts);
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
@@ -129,13 +184,29 @@ classdef gateOptimizer < qes.measurement.measurement
                 QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
 			elseif strcmp(qubit.g_XY_typ,'hPi')
 				f = qes.expFcn([detune,XY2_amp,alpha],R);
-                x0 = [0,0];
-                fval0 = f(x0);
-				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					x0,...
-					[-2e6,-qubit.g_XY2_amp*0.05],...
-					[2e6,qubit.g_XY2_amp*0.05],...
-					opts);
+                
+                x0 = [-1e6,-0.05*qubit.g_XY2_amp;...
+                    -1e6,0.05*qubit.g_XY2_amp;...
+                    1e6,0.05*qubit.g_XY2_amp];
+                tolX = [1e4,qubit.g_XY2_amp/1e4];
+                tolY = [5e-4];
+
+                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+                axs(1) = subplot(4,1,4,'Parent',h);
+                axs(2) = subplot(4,1,3);
+                axs(3) = subplot(4,1,2);
+                axs(4) = subplot(4,1,1);
+                [optParams, x_trace, y_trace, n_feval] = qes.util.NelderMead(f.fcn, x0, tolX, tolY, maxFEval, axs);
+                fval = y_trace(end);
+                fval0 = y_trace(1);
+                
+%                 x0 = [0,0];
+%                 fval0 = f(x0);
+% 				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+% 					x0,...
+% 					[-2e6,-qubit.g_XY2_amp*0.05],...
+% 					[2e6,qubit.g_XY2_amp*0.05],...
+% 					opts);
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
@@ -228,21 +299,39 @@ classdef gateOptimizer < qes.measurement.measurement
 			p_td = qes.expParam(td,'val');
             p_td.callbacks = {@(x)setXfrFunc()};
 			p_td.offset = td.val;
-			
-		
-			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
-			
-				f = qes.expFcn([Z_amp,p_rAmp,p_td],R);
-                x0 = [0,0,0];
-                fval0 = f(x0);
-				[optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
-					x0,...
-					[-qubit.g_Z_z_amp*0.05,-0.03,100],...
-					[qubit.g_Z_z_amp*0.05,0.03,1500],...
-					opts);
-                if fval > fval0
-                    error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
-                end
+
+            
+            f = qes.expFcn([Z_amp,p_rAmp,p_td],R);
+            
+            
+            x0 = [-1e6,-0.05*qubit.g_XY2_amp;...
+                    -1e6,0.05*qubit.g_XY2_amp;...
+                    1e6,0.05*qubit.g_XY2_amp];
+            tolX = [1e4,qubit.g_XY2_amp/1e4];
+            tolY = [5e-4];
+
+            h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+            axs(1) = subplot(4,1,4,'Parent',h);
+            axs(2) = subplot(4,1,3);
+            axs(3) = subplot(4,1,2);
+            axs(4) = subplot(4,1,1);
+            [optParams, x_trace, y_trace, n_feval] = qes.util.NelderMead(f.fcn, x0, tolX, tolY, maxFEval, axs);
+            fval = y_trace(end);
+            fval0 = y_trace(1);
+            
+%             x0 = [0,0,0];
+%             fval0 = f(x0);
+%             opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
+%             [optParams,fval,exitflag,output] = qes.util.fminsearchbnd(f.fcn,...
+%                 x0,...
+%                 [-qubit.g_Z_z_amp*0.05,-0.03,100],...
+%                 [qubit.g_Z_z_amp*0.05,0.03,1500],...
+%                 opts);
+                
+                
+            if fval > fval0
+                error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
+            end
                 
 			dataPath = QS.loadSSettings('data_path');
 			TimeStamp = datestr(now,'_yymmddTHHMMSS_');

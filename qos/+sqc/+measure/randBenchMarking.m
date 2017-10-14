@@ -96,8 +96,9 @@ classdef randBenchMarking < qes.measurement.measurement
                 case 'iSwap' 
                     throw(MException('QOS_randBenchMarking:notImplemeted',...
 						'Not implemented error'));
-                otherwise
-                    error('Process not one of NULL, I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap.');
+                otherwise % other cases are assumed to be I, X2p*X2m, CZ*CZ for example
+                    obj.processIdx = 1;
+                   % error('Process not one of NULL, I, X, Y, X2p, X2m, Y2p, Y2m, CZ, CNOT, iCNOT, iSwap.');
             end
             
             obj.R = sqc.measure.resonatorReadout_ss(obj.qubits);

@@ -50,7 +50,7 @@ function [f_,f_fit] = sweepFreq(ind,biasselected,f0list)
         f_fit=polyfit(biasselected,f0list,2);
         f_center=polyval(f_fit,bias0(inx(ind)))*1e9;
     end
-    if II <= 9
+    if II <= 5
         f_=floor((f_center-2*args.swpBandWdth/2:args.swpBandStep:f_center+2*args.swpBandWdth/2)/args.swpBandStep)*args.swpBandStep;
     else
         f_=floor((f_center-args.swpBandWdth/2:args.swpBandStep:f_center+args.swpBandWdth/2)/args.swpBandStep)*args.swpBandStep;
@@ -70,7 +70,7 @@ f0list=zeros(1,length(inx));
 biasselected=[];
 
 if args.gui
-    hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name),true);
+    hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name));
     ax = axes('parent',hf);
 end
 
@@ -114,7 +114,7 @@ for II=1:length(inx)
     save(dataSvName,'Bias','Frequency','P','f_fit');
     if args.gui
         if ~isgraphics(ax)
-            hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name),true);
+            hf = qes.ui.qosFigure(sprintf('Spectroscopy | %s', q.name));
             ax = axes('parent',hf);
         end
         imagesc(Bias,Frequency/1e9,P,'Parent',ax);

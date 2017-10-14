@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q1';
+q = 'q7';
 
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
@@ -11,11 +11,11 @@ tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X','AE',true,'gui',true,'save','askMe');
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 %% fully auto callibration
-qubits = {'q5','q6'};%'q9','q7',,'q8'
+qubits = {'q7','q6'};%'q9','q7',,'q8'
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000); 
-    tuneup.iq2prob_01('qubit',q,'numSamples',2e4,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
     tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
     XYGate ={'X/2'};
     for jj = 1:numel(XYGate)
@@ -58,11 +58,11 @@ zPulseRipple('qubit','q8',...
     s.bandWidht = 0.25;
 %     s.r = [0.0130]; % q8
 %     s.td = [464]; % q8
-    s.r = [0.0130]; % q6
-    s.td = [260];  % q6
+%     s.r = [0.0130]; % q6
+%     s.td = [260];  % q6
     
-%     s.r = [0.0130]; % q5
-%     s.td = [458];  % q5
+    s.r = [0.0130]; % q5
+    s.td = [458];  % q5
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
     xfrFunc_inv = xfrFunc.inv();
@@ -76,7 +76,7 @@ zPulseRipple('qubit','q8',...
 %     fsamples = xfrFunc_f.eval(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-b');
 
-q = 'q6';
+q = 'q5';
 
 delayTime = [0:20:1.5e3];
 setQSettings('r_avg',5000);

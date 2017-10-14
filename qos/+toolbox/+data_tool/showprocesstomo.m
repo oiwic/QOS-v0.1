@@ -157,6 +157,7 @@ function bttnautocallback(hObject, eventdata, handles)
     set(hsldtheta1,'Value',theta1*180/pi);
     set(hsldtheta2,'Value',theta2*180/pi);
     showdata();
+    disp(['"dynamicPhase":     [' num2str(-theta1,'%.5f') ', ' num2str(-theta2,'%.5f') ']'])
 end
 end
 
@@ -275,9 +276,9 @@ function [theta1,theta2] = thetafit(pexp,pid)
         y = sum(D(:));
     end
     
-    theta = qes.util.fminsearchbnd(@(theta)fitFunc(pexp,pid,theta),[0,0],[-pi,-pi],[pi,pi]);
-    theta1 = theta(1);
-    theta2 = theta(2);
+    theta = qes.util.fminsearchbnd(@(theta)fitFunc(pexp,pid,theta),[0,0],[-2*pi,-2*pi],[2*pi,2*pi]);
+    theta1 = mod(theta(1)+pi,2*pi)-pi;
+    theta2 = mod(theta(2)+pi,2*pi)-pi;
 end
 
 function [pr] = rotatep(p,theta1,theta2)

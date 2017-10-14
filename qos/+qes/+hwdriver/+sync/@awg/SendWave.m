@@ -56,7 +56,7 @@ function SendWave(obj,chnl,DASequence,isI)
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:
             % SendWave(...); setChnlOutputDelay(...,100);
-            % Run(...); % oops, delay not 100*4 ns
+            % Run(...); % delay not 100*4 ns
             % SendWave(...); setChnlOutputDelay(...,200);
             % Run(..); % now delay is 100*4 ns, not 200*4 ns,
             % 200*4 ns will be the delay amount of next Run.

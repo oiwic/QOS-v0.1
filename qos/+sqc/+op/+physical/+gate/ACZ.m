@@ -76,6 +76,9 @@ classdef ACZ < sqc.op.physical.operator
 %                 obj.detuneQubits{ii} = sqc.util.qName2Obj(scz.detuneQubits{ii});
 %             end
             obj.detuneFreq = scz.detuneFreq;
+            if isempty(scz.detuneLonger)
+                scz.detuneLonger = 0;
+            end
             obj.detuneLonger = scz.detuneLonger;
             
             obj.aczLn = scz.aczLn; % must be after the setting of meetUpLonger, padLn and detuneLonger
