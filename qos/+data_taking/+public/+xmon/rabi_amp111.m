@@ -86,7 +86,7 @@ function procFactory(amp_)
     g.amp = amp_;
     XY = g^m;
     Z.ln = XY.length + 2*args.biasLonger;
-    proc = Z.*(XY*I);
+    proc = Z.*(I*XY);
     R.delay = proc.length;
     proc.Run();
 end
