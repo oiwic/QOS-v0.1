@@ -43,9 +43,12 @@ function varargout = jpaBringupADDA(varargin)
     virtualQubit.r_jpa = jpa.name;
     virtualQubit.r_avg = args.rAvg;
     virtualQubit.r_ln = args.signalLn;
+    virtualQubit.r_wvSettings = struct('edgeWidth',10,  'ring_w',6, 'ring_amp',0);
     virtualQubit.r_iq2prob_center0 = 0;
     virtualQubit.r_iq2prob_center1 = 1;
     virtualQubit.r_iq2prob_center2 = 2;
+    virtualQubit.r_iq2prob_intrinsic = true;
+    virtualQubit.r_iq2prob_fidelity = [1,1];
     virtualQubit.r_truncatePts = [0,0];
     
     s = qes.sweep.empty();

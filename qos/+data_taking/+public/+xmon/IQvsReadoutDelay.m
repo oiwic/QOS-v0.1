@@ -46,16 +46,18 @@ function varargout = IQvsReadoutDelay(varargin)
     e.measurements = R;
     e.showctrlpanel = false;
     e.plotdata = false;
-    e.savedata = false;
+    e.savedata = true;
+    e.datafileprefix = sprintf('IQvsDelay_%s', q.name);
     e.Run();
     e.data{1} = cell2mat(e.data{1});
-    e.datafileprefix = sprintf('IQvsDelay_%s', q.name);
+    
     if args.gui
         ax = axes('Parent',figure('NumberTitle','off','Name','QOS |IQ vs Readout delay '));
         plot(ax, e.data{1}(:,1),'.b');
         hold(ax,'on');
         plot(ax, e.data{1}(:,2),'.r');
         legend(ax,{'|0>', '|1>'});
+        drawnow;
     end
     e.notes = args.notes;
     e.addSettings({'fcn','args'},{fcn_name,args});

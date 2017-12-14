@@ -31,6 +31,7 @@ function varargout = ramsey_dp(varargin)
     X2 = op.XY2(q,pi/2+args.phaseOffset);
     X2_ = op.XY2(q,-pi/2);
     I = gate.I(q);
+    Z = op.Z_arbPhase(q,args.phaseOffset);
 
     isPhase = false;
     switch args.dataTyp
@@ -58,14 +59,14 @@ function varargout = ramsey_dp(varargin)
 
     function procFactory(delay)
         I.ln = delay;
-        phaseOffset = -2*pi*detuning.val*delay/daSamplingRate+args.phaseOffset;
+        phase = 2*pi*detuning.val*delay/daSamplingRate+args.phaseOffset;
         if isPhase
-            proc = X2_*I;
-            R.xyGatePhaseOffset = phaseOffset;
+            Z.phase = phase;
+            proc = X2_*I*Z;
             R.setProcess(proc);
         else
             proc = X2_*I*X2;
-            X2.phi = phaseOffset;
+            X2.phi = -phase;
             proc.Run();
             R.delay = proc.length;
         end

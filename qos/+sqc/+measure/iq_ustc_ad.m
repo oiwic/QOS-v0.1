@@ -196,7 +196,7 @@ classdef iq_ustc_ad < qes.measurement.iq
             t_ = 1:obj.adI.recordLength;
             obj.kernel = cell(1,numFreqs);
             for ii = 1:numFreqs
-                % typically, one needs to remove a few data points at the
+                % in most cases one needs to remove a few data points at the
                 % beginning or at the end of each segament due to trigger
                 % and signal may not be exactly syncronized.
                 if obj.startidx(ii) > 1 ||...

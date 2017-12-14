@@ -12,9 +12,10 @@ classdef phase < sqc.measure.phaseTomography
         end
         function Run(obj)
             Run@sqc.measure.phaseTomography(obj);
-            obj.data = 1 - 2*obj.data;
-            % obj.data = obj.data*[1;-1];
-            obj.data  = angle(obj.data(1,2)+1j*obj.data(2,2));
+            % by define |0>-|1>, |0>-1j|1> and |0>, as x, y and z zero
+            % phase point
+            obj.data = 1 - 2*obj.data(:,2);  % 1-2*P|1> or 2*P|0> - 1
+            obj.data  = angle(obj.data(1)+1j*obj.data(2));
         end
     end
 end

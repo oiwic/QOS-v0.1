@@ -158,13 +158,11 @@ function varargout = xyGateAmpTuner(varargin)
 		xlabel(ax,'xy drive amplitude');
 		ylabel(ax,'P|1>');
         if args.AE
-            legend(ax,{'data(1\pi)',...
+            legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],...
                 [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
                 sprintf('%s gate amplitude',args.gateTyp)});
-            title('Precision: ~0.5%');
         else
-            legend(ax,{'data(1\pi)',sprintf('%s gate amplitude',args.gateTyp)});
-            title('Precision: ~2%');
+            legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
         end
         set(ax,'YLim',ylim);
         drawnow;

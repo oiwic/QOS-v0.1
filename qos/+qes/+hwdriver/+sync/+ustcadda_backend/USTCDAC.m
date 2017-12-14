@@ -137,9 +137,10 @@ classdef USTCDAC < handle
                 else
                     isDACReady = 0;
                     obj.InitBoard();
-                    try_count =  try_count - 1;
+                    
                     pause(0.1);
                 end
+                try_count =  try_count - 1;
             end
             
             if(isDACReady == 0)

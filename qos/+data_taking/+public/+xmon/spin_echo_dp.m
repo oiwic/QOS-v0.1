@@ -35,8 +35,8 @@ function varargout = spin_echo_dp(varargin)
 	daSamplingRate = daChnl.samplingRate;
 
     X = gate.X(q);
-    X2 = op.XY2(q,pi/2);
-    X2_ = op.XY2(q,-pi/2);
+    X2 = op.XY2(q,-pi/2);
+    X2_ = op.XY2(q,pi/2);
     I = gate.I(q);
     R = measure.resonatorReadout_ss(q);
 	detuning = util.hvar(0);

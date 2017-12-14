@@ -1,5 +1,5 @@
 function varargout = czAmplitude(varargin)
-% <_o_> = czRBFidelityVsPhase('controlQ',_c&o_,'targetQ',_c&o_,...
+% <_o_> = czAmplitude('controlQ',_c&o_,'targetQ',_c&o_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -26,7 +26,7 @@ function varargout = czAmplitude(varargin)
     QS = qes.qSettings.GetInstance();
     scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
     
-    czAmp= scz.amp*linspace(0.95,1.05,60);
+    czAmp= round(scz.amp*linspace(0.97,1.03,25));
     acz1= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
        'dataTyp','Phase',...
        'czLength',scz.aczLn,'czAmp',czAmp,'cState','1',...
@@ -47,15 +47,29 @@ function varargout = czAmplitude(varargin)
     fdp_ = fdp;
     fdp_(3)=fdp_(3)-1;
     rd=roots(fdp_);
-    czamp=rd(find(rd>czAmp(1)&rd<czAmp(end)));
+    ampBnd = minmax([czAmp(1),czAmp(end)]);
+    czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
     if isempty(czamp)
         fdp_ = fdp;
         fdp_(3)=fdp_(3)+1;
         rd=roots(fdp_);
-        czamp=rd(find(rd>czAmp(1)&rd<czAmp(end)));
+        rd = rd(isreal(rd));
+        czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
     end
     
     if isempty(czamp)
+        
+        if args.gui
+            hf = qes.ui.qosFigure(sprintf('ACZ amplitude | %s,%s', qc.name, qt.name),true);
+            ax = axes('parent',hf);
+            plot(ax,czAmp,cz0data,'--b',czAmp, cz1data,'--r',...
+                czAmp,dp,'.',czAmp,polyval(fdp,czAmp),'-g',...
+                czAmp,ones(1,length(czAmp)),'--k',czAmp,-ones(1,length(czAmp)),'--k');
+            xlabel(ax,'acz amplitude');
+            ylabel(ax,'phase(\pi)');
+            legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'})
+        end
+        
         error('acz amplitude not found! Probably out of range.');
     end
     

@@ -5,7 +5,7 @@ function varargout = correctf01byRamsey(varargin)
 % note: T2* time can not be too short
 %
 % <_f_> = correctf01byRamsey('qubit',_c&o_,...
-%       'gui',<_b_>,'save',<_b_>)
+%       'robust',<_b_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -18,7 +18,6 @@ function varargout = correctf01byRamsey(varargin)
 % arguments order not important as long as they form correct pairs.
     
     % Yulin Wu, 2017/4/14
-    % resolution low, not recommended, use correctf01bySpc instead
     
     MAXFREQDRIFT = 30e6;
     DELAYTIMERANGE = 500e-9;
@@ -198,7 +197,7 @@ function varargout = correctf01byRamsey(varargin)
     end
 	if args.save
         QS = qes.qSettings.GetInstance();
-        QS.saveSSettings({q.name,'f01'},f01);
+        QS.saveSSettings({q.name,'f01'},num2str(f01,'%0.6e'));
         if ~isempty(hf) && isvalid(hf)
             dataSvName = fullfile(QS.loadSSettings('data_path'),...
                 ['corrF01_',q.name,'_',datestr(now,'yymmddTHHMMSS'),...

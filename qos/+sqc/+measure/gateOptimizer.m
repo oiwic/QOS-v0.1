@@ -9,6 +9,7 @@ classdef gateOptimizer < qes.measurement.measurement
             if nargin < 5
                 maxIter = 20;
             end
+            maxFEval = maxIter;
 
 			import sqc.op.physical.*
 			if ischar(qubit)
@@ -36,16 +37,15 @@ classdef gateOptimizer < qes.measurement.measurement
             
             QS = qes.qSettings.GetInstance();
 
-			opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
+			% opts = optimset('Display','none','MaxIter',maxIter,'TolX',0.0001,'TolFun',0.01,'PlotFcns',{@optimplotfval});
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp,alpha],R);
-                
-                
-                x0 = [-1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,0.25;...
-                    -1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,0.75;...
-                    -1e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75;...
-                    -1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75;...
-                    1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.75];
+
+                x0 = [0,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,-0.25;...
+                    -0.5e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp,0.25;...
+                    -0.5e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.25;...
+                    -0.5e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.25;...
+                    0.5e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp,0.25];
                 tolX = [1e4,qubit.g_XY2_amp/1e4,qubit.g_XY_amp/1e4, 0.005];
                 tolY = [5e-4];
 
@@ -70,21 +70,21 @@ classdef gateOptimizer < qes.measurement.measurement
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
-                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
-                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
-                QS.saveSSettings({qubit.name,'qr_xy_dragAlpha'},qubit.qr_xy_dragAlpha+optParams(4));
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01);
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp);
+                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp);
+                QS.saveSSettings({qubit.name,'qr_xy_dragAlpha'},qubit.qr_xy_dragAlpha);
 			elseif strcmp(qubit.g_XY_typ,'hPi')
 				f = qes.expFcn([detune,XY2_amp,alpha],R);
                 
-                x0 = [-1e6,-0.05*qubit.g_XY2_amp,0.25;...
-                    -1e6,-0.05*qubit.g_XY2_amp,0.75;...
-                    -1e6,0.05*qubit.g_XY2_amp,0.75;...
-                    1e6,0.05*qubit.g_XY2_amp,0.75];
+                x0 = [0,-0.05*qubit.g_XY2_amp,-0.25;...
+                    -0.5e6,-0.05*qubit.g_XY2_amp,0.25;...
+                    -0.5e6,0.05*qubit.g_XY2_amp,0.25;...
+                    0.5e6,0.05*qubit.g_XY2_amp,0.25];
                 tolX = [1e4,qubit.g_XY2_amp/1e4, 0.005];
                 tolY = [5e-4];
 
-                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubits.name),false);
+                h = qes.ui.qosFigure(sprintf('Gate Optimizer | %s', qubit.name),false);
                 axs(1) = subplot(4,1,4,'Parent',h);
                 axs(2) = subplot(4,1,3);
                 axs(3) = subplot(4,1,2);
@@ -103,9 +103,9 @@ classdef gateOptimizer < qes.measurement.measurement
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
-                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
-                QS.saveSSettings({qubit.name,'qr_xy_dragAlpha'},qubit.qr_xy_dragAlpha+optParams(3));
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01);
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp);
+                QS.saveSSettings({qubit.name,'qr_xy_dragAlpha'},qubit.qr_xy_dragAlpha);
 			else
 				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
 					qubit.g_XY_typ);
@@ -153,10 +153,10 @@ classdef gateOptimizer < qes.measurement.measurement
 			if isempty(qubit.g_XY_typ) || strcmp(qubit.g_XY_typ,'pi')
 				f = qes.expFcn([detune,XY2_amp,XY_amp],R);
                 
-                x0 = [-1e6,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp;...
-                    -1e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
-                    -1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
-                    1e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp];
+                x0 = [0,-0.05*qubit.g_XY2_amp,-0.05*qubit.g_XY_amp;...
+                    -0.5e6,-0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
+                    -0.5e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp;...
+                    0.5e6,0.05*qubit.g_XY2_amp,0.05*qubit.g_XY_amp];
                 tolX = [1e4,qubit.g_XY2_amp/1e4, qubit.g_XY_amp/1e4];
                 tolY = [5e-4];
 
@@ -179,15 +179,15 @@ classdef gateOptimizer < qes.measurement.measurement
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
-                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
-                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp+optParams(3));
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01);
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp);
+                QS.saveSSettings({qubit.name,'g_XY_amp'},qubit.g_XY_amp);
 			elseif strcmp(qubit.g_XY_typ,'hPi')
 				f = qes.expFcn([detune,XY2_amp,alpha],R);
                 
-                x0 = [-1e6,-0.05*qubit.g_XY2_amp;...
-                    -1e6,0.05*qubit.g_XY2_amp;...
-                    1e6,0.05*qubit.g_XY2_amp];
+                x0 = [-0.5e6,-0.05*qubit.g_XY2_amp;...
+                    -0.5e6,0.05*qubit.g_XY2_amp;...
+                    0.5e6,0.05*qubit.g_XY2_amp];
                 tolX = [1e4,qubit.g_XY2_amp/1e4];
                 tolY = [5e-4];
 
@@ -210,8 +210,8 @@ classdef gateOptimizer < qes.measurement.measurement
                 if fval > fval0
                     error('Optimization failed: final fidelity worse than initial fidelity, registry not updated.');
                 end
-                QS.saveSSettings({qubit.name,'f01'},qubit.f01+optParams(1));
-                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp+optParams(2));
+                QS.saveSSettings({qubit.name,'f01'},qubit.f01);
+                QS.saveSSettings({qubit.name,'g_XY2_amp'},qubit.g_XY2_amp);
 			else
 				error('unrecognized X gate type: %s, available x gate options are: pi and hPi',...
 					qubit.g_XY_typ);
@@ -638,7 +638,7 @@ classdef gateOptimizer < qes.measurement.measurement
 			aczSettingsKey = sprintf('%s_%s',qubits{1}.name,qubits{2}.name);
 			QS = qes.qSettings.GetInstance();
 			scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
-			aczSettings = sqc.qobj.aczSettings();
+			aczSettings = sqc.qobj.aczSettings(aczSettingsKey);
 			fn = fieldnames(scz);
 			for ii = 1:numel(fn)
 				aczSettings.(fn{ii}) = scz.(fn{ii});
@@ -667,9 +667,10 @@ classdef gateOptimizer < qes.measurement.measurement
 %             x0 = [-pi,-pi;...
 %                     -pi,pi;...
 %                     0,pi]/3;
-            x0 = [scz.dynamicPhase(1),scz.dynamicPhase(2)+pi/3;...
-                    scz.dynamicPhase(1)-pi/4,scz.dynamicPhase(2)-pi/4;...
-                    scz.dynamicPhase(1)+pi/4,scz.dynamicPhase(2)-pi/4];
+
+            x0 = [scz.dynamicPhase(1),scz.dynamicPhase(2)-pi/4;...
+                    scz.dynamicPhase(1)-pi/4,scz.dynamicPhase(2)+pi/4;...
+                    scz.dynamicPhase(1)+pi/4,scz.dynamicPhase(2)+pi/4];
             tolX = [pi,pi]/1e3;
             tolY = [5e-4];
             

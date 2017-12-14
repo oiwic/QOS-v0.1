@@ -2,7 +2,7 @@ function rho = stateTomoData2Rho(data,phaseCorrection)
 % data: 3^n by 2^n
 % row: {'Y2p','X2m','I'} => {'sigma_x','sigma_y','sigma_z'}(abbr.: {X,Y,Z})
 %       1Q: {X}, {Y} ,{Z}
-%       2Q: {q2:X q1:X}, {q2:X q1:Y}, {q2:X q1:I},... ,{q2:Z q1:Z}
+%       2Q: {q2:X q1:X}, {q2:X q1:Y}, {q2:X q1:Z},... ,{q2:Z q1:Z}
 %       X（Y）指把X（Y）翻转到Z轴，实际操作的矩阵是Y（X）
 % colomn: P|00>,|01>,|10>,|11>
 % qubit labeled as: |qubits{2},qubits{1}>

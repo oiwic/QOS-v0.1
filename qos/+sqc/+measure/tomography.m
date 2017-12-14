@@ -16,7 +16,6 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
         delay = 8; % idle length before measurement operations, non negative integers
 		showProgress@logical scalar = true; % print measurement progress to command window or not
 		progInfoPrefix = ''
-        xyGatePhaseOffset; % introduced to shift xy gate phase in single qubit phase tomo
 	end
 	properties (SetAccess = private)
 		qubits
@@ -40,7 +39,6 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 				end
             end
             obj = obj@qes.measurement.measurement([]);
-            obj.xyGatePhaseOffset = zeros(1,numTomoQs);
 			obj.qubits = qubits;
 			obj.readoutGates = cell(1,numTomoQs);
             obj.numReadouts = numel(readoutGates);
@@ -84,18 +82,8 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 %                 end
                 
                 
-                for uu = 1:numTomoQs
-                    if isa(rGates{uu},'sqc.op.physical.gate.XY_base')
-                        rGates{uu}.phaseOffset = obj.xyGatePhaseOffset(uu);
-                    end
-                end
 
 				P = rGates{1};
-                
-%                 if idx == 7
-%                     kkk = 1;
-%                 end
-                
 				for ii = 2:numTomoQs
 					P = P.*rGates{ii};
                 end

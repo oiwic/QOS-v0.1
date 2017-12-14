@@ -1,8 +1,5 @@
-function varargout = zPulseRipplePhase_beta(varargin)
-% zPulseRipple: ramsey oscillation,..
-% detune by changing the second pi/2 pulse tracking frame
-% 
-% <_o_> = zPulseRipplePhase_beta('qubit',_c&o_,'time',[_i_],...
+function varargout = zPulseRipplePhase(varargin)
+% <_o_> = zPulseRipplePhase('qubit',_c&o_,'time',[_i_],...
 %       'xfrFunc',[_o_],'zAmp',3e3,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
@@ -45,7 +42,7 @@ function varargout = zPulseRipplePhase_beta(varargin)
     Z_LENGTH = 10000;
 
 	if nargin > 1  % otherwise playback
-		fcn_name = 'data_taking.public.xmon.zPulseRipple'; % this and args will be saved with data
+		fcn_name = 'data_taking.public.xmon.zPulseRipplePhase'; % this and args will be saved with data
 		args = util.processArgs(varargin,{'xfrFunc',[],'gui',false,'notes','','detuning',0,'save',true});
 	end
     q = data_taking.public.util.getQubits(args,{'qubit'});
@@ -101,6 +98,10 @@ function varargout = zPulseRipplePhase_beta(varargin)
         data_phase(2,ii) = R();
         
         if args.gui && ishghandle(ax)
+            plot(ax,args.delayTime,unwrap(data_phase(1,:))-unwrap(data_phase(2,:)),'-b');
+            xlabel(ax,'delay time(DA sampling interval)');
+            ylabel(ax,'\theta(rad)');
+            legend({'phase difference'});
             plot(ax,args.delayTime,unwrap(data_phase(2,:)),'--b',...
                 args.delayTime,unwrap(data_phase(1,:)),'--r',...
                 args.delayTime,unwrap(data_phase(1,:))-unwrap(data_phase(2,:)),'-k');

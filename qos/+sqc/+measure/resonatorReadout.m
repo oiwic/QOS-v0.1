@@ -49,14 +49,6 @@ classdef resonatorReadout < qes.measurement.prob
     end
     methods
         function obj = resonatorReadout(qubits)
-            QS = qes.qSettings.GetInstance();
-            allReadoutQubits = QS.loadSSettings({'shared','readoutQubits'});
-            for ii = 1:numel(allReadoutQubits)
-				if ischar(allReadoutQubits{ii})
-					allReadoutQubits{ii} = sqc.util.qName2Obj(allReadoutQubits{ii});
-				end
-            end
- 
             if ~iscell(qubits)
                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')
                     throw(MException('resonatorReadout:invalidInput',...
@@ -66,10 +58,28 @@ classdef resonatorReadout < qes.measurement.prob
                 end
             end
             num_qubits = numel(qubits);
+            
+            QS = qes.qSettings.GetInstance();
+            allReadoutQubits = QS.loadSSettings({'shared','readoutQubits'});
+            for ii = 1:numel(allReadoutQubits)
+				if ischar(allReadoutQubits{ii})
+					allReadoutQubits{ii} = sqc.util.qName2Obj(allReadoutQubits{ii});
+				end
+            end
+            
+            for ii = 1: num_qubits
+                if strcmp(qubits{ii}.name,'virtualQubit')
+                    allReadoutQubits = [allReadoutQubits,qubits(ii)];
+                    break;
+                end
+            end
+            % virtualQubit
+ 
+            
             qubitInd = NaN(1,num_qubits);
 			for ii = 1:num_qubits
 				if ischar(qubits{ii})
-					qubits{ii} = sqc.util.qName2Qubit(qubits{ii});
+					qubits{ii} = sqc.util.qName2Obj(qubits{ii});
                 end
                 ind = qes.util.find(qubits{ii}, allReadoutQubits);
                 if isempty(ind)
