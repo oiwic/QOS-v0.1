@@ -1,4 +1,4 @@
-function [] = showtomo_new(pexp,pideal,User_defined_gate)
+function [] = showprocesstomo(pexp,pideal,User_defined_gate)
 % Tomo data check
 % 数据： P
 % 格式：

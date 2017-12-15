@@ -67,7 +67,7 @@ classdef jpaRunner < qes.qHandle
 			DASequence.outputDelay = outputDelay;
             
             obj.pumpDAChnl{1,1}.SendWave(DASequence,true);
-            obj.pumpDAChnl{1,1}.SendWave(DASequence,false);
+            obj.pumpDAChnl{2,1}.SendWave(DASequence,true); % important: true not false! the Q waveform data is all zeros in case zero frquency mixing
         end
     end
     methods (Access = private)

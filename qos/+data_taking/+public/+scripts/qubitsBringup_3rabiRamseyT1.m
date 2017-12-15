@@ -1,7 +1,7 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-amp = [0:500:3e4];
-rabi_amp1('qubit','q2','biasAmp',[0],'biasLonger',20,...
+amp = [0:200:3e4];
+rabi_amp1('qubit','q8','biasAmp',[0],'biasLonger',20,...
       'xyDriveAmp',amp,'detuning',[0],'driveTyp','X/2',...
       'dataTyp','S21','gui',true,'save',true);
 % rabi_amp1('qubit','q2','xyDriveAmp',[0:500:3e4]);  % lazy mode

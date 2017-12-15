@@ -24,10 +24,10 @@ spectroscopy111_zpa('biasQubit',biasQ,'biasAmp',[-30000:10000:30000],... % [-200
        'notes',[biasQ,'->',targetQ,' zpls cross talk'],'gui',true,'save',true);
 %%
 setQSettings('r_avg',500);
-q = 'q2';
+q = 'q8';
 f01 = getQSettings('f01',q);
-freq = f01-5e6:0.3e6:f01+5e6;
-biasAmp = 500:200:2500;
+freq = f01-50e6:0.3e6:f01+10e6;
+biasAmp = -1000:500:5000;
 spectroscopy1_zdc('qubit',q,'biasAmp',biasAmp,'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 %%
