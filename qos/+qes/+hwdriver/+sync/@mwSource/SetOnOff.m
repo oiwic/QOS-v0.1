@@ -16,6 +16,15 @@ function SetOnOff(obj,On,chnl)
 		case {'sc5511a','simulatedmwsrc'}
 			obj.interfaceobj.setOnOff(On,chnl);
 		case {'sinolink'}
+            %%%%
+            %%%%  sinolink times out very frequently, as I just using
+            %%%%  it to ouput a fixed frequency and power lo signal here
+            %%%%  I disabled it temporarily, you may need to remove this.
+            %%%% Yulin Wu 17/12/16
+            return;
+            %%%%
+            %%%%
+            
             if On
                 fprintf(obj.interfaceobj,'LEVEL:STATE ON');
             else

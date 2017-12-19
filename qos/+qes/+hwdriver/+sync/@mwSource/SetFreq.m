@@ -24,9 +24,18 @@ function SetFreq(obj,val,chnl)
 			obj.interfaceobj.setFrequency(val,chnl);
 			obj.frequency(chnl) = val;
 		case {'sinolink'}
+            %%%%
+            %%%%  sinolink times out very frequently, as I just using
+            %%%%  it to ouput a fixed frequency and power lo signal here
+            %%%%  I disabled it temporarily, you may need to remove this.
+            %%%% Yulin Wu 17/12/16
+            return;
+            %%%%
+            %%%%
+            
             fwrite(obj.interfaceobj,['FREQ ',num2str(val(1)/1e9,'%0.9f'),' GHz']);
             obj.frequency(chnl) = val;
-            pause(0.1); % sinolink is very slow at update settings, do not use it for frequency sweeping
+            pause(1); % sinolink is very slow at update settings, do not use it for frequency sweeping
         otherwise
             error('MWSource:SetError', ['Unsupported instrument: ',TYP]);
     end

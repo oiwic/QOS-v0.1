@@ -75,8 +75,8 @@ td = td/2/1000;
 wci = wci/2/1000;
 %%
 bias2f01 = @(x)x*1e9; % in case of no bias2f01 transformation needed.
-% bias2f01 = @(x)(- 2.99e-10*x.^2 - 9.005e-06*x + 5.572)*1e9;
-bias2f01 = @(x) (-8.029e-10*x.^2 + 3.476e-5*x + 5.397)*1e9;
+% % bias2f01 = @(x)(- 2.99e-10*x.^2 - 9.005e-06*x + 5.572)*1e9;
+bias2f01 = @(x) -0.13648*x.^2 -238.70471*x+4.9153e9;
 
 
 figure();

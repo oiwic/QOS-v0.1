@@ -14,7 +14,7 @@ classdef resonatorReadout < qes.measurement.prob
         
         startWv % waveform object to be added before the start of readout waveform
         
-        iqRaw = false;
+        iqRaw = false; 
     end
     properties (SetAccess = private)
         qubits
@@ -158,15 +158,15 @@ classdef resonatorReadout < qes.measurement.prob
             for ii = 1:numReaoutQs
                 readoutLength(ii) = allReadoutQubits{ii}.r_ln;
             end
+            maxReadoutLn = max(readoutLength);
             
-			rln = ceil(rs*(max(readoutLength)+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
+			rln = ceil(rs*(maxReadoutLn+ad_i_chnl_.delayStep)); % maximum startidx increment is ad.delayStep, in da sampling points
             ad_i_chnl_.recordLength = rln;
             ad_q_chnl_.recordLength = rln;
 			
 			iq_obj = sqc.measure.iq_ustc_ad(ad_i_chnl_,ad_q_chnl_);
             iq_obj.n = qubits{1}.r_avg;
-			
-			
+
 			% upsample is obsolete for performance
 %            iq_obj.upSampleNum = lcm(ad_i_chnl_.samplingRate,...
 %                da_i_chnl_.samplingRate)/ad_i_chnl_.samplingRate;
@@ -216,7 +216,9 @@ classdef resonatorReadout < qes.measurement.prob
             obj.adDelayStep = ad_i_chnl_.delayStep;
 
             if ~isempty(qubits{1}.r_jpa)
-				prop_names = {'r_jpa_biasAmp','r_jpa_pumpFreq','r_jpa_pumpPower','r_jpa_pumpAmp','r_jpa_longer'};
+                % these jpa related qubit properties are obsolete, the jpa settings are
+                % used directly
+				prop_names = {'jpa','r_jpa_longer'};
 				b = sqc.util.samePropVal(qubits,prop_names);
 				for ii = 1:numel(prop_names)
 					if b(ii)
@@ -226,11 +228,13 @@ classdef resonatorReadout < qes.measurement.prob
 						'the qubits to readout has different %s settings.',prop_names{ii}));
                 end
                 jpa = sqc.util.qName2Obj(qubits{1}.r_jpa);
-                jpa.pumpAmp = qubits{1}.r_jpa_pumpAmp; % 
-				jpa.pumpFreq = qubits{1}.r_jpa_pumpFreq; % 
-				jpa.pumpPower = qubits{1}.r_jpa_pumpPower; % 
-				jpa.biasAmp = qubits{1}.r_jpa_biasAmp; %
-                jpa.opDuration = qubits{1}.r_ln + 2*qubits{1}.r_jpa_longer;
+                
+                % jpa related qubit properties are obsolete, the jpa settings are used directly
+%               jpa.pumpAmp = qubits{1}.r_jpa_pumpAmp; % 
+% 				jpa.pumpFreq = qubits{1}.r_jpa_pumpFreq; % 
+% 				jpa.pumpPower = qubits{1}.r_jpa_pumpPower; % 
+% 				jpa.biasAmp = qubits{1}.r_jpa_biasAmp; %
+                jpa.opDuration = maxReadoutLn + 2*qubits{1}.r_jpa_longer;
                 obj.jpaRunner = sqc.util.jpaRunner(jpa);
             end
             obj.delay = 0;

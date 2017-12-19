@@ -55,7 +55,7 @@ temp.czRBFidelityVsPhase('controlQ','q9','targetQ','q8',...
 %%
 sqc.measure.gateOptimizer.czOptPhase({'q7','q8'},4,20,1500, 50);
 %%
-qc.measure.gateOptimizer.czOptPhaseAmp({'q7','q8'},4,20,1500, 100);
+sqc.measure.gateOptimizer.czOptPhaseAmp({'q7','q8'},4,20,1500, 100);
 %%
 setQSettings('r_avg',1000);
 temp.czRBFidelityVsPlsCalParam('controlQ','q7','targetQ','q8',...

@@ -64,11 +64,12 @@ for ii = 1:numel(qNames)
     setQSettings('r_freq',readoutFreqs(ii),qNames{ii});
 end
 %%  s21 vs power with DAC to finds the dispersive shift
-q = 'q8';
-% amp = logspace(log10(1000),log10(30000),25);
-amp = getQSettings('r_amp',q);
+q = 'q12';
+setQSettings('r_avg',700,q);
+amp = logspace(log10(2000),log10(30000),25);
+% amp = getQSettings('r_amp',q);
 rfreq = getQSettings('r_freq',q);
-freq = rfreq-0.5e6:0.05e6:rfreq+1.5e6;
+freq = rfreq-0.3e6:0.05e6:rfreq+0.7e6;
 s21_rAmp('qubit',q,'freq',freq,'amp',amp,...
       'notes','','gui',true,'save',true);
 %%

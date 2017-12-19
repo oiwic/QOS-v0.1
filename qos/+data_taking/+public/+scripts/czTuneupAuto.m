@@ -8,12 +8,8 @@ czQSets = {{'q9','q8','q5','q6','q7'},...
            {'q7','q6','q5','q8','q9'},...
            {'q5','q6','q7','q8','q9'},...
           };
-numCZs = struct();
-numCZs.q5 = 7;
-numCZs.q6 = 7;
-numCZs.q7 = 15;
-numCZs.q8 = 15;
-numCZs.q9 = 15;
+numCZs = struct(); numCZs.q5 = 7; numCZs.q6 = 7; numCZs.q7 = 15;
+numCZs.q8 = 15; numCZs.q9 = 15;
 
 tStart = now;
 for ii = 1:numel(allQs)
