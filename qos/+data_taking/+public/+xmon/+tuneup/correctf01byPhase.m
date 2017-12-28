@@ -56,7 +56,7 @@ function varargout = correctf01byPhase(varargin)
         grid on;
     end
     
-    if df > 3e6
+    if abs(df) > 10e6
         throw(MException('QOS_correctf01byPhase:driftTooLarge',...
 				'frequency drift too large, settings not updated.'));
     end

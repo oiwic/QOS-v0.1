@@ -123,6 +123,7 @@ for II=1:length(inx)
         set(ax,'Ydir','normal');
         fitval=polyval(f_fit,bias0(inx(II+1:end)));
         hold(ax,'on');plot(ax, bias0(inx(II+1:end)),fitval,'.r','LineWidth',2);hold(ax,'off');
+        colormap(jet);
         drawnow;
     end
 end

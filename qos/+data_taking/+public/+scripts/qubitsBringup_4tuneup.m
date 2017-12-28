@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q6';
+q = 'q4';
 
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
@@ -8,11 +8,10 @@ tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 
 % tuneup.correctf01bySpc('qubit',q,'gui',true,'save','askMe'); % measure f01 by spectrum
 % tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
-tuneup.correctf01byPhase('qubit',q,'delayTime',1e-6,'gui',true,'save','askMe');
+
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X/2','AE',true,'gui',true,'save','askMe');
 
-tuneup.correctf01byPhase('qubit',q,'delayTime',1e-6,...
-       'gui','true','save',false);
+tuneup.correctf01byPhase('qubit',q,'delayTime',1e-6,'gui','true','save','askMe');
 %% fully auto callibration
 qubits = {'q9','q7','q5','q6','q8'};%'q9','q7',,'q8'
 for ii = 1:numel(qubits)

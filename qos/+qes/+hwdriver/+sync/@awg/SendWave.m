@@ -36,7 +36,7 @@ function SendWave(obj,chnl,DASequence,isI)
 %              % version specific
             WaveformData(32e3:end) = [];
             
-% %             to plot the waveform data
+%             to plot the waveform data
 %             global OPERATOR_SHOW_WAVEDATA;
 %             OPERATOR_SHOW_WAVEDATA = true;
 %             persistent ax;
@@ -48,7 +48,7 @@ function SendWave(obj,chnl,DASequence,isI)
 %                     end
 % 
 %                     hold(ax,'on');
-%                     plot(ax,double(WaveformData(1:end))-32768);
+%                     plot(ax,[zeros(1,software_delay),samples]);
 %                 end
 %             catch
 %             end

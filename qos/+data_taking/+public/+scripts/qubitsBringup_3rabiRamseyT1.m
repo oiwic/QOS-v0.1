@@ -1,7 +1,7 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-amp = [0:500:3e4];
-rabi_amp1('qubit','q7','biasAmp',[0],'biasLonger',20,...
+amp = [0:500:3.2e4];
+rabi_amp1('qubit','q3','biasAmp',[0],'biasLonger',20,...
       'xyDriveAmp',amp,'detuning',[0],'driveTyp','X/2',...
       'dataTyp','S21','gui',true,'save',true);
 % rabi_amp1('qubit','q2','xyDriveAmp',[0:500:3e4]);  % lazy mode
@@ -15,14 +15,14 @@ rabi_long1_freq('qubit','q6','biasAmp',0,'biasLonger',5,...
       'detuning',[-10:1:10]*1e6,...
       'dataTyp','P','gui',true,'save',true);
 %%
-setQSettings('r_avg',3000);
-data=ramsey('qubit','q1','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:50:20000],'detuning',[1]*1e6,...
+setQSettings('r_avg',1000);
+ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
+      'time',[0:50:8000],'detuning',[5]*1e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
 %%
 setQSettings('r_avg',3000);
-ramsey('qubit','q1','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:100:20e3],'detuning',[1]*1e6,...
+ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
+      'time',[0:100:28e3],'detuning',[-1]*1e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true); % P or Phase
 %%
 ramsey_dz('qubit','q8',...
@@ -30,12 +30,12 @@ ramsey_dz('qubit','q8',...
        'dataTyp','P',...   % S21 or P
        'gui','true','save','true');
 %%
-spin_echo('qubit','q8','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:20:15000],'detuning',[2]*1e6,...
+spin_echo('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
+      'time',[0:50:28000],'detuning',[2]*1e6,...
       'notes','','gui',true,'save',true);
 %%
-setQSettings('r_avg',3000);
-T1_1('qubit','q1','biasAmp',[0],'biasDelay',20,'time',[20:1000:2.8e4],... % [20:200:2.8e4]
+setQSettings('r_avg',2000);
+T1_1('qubit','q3','biasAmp',[-3e3:500:3e4],'biasDelay',20,'time',[20:1000:2.8e4],... % [20:200:2.8e4]
       'gui',true,'save',true);
 %%
 resonatorT1('qubit','q2',...

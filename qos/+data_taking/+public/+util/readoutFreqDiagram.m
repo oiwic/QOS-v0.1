@@ -72,8 +72,6 @@ function readoutFreqDiagram(maxSidebandFreq,qubits)
     set(ax,'XTick',1:numQs,'XTickLabels',qNames);
     ylabel(ax,'frequency(GHz)');
     set(ax,'XLim',[0,numQs+1],'YLim',[flb,fub]);
-    
-    
 
     if numel(unique(fci)) == 1 && ~isnan(fci(1))
         fc = fci(1);

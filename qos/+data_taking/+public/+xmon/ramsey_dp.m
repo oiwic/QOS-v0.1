@@ -31,6 +31,10 @@ function varargout = ramsey_dp(varargin)
     X2 = op.XY2(q,pi/2+args.phaseOffset);
     X2_ = op.XY2(q,-pi/2);
     I = gate.I(q);
+    
+%     I = op.detune(q);
+%     I.df = 3e4;
+    
     Z = op.Z_arbPhase(q,args.phaseOffset);
 
     isPhase = false;

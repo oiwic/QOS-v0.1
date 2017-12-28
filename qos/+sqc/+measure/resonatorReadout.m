@@ -14,13 +14,12 @@ classdef resonatorReadout < qes.measurement.prob
         
         startWv % waveform object to be added before the start of readout waveform
         
-        iqRaw = false; 
+        iqRaw = false;
     end
     properties (SetAccess = private)
         qubits
-		jpa
 		adDelayStep
-        
+        jpaRunner;
         allReadoutQubits
     end
     properties (SetAccess = private, GetAccess = protected)
@@ -44,8 +43,6 @@ classdef resonatorReadout < qes.measurement.prob
         adRecordLength
         
         readoutLength
-        
-        jpaRunner
     end
     methods
         function obj = resonatorReadout(qubits)
@@ -75,7 +72,6 @@ classdef resonatorReadout < qes.measurement.prob
             end
             % virtualQubit
  
-            
             qubitInd = NaN(1,num_qubits);
 			for ii = 1:num_qubits
 				if ischar(qubits{ii})
@@ -369,6 +365,9 @@ classdef resonatorReadout < qes.measurement.prob
                 obj.extradata = obj.instrumentObject.extradata;
             end
             obj.dataready = true;
+        end
+        function setJPA(obj,jpa)
+            obj.jpaRunner = sqc.util.jpaRunner(jpa);
         end
     end
     methods (Access = private)
