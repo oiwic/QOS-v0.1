@@ -92,21 +92,21 @@ function readoutFreqDiagram(maxSidebandFreq,qubits)
             'LineWidth',1);
     end
     
-%     n2_sbFreqs = (fc - 2*sbFreqs)/1e9;
-%     n2_sbFreqsline = fcline;
-%     for ii = 1:numQs
-%         n2_sbFreqsline(ii) = line([0,numQs+1],[n2_sbFreqs(ii),n2_sbFreqs(ii)],...
-%             'Parent',ax,'LineStyle',':','Color',[0,1,0],...
-%             'LineWidth',1);
-%     end
-%     
-%     p2_sbFreqs = (fc + 2*sbFreqs)/1e9;
-%     p2_sbFreqsline = fcline;
-%     for ii = 1:numQs
-%         p2_sbFreqsline(ii) = line([0,numQs+1],[p2_sbFreqs(ii),p2_sbFreqs(ii)],...
-%             'Parent',ax,'LineStyle',':','Color',[0,0,1],...
-%             'LineWidth',1);
-%     end
+    n2_sbFreqs = (fc - 2*sbFreqs)/1e9;
+    n2_sbFreqsline = fcline;
+    for ii = 1:numQs
+        n2_sbFreqsline(ii) = line([0,numQs+1],[n2_sbFreqs(ii),n2_sbFreqs(ii)],...
+            'Parent',ax,'LineStyle',':','Color',[0,1,0],...
+            'LineWidth',1);
+    end
+    
+    p2_sbFreqs = (fc + 2*sbFreqs)/1e9;
+    p2_sbFreqsline = fcline;
+    for ii = 1:numQs
+        p2_sbFreqsline(ii) = line([0,numQs+1],[p2_sbFreqs(ii),p2_sbFreqs(ii)],...
+            'Parent',ax,'LineStyle',':','Color',[0,0,1],...
+            'LineWidth',1);
+    end
         
     pos = [pos(1)+pos(3)+0.05 pos(2) 0.05 pos(4)];
     sld = uicontrol('Parent',h,'Style', 'slider',...
@@ -123,15 +123,15 @@ function readoutFreqDiagram(maxSidebandFreq,qubits)
             set(n1_sbFreqsline(ii),'YData',[n1_sbFreqs(ii),n1_sbFreqs(ii)]);
         end
         
-%         n2_sbFreqs = (fc - 2*sbFreqs)/1e9;
-%         for ii = 1:numQs
-%             set(n2_sbFreqsline(ii),'YData',[n2_sbFreqs(ii),n2_sbFreqs(ii)]);
-%         end
-%         
-%         p2_sbFreqs = (fc + 2*sbFreqs)/1e9;
-%         for ii = 1:numQs
-%             set(p2_sbFreqsline(ii),'YData',[p2_sbFreqs(ii),p2_sbFreqs(ii)]);
-%         end
+        n2_sbFreqs = (fc - 2*sbFreqs)/1e9;
+        for ii = 1:numQs
+            set(n2_sbFreqsline(ii),'YData',[n2_sbFreqs(ii),n2_sbFreqs(ii)]);
+        end
+        
+        p2_sbFreqs = (fc + 2*sbFreqs)/1e9;
+        for ii = 1:numQs
+            set(p2_sbFreqsline(ii),'YData',[p2_sbFreqs(ii),p2_sbFreqs(ii)]);
+        end
     end
 
     pos = [pos(1)-0.1,pos(2)-0.1,0.2,0.05];

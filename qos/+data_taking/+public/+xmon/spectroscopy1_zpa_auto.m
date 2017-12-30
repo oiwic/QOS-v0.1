@@ -38,14 +38,14 @@ end
 II = 0;
 
 function [f_,f_fit] = sweepFreq(ind,biasselected,f0list)
-    if ind<4 % ind==1
+    if ind==1
         f_center=args.swpInitf01;
         f_fit=[0,0,0,f_center];
-    elseif II<=5 % II>1 && II<=3
+    elseif II>1 && II<=3
         f0list(find(f0list==0))=[];
         f_fit=polyfit(biasselected,f0list,1);
         f_center=polyval(f_fit,bias0(inx(ind)))*1e9;
-    elseif II>5 
+    elseif II>3 
         f0list(find(f0list==0))=[];
         f_fit=polyfit(biasselected,f0list,2);
         f_center=polyval(f_fit,bias0(inx(ind)))*1e9;
@@ -87,17 +87,28 @@ figSvName = fullfile(QS.loadSSettings('data_path'),...
 
 for II=1:length(inx)
     [f,f_fit] = sweepFreq(II,biasselected,f0list);
-    e = spectroscopy1_zpa('qubit',q,'biasAmp',bias0(inx(II)),'driveFreq',f,'save',false,'gui',false);
+    e = spectroscopy1_zpa('qubit',q,'biasAmp',bias0(inx(II)),'driveFreq',f,'save',false,'gui',false,'dataTyp',args.dataTyp);
     [~,lo]=ismember(f,Frequency);
-    if lo(1)==0 && sum(lo==0)>0
+    f__=f;
+    if lo(1)==0 && f(end)+args.swpBandStep>=Frequency(1)
         P=[NaN(sum(lo==0),length(inx)); P];
-    elseif lo(1)>1 && sum(lo==0)>0
+    elseif lo(1)==0 && f(end)+args.swpBandStep<Frequency(1)
+        P=[NaN((Frequency(1)-f(1))/args.swpBandStep,length(inx)); P];
+        f__=f(1):args.swpBandStep:(Frequency(1)-args.swpBandStep);
+    elseif lo(1)==0 && f(1)-args.swpBandStep>Frequency(end)
+        P=[ P; NaN((-Frequency(end)+f(end))/args.swpBandStep,length(inx));];
+        f__=(Frequency(end)+args.swpBandStep):args.swpBandStep:f(end);
+    elseif lo(1)>1 && lo(end)==0
         P=[ P; NaN(sum(lo==0),length(inx))];
     end
         
-    Frequency=union(f,Frequency);
+    Frequency=union(f__,Frequency);
     [~,lo]=ismember(f,Frequency);
-    data=cell2mat(e.data);
+    if strcmp(args.dataTyp,'S21')
+        data=cell2mat(e.data{1,1});
+    else
+        data=cell2mat(e.data);
+    end
     P(lo(1):lo(end),inx(II))=data;
     if args.peak
         [~,finx]=max(data);
@@ -123,7 +134,6 @@ for II=1:length(inx)
         set(ax,'Ydir','normal');
         fitval=polyval(f_fit,bias0(inx(II+1:end)));
         hold(ax,'on');plot(ax, bias0(inx(II+1:end)),fitval,'.r','LineWidth',2);hold(ax,'off');
-        colormap(jet);
         drawnow;
     end
 end
