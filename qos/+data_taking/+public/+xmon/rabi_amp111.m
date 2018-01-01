@@ -35,74 +35,122 @@ import sqc.op.physical.*
 
 args = util.processArgs(varargin,{'biasAmp',0,'biasLonger',0,'detuning',0,'driveTyp','X','dataTyp','P',...
     'numPi',1,'r_avg',0,'gui',false,'notes','','save',true});
-[readoutQubit, biasQubit, driveQubit] =...
-    data_taking.public.util.getQubits(args,{'readoutQubit', 'biasQubit', 'driveQubit'});
+
+if iscell(args.driveQubit) && numel(args.driveQubit) > 1
+	numQs = numel(args.driveQubit);	
+	% when parallel, biasAmp, detuning must be zero
+	if args.biasAmp ~=0 || args.detuning ~= 0
+		throw(MException('QOS_rabi_amp111:illegalArguments','parallel mesurement with non-zero biasAmp or detuning not supported');
+	end
+	if ~qes.util.identicalArray(args.driveQubit,args.biasQubit) ||...
+		~qes.util.identicalArray(args.driveQubit,args.readoutQubit)
+		throw(MException('QOS_rabi_amp111:illegalArguments',...
+			'parallel mesurement with different driveQubits, biasQubits and readoutQubits is not supported');
+	end
+	driveQubit = args.driveQubit;
+	if ischar(driveQubit{ii})
+            driveQubit{ii} = sqc.util.qName2Obj(driveQubit{ii});
+    end
+	readoutQubit = driveQubit;
+	biasQubit = driveQubit;
+else
+	isParallel = false;	
+	[readoutQubit, biasQubit, driveQubit] =...
+		data_taking.public.util.getQubits(args,{'readoutQubit', 'biasQubit', 'driveQubit'});
+	readoutQubit = {readoutQubit};
+	biasQubit = {biasQubit};
+	driveQubit = {driveQubit};
+	numQs = numel(driveQubit);
+end
 
 if args.r_avg~=0 %add by GM, 20170414
-    readoutQubit.r_avg=args.r_avg;
+	for ii = 1:numQs
+		readoutQubit{ii}.r_avg=args.r_avg;
+	end
 end
+g = cell(1,numQs)
+for ii = 1:numQs
 switch args.driveTyp
 	case 'X'
-		g = gate.X_(driveQubit);
+		g{ii} = gate.X_(driveQubit{ii});
         n = 1;
 	case {'X/2','X2p'}
-		g = gate.X2p(driveQubit);
+		g{ii} = gate.X2p(driveQubit{ii});
         n = 2;
 	case {'-X/2','X2m'}
-		g = gate.X2m(driveQubit);
+		g{ii} = gate.X2m(driveQubit{ii});
         n = 2;
     case {'X/4','X4p'}
-		g = gate.X4p(driveQubit);
+		g{ii} = gate.X4p(driveQubit{ii});
         n = 4;
     case {'-X/4','X4m'}
-		g = gate.X4m(driveQubit);
+		g{ii} = gate.X4m(driveQubit{ii});
         n = 4;
 	case 'Y'
-		g = gate.Y_(driveQubit);
+		g{ii} = gate.Y_(driveQubit{ii});
         n = 1;
 	case {'Y/2', 'Y2p'}
-		g = gate.Y2p(driveQubit);
+		g{ii} = gate.Y2p(driveQubit{ii});
         n = 2;
 	case {'-Y/2', 'Y2m'}
-		g = gate.Y2m(driveQubit);
+		g{ii} = gate.Y2m(driveQubit{ii});
         n = 2;
     case {'Y/4','Y4p'}
-		g = gate.Y4p(driveQubit);
+		g{ii} = gate.Y4p(driveQubit{ii});
         n = 4;
     case {'-Y/4','Y4m'}
-		g = gate.Y4m(driveQubit);
+		g{ii} = gate.Y4m(driveQubit{ii});
         n = 4;
 	otherwise
 		throw(MException('QOS_rabi_amp111:illegalDriverTyp',...
 			sprintf('the given drive type %s is not one of the allowed drive types: X, X/2, -X/2, X/4, -X/4, Y, Y/2, -Y/2, Y/4, -Y/4',...
 			args.driveTyp)));
 end
-I = gate.I(driveQubit);
-I.ln = args.biasLonger;
-Z = op.zBias4Spectrum(biasQubit);
-Z.amp = args.biasAmp;
+end
+if numQs == 1
+	I = gate.I(driveQubit);
+	I.ln = args.biasLonger;
+	Z = op.zBias4Spectrum(biasQubit);
+	Z.amp = args.biasAmp;
+end
 m = n*args.numPi;
 function procFactory(amp_)
-    g.amp = amp_;
-    XY = g^m;
-    Z.ln = XY.length + 2*args.biasLonger;
-    proc = Z.*(I*XY);
-    R.delay = proc.length;
-    proc.Run();
+	ln = 0
+	for ii = 1:numQs
+		g{ii}.amp = amp_[ii];
+		XY = g{ii}^m;
+		if numQs == 1
+			Z.ln = XY.length + 2*args.biasLonger;
+			proc = Z.*(I*XY);
+		else
+			proc = XY;
+		end
+		ln = max(ln,XY);
+		proc.Run();
+	end
+	R.delay = ln;
 end
-R = measure.resonatorReadout_ss(readoutQubit);
-
-switch args.dataTyp
-    case 'P'
-        R.state = 2;
-    case 'S21'
-        R.swapdata = true;
-        R.name = '|IQ|';
-        R.datafcn = @(x)mean(abs(x));
-    otherwise
-        throw(MException('QOS_rabi_amp111:unsupportedDataTyp',...
-			'unrecognized dataTyp %s, available dataTyp options are P and S21.',...
-			args.dataTyp));
+if numQs == 1
+	R = measure.resonatorReadout_ss(readoutQubit);
+	switch args.dataTyp
+		case 'P'
+			R.state = 2;
+		case 'S21'
+			R.swapdata = true;
+			R.name = '|IQ|';
+			R.datafcn = @(x)mean(abs(x));
+		otherwise
+			throw(MException('QOS_rabi_amp111:unsupportedDataTyp',...
+				'unrecognized dataTyp %s, available dataTyp options are P and S21.',...
+				args.dataTyp));
+		end
+else
+	if ~strcmp(args.dataTyp, 'P')
+		throw(MException('QOS_rabi_amp111:unsupportedDataTyp',...
+				'dataTyp %s not supported for parallel measurement.',...
+				args.dataTyp));
+	end
+	R = measure.resonatorReadout(readoutQubit,true);
 end
 
 x = expParam(g,'f01');
@@ -114,7 +162,7 @@ y.name = [driveQubit.name,' xyDriveAmp'];
 s1 = sweep(x);
 s1.vals = args.detuning;
 s2 = sweep(y);
-s2.vals = args.xyDriveAmp;
+s2.vals = cell2mat(args.xyDriveAmp(:)).';
 e = experiment();
 e.sweeps = [s1,s2];
 e.measurements = R;

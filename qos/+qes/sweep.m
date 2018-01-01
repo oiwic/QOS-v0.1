@@ -12,7 +12,7 @@ classdef (Sealed = true)sweep < qes.qHandle
         % object in paramobjs to sweep, and the sweep values for all the
         % ExpParam object should have the same length.
         vals
-        % sweep mask, mask is empty or a bolean array of sweep size,
+        % sweep mask, mask is empty or a bolean array with length equal to the sweep size,
         % it is used to relize non rectangular sweeps: circular, band etc.
         % mask(nth) = false: the nth sweep point will be skipped;
         % mask(nth) = true: the nth sweep point will be sweeped;
@@ -29,8 +29,8 @@ classdef (Sealed = true)sweep < qes.qHandle
         % auxilary parameter, typically a object to implement some function
         % by callbacks, for example:
         % auxpara = DynMwSweepRngObj; prestepcallbacks = {@(x) x.auxpara.UpdateRng()};
-        auxpara  
-        % a measurement object,  add to implement a special functionanilty
+%        auxpara  
+%        % a measurement object,  added to implement a special functionanilty
         swpdatasrc
         swpdata
     end
@@ -51,6 +51,9 @@ classdef (Sealed = true)sweep < qes.qHandle
     properties (Dependent = true)
 		size    % number of sweep steps
         paramnames; % name of parameter objects
+    end
+	properties (SetAccess = private, GetAccess = private)
+		isScalarVal
     end
 	methods
         function obj = sweep(ExpParamObjs,MainParam)
@@ -123,6 +126,19 @@ classdef (Sealed = true)sweep < qes.qHandle
                     ParamVals = ParamVals(1);
                 end
             end
+			for ii = 1:NumParams
+				sz = size(ParamVals{ii});
+				if all(sz > 1)
+					% in case of matrix, param vals are taken as ParamVals{ithParam}(stepInd, :)
+					if size(sz) > 2
+						error('sweep:InvalidInput',...
+                            '3D or higher dimension maxtrix as ParamVals is not supported');
+					end
+					obj.isScalarVal(ii) = false;
+				else
+					obj.isScalarVal(ii) = true;
+				end
+			end
             obj.vals = ParamVals(:);
         end
         function set.mask(obj,val)
@@ -197,7 +213,11 @@ classdef (Sealed = true)sweep < qes.qHandle
                     feval(obj.prestepcallbacks{ii},obj);
                 end
                 for ii = 1:numel(obj.paramobjs)
-                    obj.paramobjs(ii).val = obj.vals{ii}(obj.idx);
+					if obj.isScalarVal(ii)
+						obj.paramobjs(ii).val = obj.vals{ii}(obj.idx);
+					else
+						obj.paramobjs(ii).val = obj.vals{ii}(obj.idx,:);
+					end
                 end
                 for ii = 1:numel(obj.poststepcallbacks)
                     % do not use cellfun, cellfun function does not perform
@@ -243,7 +263,7 @@ classdef (Sealed = true)sweep < qes.qHandle
         function obj = plus(obj1,obj2)
             % add two sweeps together, order is important: the first sweep is executed first. 
             % the two added sweeps should have the same size.
-            if obj1.size ~= obj2.suze
+            if obj1.size ~= obj2.size
                 error('sweep:Add','the two added sweeps should have the size.');
             end
             obj = sweep([obj1.paramobjs;obj2.paramobjs]);

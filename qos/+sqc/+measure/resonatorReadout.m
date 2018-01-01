@@ -14,7 +14,7 @@ classdef resonatorReadout < qes.measurement.prob
         
         startWv % waveform object to be added before the start of readout waveform
         
-        iqRaw = false;
+        iqRaw@logical scalar = false; % raw iq as data, otherwise state events or probabilities
     end
     properties (SetAccess = private)
         qubits
@@ -45,7 +45,13 @@ classdef resonatorReadout < qes.measurement.prob
         readoutLength
     end
     methods
-        function obj = resonatorReadout(qubits)
+        function obj = resonatorReadout(qubits,jointReadout, iqAsExtraData)
+			if nargin < 2
+				jointReadout = false;
+				iqAsExtraData = flase;
+			elseif nargin < 3
+				iqAsExtraData = flase;
+			end
             if ~iscell(qubits)
                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')
                     throw(MException('resonatorReadout:invalidInput',...
@@ -173,10 +179,20 @@ classdef resonatorReadout < qes.measurement.prob
                 demod_freq(ii) = qubits{ii}.r_freq- qubits{1}.r_fc;
             end
             iq_obj.freq = demod_freq;
+			
+			if qubits{1}.correctDecay
+				T1 = zeros(1,num_qubits);
+				for ii = 1:num_qubits
+					T1(ii) = qubits{ii}.T1;
+				end
+				iq_obj.T1 = T1;
+			end
+			
 %             iq_obj.startidx = qubits{1}.r_truncatePts(1)+1;
 %             iq_obj.endidx = ad.recordLength-qubits{1}.r_truncatePts(2);
-            prob_obj = sqc.measure.prob_iq_ustc_ad_j(iq_obj,qubits);
-
+            prob_obj = sqc.measure.prob_iq_ustc_ad(iq_obj,qubits,jointReadout);
+			prob_obj.iqAsExtraData = iqAsExtraData;
+			
             obj = obj@qes.measurement.prob(prob_obj);
             obj.delayStep = lcm(round(ad_i_chnl_.samplingRate),...
                 round(da_i_chnl_.samplingRate))/ad_i_chnl_.samplingRate;
@@ -337,7 +353,6 @@ classdef resonatorReadout < qes.measurement.prob
                     'iqRaw not a boolean'));
             end
             obj.iqRaw = val;
-            obj.iq_obj.iqRaw = val;
         end
         function Run(obj)
             obj.GenWave();

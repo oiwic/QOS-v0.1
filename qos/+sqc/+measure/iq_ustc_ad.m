@@ -22,8 +22,8 @@ classdef iq_ustc_ad < qes.measurement.iq
 
 %        upSampleNum = 1 % upsample to match DA sampling rate
         iqWeight
-        
-        iqRaw@logical scalar = false;
+		
+		T1
     end
     properties (SetAccess = private, GetAccess = private)
         % Cached variables
@@ -59,8 +59,12 @@ classdef iq_ustc_ad < qes.measurement.iq
             calcCachedVar(obj);
         end
         function set.freq(obj,val)
+			if ~isempty(obj.T1) && length(obj.T1) ~= length(val)
+				error('number of freq not matching number of T1s');
+			end
             obj.freq = val;
             numFreqs = numel(obj.freq);
+			obj.T1 = Inf*ones(1,numFreqs);
             obj.iqWeight = cell(1,numFreqs);
             obj.selectidx = cell(1,numFreqs);
             if ~isempty(obj.startidx)
@@ -77,6 +81,13 @@ classdef iq_ustc_ad < qes.measurement.iq
             end
             
         end
+		function set.T1(obj,val)
+			if ~isempty(obj.freq) && length(obj.freq) ~= length(val)
+				error('number of freq not matching number of T1s');
+			end
+			obj.T1 = val;
+		end
+		
 %        function set.upSampleNum(obj,val)
 %            if isempty(val)
 %                throw(MException('QOS_iq_ustc_ad:emptyUnpSampleNum','upSampleNum can not be empty.'));
@@ -164,13 +175,7 @@ classdef iq_ustc_ad < qes.measurement.iq
 				Vi = double(Vi) -127;
 				Vq = double(Vq) -127;
                 
-                if obj.iqRaw
-                    obj.data = obj.demod_rawIQ(Vi,Vq);
-                    obj.dataready = true;
-                    return;
-                else
-                    obj.demod(Vi,Vq);
-                end
+                obj.demod(Vi,Vq);
 				
 			end           
                % toc 
@@ -193,7 +198,7 @@ classdef iq_ustc_ad < qes.measurement.iq
                 eidx = obj.endidx;
             end
             adSamplingRate = obj.adI.samplingRate;
-            t_ = 1:obj.adI.recordLength;
+            t_ = (1:obj.adI.recordLength)/adSamplingRate;
             obj.kernel = cell(1,numFreqs);
             for ii = 1:numFreqs
                 % in most cases one needs to remove a few data points at the
@@ -212,8 +217,7 @@ classdef iq_ustc_ad < qes.measurement.iq
                 % obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
                 % t = (obj.selectidx-obj.startidx)/...
                 %     (obj.adI.samplingRate*obj.upSampleNum);
-				
-                obj.kernel{ii} = exp(-2j*pi*obj.freq(ii).*t);
+                obj.kernel{ii} = exp(-t/obj.T1(ii)-2j*pi*obj.freq(ii).*t);
             end
         end
         
