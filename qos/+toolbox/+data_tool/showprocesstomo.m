@@ -309,7 +309,7 @@ function [theta] = thetafit(pexp,pid)
         y = sum(D(:));
     end
     numQs = round(log(size(pexp,2))/log(3));
-    theta = qes.util.fminsearchbnd(@(theta)fitFunc(pexp,pid,theta),zeros(1,numQs),-ones(1,numQs)*pi,ones(1,numQs)*pi);
+    theta = qes.util.fminsearchbnd(@(theta)fitFunc(pexp,pid,theta),zeros(1,numQs),-ones(1,numQs)*2*pi,ones(1,numQs)*2*pi);
 end
 
 function [pr] = rotatep(p,theta)

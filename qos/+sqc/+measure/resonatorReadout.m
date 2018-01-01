@@ -177,6 +177,7 @@ classdef resonatorReadout < qes.measurement.prob
             
             for ii = 1:num_qubits
                 demod_freq(ii) = qubits{ii}.r_freq- qubits{1}.r_fc;
+                
             end
             iq_obj.freq = demod_freq;
 			
@@ -190,9 +191,9 @@ classdef resonatorReadout < qes.measurement.prob
 			
 %             iq_obj.startidx = qubits{1}.r_truncatePts(1)+1;
 %             iq_obj.endidx = ad.recordLength-qubits{1}.r_truncatePts(2);
+
             prob_obj = sqc.measure.prob_iq_ustc_ad(iq_obj,qubits,jointReadout);
 			prob_obj.iqAsExtraData = iqAsExtraData;
-			
             obj = obj@qes.measurement.prob(prob_obj);
             obj.delayStep = lcm(round(ad_i_chnl_.samplingRate),...
                 round(da_i_chnl_.samplingRate))/ad_i_chnl_.samplingRate;
@@ -230,7 +231,7 @@ classdef resonatorReadout < qes.measurement.prob
             if ~isempty(qubits{1}.r_jpa)
                 % these jpa related qubit properties are obsolete, the jpa settings are
                 % used directly
-				prop_names = {'jpa','r_jpa_longer'};
+				prop_names = {'r_jpa','r_jpa_longer'};
 				b = sqc.util.samePropVal(qubits,prop_names);
 				for ii = 1:numel(prop_names)
 					if b(ii)
@@ -316,7 +317,7 @@ classdef resonatorReadout < qes.measurement.prob
             endidx = obj.adRecordLength-r_truncatePts(2,:)-obj.adDelayStep+dd;
             for ii = 1:numQs
                 endidx(ii) = endidx(ii) - ...
-                    obj.delayStep*ceil((maxReadoutLength - obj.readoutLength(ii))/obj.delayStep)*rs;
+                    obj.delayStep*ceil((maxReadoutLength - obj.readoutLength(obj.qubitInd(ii)))/obj.delayStep)*rs;
             end
             obj.iq_obj.endidx = endidx;
 

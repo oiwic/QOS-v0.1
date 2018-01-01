@@ -42,9 +42,15 @@ function varargout = Tomo_2QProcess(varargin)
                 Y2p = gate.Y2p(q2);
                 p = Y2m*CZ*Y2p; % q1, control qubit, q2, target qubit
             otherwise
-                throw(MException('QOS_singleQProcessTomo:unsupportedGate',...
-                    sprintf('available process options for singleQProcessTomo is %s, %s given.',...
-                    '''CZ'',''CNOT''',args.process)));
+                tokens = strsplit(args.process,',');
+                assert(numel(tokens) == 2);
+                g1 = feval(str2func(['@(q)sqc.op.physical.gate.',tokens{1},'(q)']),q1);
+                g2 = feval(str2func(['@(q)sqc.op.physical.gate.',tokens{2},'(q)']),q2);
+                p = g2.*g1;
+                
+%                 throw(MException('QOS_singleQProcessTomo:unsupportedGate',...
+%                     sprintf('available process options for singleQProcessTomo is %s, %s given.',...
+%                     '''CZ'',''CNOT''',args.process)));
         end
     else
         if ~isa(args.process,'sqc.op.physical.operator')
