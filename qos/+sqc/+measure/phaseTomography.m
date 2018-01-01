@@ -6,7 +6,7 @@ classdef phaseTomography < sqc.measure.tomography
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
     methods
-        function obj = phaseTomography(qubit, isParallel)
+        function obj = phaseTomography(qubits, isParallel)
 			if nargin < 2
 				isParallel = false;
 			end

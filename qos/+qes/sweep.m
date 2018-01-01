@@ -132,7 +132,7 @@ classdef (Sealed = true)sweep < qes.qHandle
 					% in case of matrix, param vals are taken as ParamVals{ithParam}(stepInd, :)
 					if size(sz) > 2
 						error('sweep:InvalidInput',...
-                            '3D or higher dimension maxtrix as ParamVals is not supported');
+                            '3D or higher dimension matrix as ParamVals is not supported');
 					end
 					obj.isScalarVal(ii) = false;
 				else
@@ -202,7 +202,8 @@ classdef (Sealed = true)sweep < qes.qHandle
                 sz = 0;
                 return;
             end
-            sz = numel(obj.vals{1});
+            sz = size(obj.vals{1});
+            sz = sz(1);
         end
         function Step(obj)
             if obj.idx <= obj.size

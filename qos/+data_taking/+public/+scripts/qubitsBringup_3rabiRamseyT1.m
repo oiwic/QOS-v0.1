@@ -15,9 +15,9 @@ rabi_long1_freq('qubit','q6','biasAmp',0,'biasLonger',5,...
       'detuning',[-10:1:10]*1e6,...
       'dataTyp','P','gui',true,'save',true);
 %%
-setQSettings('r_avg',1000);
-ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:50:8000],'detuning',[5]*1e6,...
+setQSettings('r_avg',3000);
+ramsey('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
+      'time',[20:20:8000],'detuning',[1]*2e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
 %%
 setQSettings('r_avg',5000);
@@ -30,7 +30,7 @@ ramsey_dz('qubit','q1',...
        'dataTyp','P',...   % S21 or P
        'gui','true','save','true');
 %%
-spin_echo('qubit','q2','mode','dp',... % available modes are: df01, dp and dz
+spin_echo('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
       'time',[0:50:8000],'detuning',[2]*1e6,...
       'notes','','gui',true,'save',true);
 %%

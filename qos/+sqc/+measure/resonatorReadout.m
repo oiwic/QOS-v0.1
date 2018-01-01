@@ -48,9 +48,9 @@ classdef resonatorReadout < qes.measurement.prob
         function obj = resonatorReadout(qubits,jointReadout, iqAsExtraData)
 			if nargin < 2
 				jointReadout = false;
-				iqAsExtraData = flase;
+				iqAsExtraData = true;
 			elseif nargin < 3
-				iqAsExtraData = flase;
+				iqAsExtraData = false;
 			end
             if ~iscell(qubits)
                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')
@@ -181,7 +181,7 @@ classdef resonatorReadout < qes.measurement.prob
             end
             iq_obj.freq = demod_freq;
 			
-			if qubits{1}.correctDecay
+			if qubits{1}.r_correctDecay
 				T1 = zeros(1,num_qubits);
 				for ii = 1:num_qubits
 					T1(ii) = qubits{ii}.T1;

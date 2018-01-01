@@ -25,13 +25,13 @@ classdef phase < sqc.measure.phaseTomography
 			else
 				obj.numericscalardata = true;
 				obj.name = [qubits{1}.name,' phase(rad)'];
-			end
+            end
         end
         function Run(obj)
             Run@sqc.measure.phaseTomography(obj);
             % by define |0>-|1>, |0>-1j|1> and |0>, as x, y and z zero
             % phase point
-			if isParallel
+			if obj.isParallel
 				numQs = numel(obj.qubits);
 				data_ = nan(1,numQs);
 				for ii = 1:numQs

@@ -1,4 +1,5 @@
 function varargout = spin_echo_dp(varargin)
+
 % spin echo:
 % detune by changing the second pi/2 pulse tracking frame
 % 

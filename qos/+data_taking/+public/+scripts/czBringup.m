@@ -1,37 +1,42 @@
 % CZ bring up:
 %%
 czLength=160;
-czAmp=[0.9e4:20:1e4];  % for q5-q6: [-4750:10:-4.5e3]
+czAmp=[-1e4:-60:-1.3e4];  % for q5-q6: [-4750:10:-4.5e3]
 setQSettings('r_avg',5000);
-acz1=acz_ampLength('controlQ','q3','targetQ','q4',...
+acz1=acz_ampLength('controlQ','q5','targetQ','q4',...
        'dataTyp','Phase',...
        'czLength',czLength,'czAmp',czAmp,'cState','1',...
        'notes','','gui',true,'save',true);
-acz0=acz_ampLength('controlQ','q3','targetQ','q4',...
+acz0=acz_ampLength('controlQ','q5','targetQ','q4',...
        'dataTyp','Phase',...
        'czLength',czLength,'czAmp',czAmp,'cState','0',...
        'notes','','gui',true,'save',true);
 cz0data=unwrap(acz0.data{1,1});
 cz1data=unwrap(acz1.data{1,1});
-ff0=polyfit(czAmp,cz0data,2);
-ff1=polyfit(czAmp,cz1data,2);
-if cz1data(1)>cz0data(1)
-ff=ff1-ff0;
-
-else
-ff=-ff1+ff0;
-end
-figure;plot(czAmp,polyval(ff0,czAmp),'--b',czAmp,polyval(ff1,czAmp),'--r',...
-    czAmp,cz0data,'.b',czAmp,cz1data,'.r',...
-    czAmp,polyval(ff,czAmp),'-g',czAmp,cz1data-cz0data,'.-m',...
+% ff0=polyfit(czAmp,cz0data,2);
+% ff1=polyfit(czAmp,cz1data,2);
+ffd=polyfit(czAmp,cz1data - cz0data,2);
+figure;plot(czAmp,cz0data,'.b',czAmp,cz1data,'.r',...
+    czAmp,polyval(ffd,czAmp),'-g',czAmp,cz1data-cz0data,'.-m',...
     czAmp,ones(1,length(czAmp))*pi,':k',czAmp,-ones(1,length(czAmp))*pi,':k');
-ff(3)=ff(3)-pi;
-rd=roots(ff);
-czamp=rd(find(rd>czAmp(1)&rd<czAmp(end)));
+czAmp = sort(czAmp);
+ffd_ = ffd;
+ffd_(3)=ffd_(3)-pi;
+rd=roots(ffd_);
+if ~isempty(rd)
+    czamp=rd(find(rd>czAmp(1)&rd<czAmp(end)));
+end
+sprintf('%.4e',czamp)
+ffd_ = ffd;
+ffd_(3)=ffd_(3)+pi;
+rd=roots(ffd_);
+if ~isempty(rd)
+    czamp=rd(find(rd>czAmp(1)&rd<czAmp(end)));
+end
 sprintf('%.4e',czamp)
 %%
 setQSettings('r_avg',5000);
-tuneup.czAmplitude('controlQ','q5','targetQ','q6',...
+tuneup.czAmplitude('controlQ','q5','targetQ','q4',...
     'notes','','gui',true,'save',true);
 
 %% check |11> -> |02> state leakage, method: prepare |11>, apply CZ, measure P|0?>
@@ -42,7 +47,7 @@ acz_ampLength('controlQ','q11','targetQ','q10',...
        'notes','','gui',true,'save',true);
 %% Tomography
 setQSettings('r_avg',5000);
-CZTomoData = Tomo_2QProcess('qubit1','q3','qubit2','q4',...
+CZTomoData = Tomo_2QProcess('qubit1','q5','qubit2','q4',...
        'process','CZ',...
        'notes','','gui',true,'save',true);
 toolbox.data_tool.showprocesstomo(CZTomoData,CZTomoData)

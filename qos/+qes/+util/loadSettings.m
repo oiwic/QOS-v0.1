@@ -99,8 +99,11 @@ function data = loadSettings(spath, fields)
                             end
                         end
                         if isfield(data,fieldname)
-                            throw(MException('QOS_loadSettings:duplicateSettingsEntry',...
-                                'duplicate settings entry ''%s'' found in settings path %s', fieldname, strrep(spath,'\','\\')));
+                            duplicateFile = fullfile(spath,fileinfo(ii).name);
+                            delete(duplicateFile);
+                            warning(['duplicate file : ', duplicateFile, ' deleted.']);
+%                             throw(MException('QOS_loadSettings:duplicateSettingsEntry',...
+%                                 'duplicate settings entry ''%s'' found in settings path %s', fieldname, strrep(spath,'\','\\')));
                         end
                         data.(fieldname) = data_;
                     end

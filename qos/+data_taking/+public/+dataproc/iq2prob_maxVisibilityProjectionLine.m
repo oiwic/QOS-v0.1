@@ -75,7 +75,7 @@ function [rPoint, ang, threshold, polarity, hf,axs] =...
         if ~auto
             x = binEdges(1:end-1)+binSize/2;
             try 
-                if count == 2
+                if count == 5
                     plot(ax1,iq_raw_0,'b.','MarkerSize',4);
                     hold(ax1,'on');
                     plot(ax1,iq_raw_1,'r.','MarkerSize',4);
@@ -127,6 +127,8 @@ function [rPoint, ang, threshold, polarity, hf,axs] =...
 
     rPoint = xsol(1)+1j*xsol(2);
     ang = xsol(3);
-    
-    axs = [ax1,ax2,ax3];
+    axs = [];
+    if ~auto
+        axs = [ax1,ax2,ax3];
+    end
 end

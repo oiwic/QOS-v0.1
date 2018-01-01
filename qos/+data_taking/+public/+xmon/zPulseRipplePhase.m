@@ -39,7 +39,7 @@ function varargout = zPulseRipplePhase(varargin)
     import sqc.*
     import sqc.op.physical.*
     
-    Z_LENGTH = 10000;
+    Z_LENGTH = 2000;
 
 	if nargin > 1  % otherwise playback
 		fcn_name = 'data_taking.public.xmon.zPulseRipplePhase'; % this and args will be saved with data
@@ -47,7 +47,7 @@ function varargout = zPulseRipplePhase(varargin)
 	end
     q = data_taking.public.util.getQubits(args,{'qubit'});
 
-    Y2 = gate.Y2p(q);
+    Y2 = gate.Y2m(q);
     X = gate.X(q);
     I1 = gate.I(q);
     I2 = gate.I(q);

@@ -1,4 +1,4 @@
-classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
+classdef prob_iq_ustc_ad < qes.measurement.prob
     % rename this class to events_iq_ustc_ad
     % this class measures the state of each shots(events)
     % data(k,:) is a 1 by n(number of shots), the single shot events of
@@ -8,13 +8,13 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 % mail4ywu@gmail.com/mail4ywu@icloud.com
     properties
         n
-        threeStates@logical scalar = false; % {|0>, |1>} system or {|0>, |1>, |2>} system
-		iqAsExtraData@logical scalar = ture; % raw iq as extradata or event states as extradata
+        threeStates@logical scalar = false % {|0>, |1>} system or {|0>, |1>, |2>} system
+		iqAsExtraData@logical scalar = true % raw iq as extradata or event states as extradata
     end
     properties (SetAccess = private)
         qubits % qubit objects or qubit names
 		
-		jointReadout@logical scalar = false;
+		jointReadout@logical scalar = false
 		
 		stateNames
         % convert to intrinsic state probability by using measurement
@@ -27,6 +27,9 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 		center0
 		center1
 		center2
+        
+        invFMat
+        
 %        ref_angle % r_iq2prob_01rAngle
 %        ref_point % r_iq2prob_01rPoint
 %        threshold % r_iq2prob_01threshold
@@ -67,11 +70,11 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 				end
 			else
 				if obj.threeStates
-					obj.stateNames = {'|0>','|1>'}
+					obj.stateNames = {'|0>','|1>'};
 				else
-					obj.stateNames = {'|0>','|1>','|2>'}
+					obj.stateNames = {'|0>','|1>','|2>'};
 				end
-				obj.invFMat = cell(1,obj.num_qs)
+				obj.invFMat = cell(1,obj.num_qs);
 				for ii = 1:obj.num_qs
 					if obj.qubits{ii}.r_iq2prob_intrinsic
 						F00 = obj.qubits{ii}.r_iq2prob_fidelity(1);
@@ -252,7 +255,7 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 			else
 				obj.extradata = obj.data; % event states
 			end
-			if jointReaout
+			if obj.jointReadout
 				obj.DataProcessing_j();
 			else
 				obj.DataProcessing_i();
@@ -279,13 +282,14 @@ classdef (Abstract = true)prob_iq_ustc_ad < qes.measurement.prob
 		function DataProcessing_i(obj)
 			data_ = nan(obj.num_qs,2);
 			for ii = 1:obj.num_qs
-				p1 = sum(obj.data(ii,:))/obj.n;
+				P1 = sum(obj.data(ii,:))/obj.n;
 				p = [1-P1;P1];
 				if ~isempty(obj.invFMat{ii})
 					p = obj.invFMat{ii}*p;
 				end
 				data_(ii,:) = p.';
-			end
+            end
+            obj.data = data_;
         end
 	end
 end

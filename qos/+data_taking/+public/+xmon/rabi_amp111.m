@@ -1,4 +1,6 @@
 function varargout = rabi_amp111(varargin)
+% support multi-qubit parallel process
+%
 % rabi_amp111: Rabi oscillation by changing the pi pulse amplitude
 % bias qubit q1, drive qubit q2 and readout qubit q3,
 % q1, q2, q3 can be the same qubit or different qubits,
@@ -40,16 +42,18 @@ if iscell(args.driveQubit) && numel(args.driveQubit) > 1
 	numQs = numel(args.driveQubit);	
 	% when parallel, biasAmp, detuning must be zero
 	if args.biasAmp ~=0 || args.detuning ~= 0
-		throw(MException('QOS_rabi_amp111:illegalArguments','parallel mesurement with non-zero biasAmp or detuning not supported');
+		throw(MException('QOS_rabi_amp111:illegalArguments','parallel mesurement with non-zero biasAmp or detuning not supported'));
 	end
 	if ~qes.util.identicalArray(args.driveQubit,args.biasQubit) ||...
 		~qes.util.identicalArray(args.driveQubit,args.readoutQubit)
 		throw(MException('QOS_rabi_amp111:illegalArguments',...
-			'parallel mesurement with different driveQubits, biasQubits and readoutQubits is not supported');
+			'parallel mesurement with different driveQubits, biasQubits and readoutQubits is not supported'));
 	end
 	driveQubit = args.driveQubit;
-	if ischar(driveQubit{ii})
+    for ii = 1:numQs
+        if ischar(driveQubit{ii})
             driveQubit{ii} = sqc.util.qName2Obj(driveQubit{ii});
+        end
     end
 	readoutQubit = driveQubit;
 	biasQubit = driveQubit;
@@ -68,7 +72,7 @@ if args.r_avg~=0 %add by GM, 20170414
 		readoutQubit{ii}.r_avg=args.r_avg;
 	end
 end
-g = cell(1,numQs)
+g = cell(1,numQs);
 for ii = 1:numQs
 switch args.driveTyp
 	case 'X'
@@ -115,17 +119,17 @@ if numQs == 1
 end
 m = n*args.numPi;
 function procFactory(amp_)
-	ln = 0
-	for ii = 1:numQs
-		g{ii}.amp = amp_[ii];
-		XY = g{ii}^m;
+	ln = 0;
+	for ii_ = 1:numQs
+		g{ii_}.amp = amp_(ii_);
+		XY = g{ii_}^m;
 		if numQs == 1
 			Z.ln = XY.length + 2*args.biasLonger;
 			proc = Z.*(I*XY);
 		else
 			proc = XY;
 		end
-		ln = max(ln,XY);
+		ln = max(ln,XY.length);
 		proc.Run();
 	end
 	R.delay = ln;
@@ -150,24 +154,34 @@ else
 				'dataTyp %s not supported for parallel measurement.',...
 				args.dataTyp));
 	end
-	R = measure.resonatorReadout(readoutQubit,true);
+	R = measure.resonatorReadout(readoutQubit,false);
 end
 
-x = expParam(g,'f01');
-x.offset = driveQubit.f01;
-x.name = [driveQubit.name,' detunning(f-f01, Hz)'];
+x = expParam(g{1},'f01'); % numQs == 1 only
+x.offset = driveQubit{1}.f01;
+x.name = [driveQubit{1}.name,' detunning(f-f01, Hz)'];
 y = expParam(@procFactory);
-y.name = [driveQubit.name,' xyDriveAmp'];
+if numQs == 1
+    y.name = [driveQubit{1}.name,' xyDriveAmp'];
+else
+    y.name = 'xyDriveAmp';
+end
 
 s1 = sweep(x);
 s1.vals = args.detuning;
 s2 = sweep(y);
-s2.vals = cell2mat(args.xyDriveAmp(:)).';
+if numQs == 1
+    s2.vals = args.xyDriveAmp;
+else
+    s2.vals = cell2mat(args.xyDriveAmp(:)).';
+end
 e = experiment();
 e.sweeps = [s1,s2];
 e.measurements = R;
 e.name = 'rabi_amp111';
-e.datafileprefix = sprintf('[%s]_rabi', readoutQubit.name);
+if numQs == 1
+    e.datafileprefix = sprintf('[%s]_rabi', readoutQubit{1}.name);
+end
 
 if ~args.gui
     e.showctrlpanel = false;

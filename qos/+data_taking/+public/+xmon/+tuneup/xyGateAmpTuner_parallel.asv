@@ -18,7 +18,7 @@ function varargout = xyGateAmpTuner(varargin)
     % Yulin Wu, 2017/1/8
     import data_taking.public.xmon.rabi_amp1
 	
-	NUM_RABI_SAMPLING_PTS = 50;
+	NUM_RABI_SAMPLING_PTS = 30;
 	MIN_VISIBILITY = 0.3;
 	AE_NUM_PI = 11; % must be an positive odd integer
 	
@@ -87,22 +87,19 @@ function varargout = xyGateAmpTuner(varargin)
 		currentGateAmp = qubits{ii}.(gateAmpSettingsKey); % QS.loadSSettings({q.name,gateAmpSettingsKey});
 		% amps{ii} = linspace(0.95*gateAmp,min(daChnl.vpp,1.05*gateAmp),NUM_RABI_SAMPLING_PTS*3);
 		amps{ii} = linspace((1-args.tuneRange)*currentGateAmp,...
-				min(daChnl.vpp,(1+args.tuneRange)*currentGateAmp),NUM_RABI_SAMPLING_PTS);
+				min(daChnl.vpp,(1+args.tuneRange)*currentGateAmp),NUM_RABI_SAMPLING_PTS*3);
 	end
 
 	e = rabi_amp1('qubit',qubits,'biasAmp',0,'biasLonger',0,'xyDriveAmp',amps,...
-		'detuning',0,'numPi',args.AENumPi,'driveTyp',args.gateTyp,'gui',false,'save',false);
+		'detuning',0,'numPi',numPi,'driveTyp',args.gateTyp,'gui',false,'save',false);
 	
 	data = e.data{1};
-    for ii = 1:numel(data)
-        data{ii}(:,1) = [];
-    end
-	data = cell2mat(data);
+	data = cell2mat(data(:));
 	
 	allGateAmps = nan(1,numQs);
 	for ii = 1:numQs
 	q = qubits{ii};
-    P = data(ii,:);
+    P = data(:,ii);
 	
 	rP = range(P);
 	P0 = min(P);
@@ -115,7 +112,7 @@ function varargout = xyGateAmpTuner(varargin)
 				'readout average number %d too small.', q.r_avg));
     end
     
-    gateAmp = findsPkLoc(amps{ii},P);
+    gateAmp = findsPkLoc(amps,P);
 	allGateAmps(ii) = gateAmp;
 	if isempty(gateAmp)
 		throw(MException('QOS_xyGateAmpTuner:gateAmpNotFound',...
@@ -125,7 +122,7 @@ function varargout = xyGateAmpTuner(varargin)
 	if args.gui
 		h = qes.ui.qosFigure(sprintf('XY Gate Tuner | %s: %s', q.name, args.gateTyp),true);
 		ax = axes('parent',h);
-		plot(ax,amps{ii},P,'-b');
+		plot(ax,amps,P,'-b');
 		hold(ax,'on');
         if args.AE
            plot(ax,amps_ae,P_ae);

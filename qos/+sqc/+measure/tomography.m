@@ -29,9 +29,10 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
     end
     methods
         function obj = tomography(qubits, readoutGates,isParallel)
-			if nargin > 3
+            obj = obj@qes.measurement.measurement([]);
+			if nargin > 2
 				obj.isParallel = isParallel;
-			end
+            end
 			import sqc.op.physical.gate.*
 			if ~iscell(qubits)
                 qubits = {qubits};
@@ -42,7 +43,6 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
                     qubits{ii} = sqc.util.qName2Obj(qubits{ii});
 				end
             end
-            obj = obj@qes.measurement.measurement([]);
 			obj.qubits = qubits;
 			obj.readoutGates = cell(1,numTomoQs);
             obj.numReadouts = numel(readoutGates);
@@ -57,14 +57,14 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
                 end
             end
             obj.numericscalardata = false;
-			obj.R = sqc.measure.resonatorReadout(obj.qubits,isParallel);
+			obj.R = sqc.measure.resonatorReadout(obj.qubits,~isParallel);
         end
         function Run(obj)
             Run@qes.measurement.measurement(obj);
 			if obj.isParallel
-				obj.runJoint();
+                obj.runParallel();
 			else
-				obj.runParallel();
+				obj.runJoint();
 			end
         end
     end

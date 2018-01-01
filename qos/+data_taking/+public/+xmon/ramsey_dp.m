@@ -1,4 +1,6 @@
 function varargout = ramsey_dp(varargin)
+% support multi-qubit parallel process
+%
 % ramsey: ramsey oscillation,..
 % detune by changing the second pi/2 pulse tracking frame
 % 
@@ -26,7 +28,6 @@ function varargout = ramsey_dp(varargin)
 
     args = util.processArgs(varargin,{'phaseOffset',0,'dataTyp','P',...
         'gui',false,'notes','','detuning',0,'save',true});
-    q = data_taking.public.util.getQubits(args,{'qubit'});
 	
 	allQubits = sqc.util.loadQubits();
 	qubits = args.qubit; % qubit not qubits because this function only support one qubit measurement when first written
@@ -40,10 +41,9 @@ function varargout = ramsey_dp(varargin)
 	Z = cell(1,numQs);
 	for ii = 1:numQs
 		if ischar(qubits{ii})
-			q = allQubits{qes.util.find(qubits{ii},allQubits)};
-		else
-			q = qubits{ii};
-		end
+			qubits{ii} = allQubits{qes.util.find(qubits{ii},allQubits)};
+        end
+        q = qubits{ii};
 		X2{ii} = op.XY2(q,pi/2+args.phaseOffset);
 		X2_{ii} = op.XY2(q,-pi/2);
 		I{ii} = gate.I(q);
@@ -62,10 +62,10 @@ function varargout = ramsey_dp(varargin)
     isPhase = false;
     switch args.dataTyp
         case 'P'
-            R = measure.resonatorReadout_ss(qubits,parallelReadout);
+            R = measure.resonatorReadout_ss(qubits);
             R.state = 2;
         case 'S21'
-            R = measure.resonatorReadout_ss(qubits); % ther is no parallelReadout for S21
+            R = measure.resonatorReadout_ss(qubits); 
             R.swapdata = true;
             R.name = 'iq';
             R.datafcn = @(x)mean(abs(x));
@@ -84,21 +84,22 @@ function varargout = ramsey_dp(varargin)
 	daSamplingRate = daChnl.samplingRate;
 
     function procFactory(delay)
-        I.ln = delay;
         phase = 2*pi*detuning.val*delay/daSamplingRate+args.phaseOffset;
         if isPhase
             Z{1}.phase = phase;
             proc = X2_{1}*I{1}*Z{1};
-			for ii = 1:numQs
-				proc = proc.*(X2_{ii}*I{ii}*Z{ii});
+			for ii_ = 1:numQs
+                I{ii}.ln = delay;
+				proc = proc.*(X2_{ii_}*I{ii_}*Z{ii_});
 			end
             R.setProcess(proc);
         else
             X2{1}.phi = -phase;
 			proc = X2_{1}*I{1}*X2{1};
-			for ii = 1:numQs
-				X2{ii}.phi = -phase;
-				proc = proc.*(X2_{ii}*I{ii}*X2{ii});
+			for ii_ = 1:numQs
+                I{ii}.ln = delay;
+				X2{ii_}.phi = -phase;
+				proc = proc.*(X2_{ii_}*I{ii_}*X2{ii_});
 			end
 			proc.Run();
             R.delay = proc.length;

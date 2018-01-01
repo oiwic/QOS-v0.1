@@ -1,0 +1,22 @@
+% setQSettings('r_avg',2000);
+% qubits = {'q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11'};
+% qubits = {'q3','q4'};
+% tuneup.correctf01byPhase('qubits',qubits,'delayTime',1e-6,'gui','true','save','ask');
+
+% qubits = {'q1','q3','q5','q7','q9','q11'};
+% qubits = {'q2','q4','q6','q8','q10','q12'};
+% tuneup.correctf01byPhase('qubits',qubits,'delayTime',1e-6,'gui','true','save','ask');
+
+gui
+
+setQSettings('r_avg',2000);
+
+qubits = {'q1','q4','q7','q10'};
+tuneup.iq2prob_01_parallel('qubits',qubits,'numSamples',1e4,'gui',false,'save',true);
+tuneup.correctf01byPhase('qubits',qubits,'delayTime',1e-6,'gui','true','save',true);
+qubits = {'q2','q5','q8','q11'};
+tuneup.correctf01byPhase('qubits',qubits,'delayTime',1e-6,'gui','true','save',true);
+qubits = {'q3','q6','q9'};
+tuneup.correctf01byPhase('qubits',qubits,'delayTime',1e-6,'gui','true','save',true);
+
+%%

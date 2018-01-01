@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q4';
+q = 'q7';
 
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
@@ -30,15 +30,15 @@ for ii = 1:numel(qubits)
     tuneup.iq2prob_01('qubit',q,'numSamples',5e4,'gui',true,'save',true);
 end
 %%
-qubits = {'q7','q9','q8'};
-tuneup.iq2prob_01_multiplexed('qubits',qubits,'numSamples',2e4,'gui',true,'save',true);
+qubits = {'q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11'};
+tuneup.iq2prob_01_parallel('qubits',qubits,'numSamples',1e4,'gui',false,'save',false);
 %%
 tuneup.APE('qubit','q7',...
       'phase',-pi:pi/40:pi,'numI',4,...
       'gui',true,'save',true);
 %%
 setQSettings('r_avg',5000);
-tuneup.DRAGAlphaAPE('qubit','q7','alpha',[-0.5:0.02:0.5],...
+tuneup.DRAGAlphaAPE('qubit','q8','alpha',[0.8:0.02:1.3],...
     'phase',0,'numI',45,...
     'gui',true,'save',true);
 %%
@@ -62,19 +62,28 @@ zPulseRipple('qubit','q7',...
     s.type = 'function';
     s.funcName = 'qes.waveform.xfrFunc.gaussianExp';
     s.bandWidht = 0.25;
-%     s.r = [0.0113]; % q8
-%     s.td = [600]; % q8
-%     s.r = [0.0140]; % q6
-%     s.td = [365];  % q6
     
-    s.r = [0.0130]; % q5
-    s.td = [600];  % q5
+%     q = 'q2';
+%     s.r = [0.013]; % q2
+%     s.td = [833]; % q2
+%     q = 'q4';
+%     s.r = [0.014]; % q4
+%     s.td = [634]; % q4
+%     q = 'q5';
+%     s.r = [0.017]; % q5
+%     s.td = [664]; % q5
+%     q = 'q6';
+%     s.r = [0.035]; % q6
+%     s.td = [554]; % q6
+%       q = 'q8';
+%       s.r = [0.019]; % q6
+%       s.td = [570]; % q6
+      
+            q = 'q10';
+      s.r = [0.019]; % q6
+      s.td = [570]; % q6
 
-%     s.r = 0.011; % q7
-%     s.td = 765;  % q7
-    
-%     s.r = 0.011; % q7
-%     s.td = 765;  % q7
+
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
     xfrFunc_inv = xfrFunc.inv();
@@ -82,18 +91,17 @@ zPulseRipple('qubit','q7',...
     xfrFunc_f = xfrFunc_lp.add(xfrFunc_inv);
 
 %     fi = fftshift(qes.util.fftFreq(6000,1));
-%     fsamples = xfrFunc_inv.eval(fi);
+%     fsamples = xfrFunc_inv.samples_t(fi);
 %     figure();
 %     plot(fi, fsamples(1:2:end),'-r');
-%     fsamples = xfrFunc_f.eval(fi);
+%     fsamples = xfrFunc_f.samples_t(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-b');
 
-q = 'q2';
 
-delayTime = [0:100:2e3];
+delayTime = [0:50:1500];
 setQSettings('r_avg',5000);
 zPulseRipplePhase('qubit',q,'delayTime',delayTime,...
-       'xfrFunc',[],'zAmp',-20e3,'s',s,...
+       'xfrFunc',[xfrFunc_f],'zAmp',1e4,'s',s,...
        'notes','','gui',true,'save',true);
 %%
 s = struct();
