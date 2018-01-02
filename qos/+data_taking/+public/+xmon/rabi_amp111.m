@@ -173,7 +173,7 @@ s2 = sweep(y);
 if numQs == 1
     s2.vals = args.xyDriveAmp;
 else
-    s2.vals = cell2mat(args.xyDriveAmp(:)).';
+    s2.vals = cell2mat(args.xyDriveAmp(:));
 end
 e = experiment();
 e.sweeps = [s1,s2];

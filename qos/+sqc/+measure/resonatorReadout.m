@@ -47,7 +47,7 @@ classdef resonatorReadout < qes.measurement.prob
     methods
         function obj = resonatorReadout(qubits,jointReadout, iqAsExtraData)
 			if nargin < 2
-				jointReadout = false;
+				jointReadout = true;
 				iqAsExtraData = true;
 			elseif nargin < 3
 				iqAsExtraData = false;

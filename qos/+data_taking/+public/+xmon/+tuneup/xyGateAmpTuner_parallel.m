@@ -79,7 +79,7 @@ function varargout = xyGateAmpTuner(varargin)
                 sprintf('gate %s is not supported, supported types are %s',args.gateTyp,...
                 'X Y X/2 -X/2 X2m X2p X/4 -X/4 X4m X4p Y/2 -Y/2 Y2m Y2p Y/4 -Y/4 Y4m Y4p')));
     end
-	amps = cell(1,numQs);
+	amps = cell(numQs,1);
 	for ii = 1:numQs
 		da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
                         'name', qubits{ii}.channels.xy_i.instru);
@@ -140,7 +140,7 @@ function varargout = xyGateAmpTuner(varargin)
                 [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
                 sprintf('%s gate amplitude',args.gateTyp)});
         else
-            legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
+            legend(ax,{[sprintf('data(%d',args.AENumPi),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
         end
         set(ax,'YLim',ylim);
         drawnow;

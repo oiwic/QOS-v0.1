@@ -52,9 +52,6 @@ classdef (Sealed = true)sweep < qes.qHandle
 		size    % number of sweep steps
         paramnames; % name of parameter objects
     end
-	properties (SetAccess = private, GetAccess = private)
-		isScalarVal
-    end
 	methods
         function obj = sweep(ExpParamObjs,MainParam)
             % note: you can create a null sweeper by sweep([]) or sweep(),
@@ -101,45 +98,35 @@ classdef (Sealed = true)sweep < qes.qHandle
             end
         end
         function set.vals(obj, ParamVals)
+            % sweep size is the number of rows*, each column is taken
+            % as a sweep value, one row: scalar value sweep,
+            % multiple rows: vector value sweep, property or function that
+            % takes a vector as value/argument
             if isempty(obj.paramobjs)
                 return;
             end
-            NumParams = numel(obj.paramobjs);
-            if NumParams > 1
-                if~iscell(ParamVals) || numel(ParamVals) ~= NumParams
-                    error('sweep:InvalidInput',...
-                        'if paramobjs is an array(muti ExpParam class objects), vals should be a cell array of the same length.');
-                else % check sweep values for all ExpParamObjs have the same length.
-                    sz = zeros(1,NumParams);
-                    for ii = 1:NumParams
-                        sz(ii) = numel(ParamVals{ii});
-                    end
-                    if numel(unique(sz)) > 1
-                        error('sweep:InvalidInput',...
-                            'sweep values are not of the same length.');
-                    end
-                end
-            else % null sweep
-                if ~iscell(ParamVals)
-                    ParamVals =  {ParamVals};
-                else
-                    ParamVals = ParamVals(1);
-                end
+            if ~iscell(ParamVals)
+                ParamVals = {ParamVals};
             end
-			for ii = 1:NumParams
-				sz = size(ParamVals{ii});
-				if all(sz > 1)
-					% in case of matrix, param vals are taken as ParamVals{ithParam}(stepInd, :)
-					if size(sz) > 2
-						error('sweep:InvalidInput',...
+            NumParams = numel(obj.paramobjs);
+            if numel(ParamVals) ~= NumParams
+                error('sweep:InvalidInput',...
+                        'vals not of the same length as number of paramobjs.');
+            end
+            sz = zeros(1,NumParams);
+            for ii = 1:NumParams
+                sz_ = size(ParamVals{ii});
+				if length(sz_) > 2
+					error('sweep:InvalidInput',...
                             '3D or higher dimension matrix as ParamVals is not supported');
-					end
-					obj.isScalarVal(ii) = false;
-				else
-					obj.isScalarVal(ii) = true;
-				end
-			end
-            obj.vals = ParamVals(:);
+                end
+                sz(ii) = sz_(2);
+            end
+            if numel(unique(sz)) > 1
+                error('sweep:InvalidInput',...
+                    'sweep values are not of the same length.');
+            end
+            obj.vals = ParamVals;
         end
         function set.mask(obj,val)
             if isempty(val)
@@ -203,7 +190,7 @@ classdef (Sealed = true)sweep < qes.qHandle
                 return;
             end
             sz = size(obj.vals{1});
-            sz = sz(1);
+            sz = sz(2);
         end
         function Step(obj)
             if obj.idx <= obj.size
@@ -214,11 +201,7 @@ classdef (Sealed = true)sweep < qes.qHandle
                     feval(obj.prestepcallbacks{ii},obj);
                 end
                 for ii = 1:numel(obj.paramobjs)
-					if obj.isScalarVal(ii)
-						obj.paramobjs(ii).val = obj.vals{ii}(obj.idx);
-					else
-						obj.paramobjs(ii).val = obj.vals{ii}(obj.idx,:);
-					end
+					obj.paramobjs(ii).val = obj.vals{ii}(:,obj.idx);
                 end
                 for ii = 1:numel(obj.poststepcallbacks)
                     % do not use cellfun, cellfun function does not perform
@@ -235,7 +218,7 @@ classdef (Sealed = true)sweep < qes.qHandle
                 end
                 obj.idx = obj.idx + 1;
                 while 1
-                    if obj.IsDone() || isempty(obj.mask) || obj.mask(obj.idx)
+                    if isempty(obj.mask) || obj.mask(obj.idx) || obj.IsDone()
                         break;
                     end
                     obj.Skip();
