@@ -170,25 +170,8 @@ classdef gateParser
                 end
             end
         end
-        function p = parseLogicalProb(gateMat)
-            % GHZ sate example
-%             gateMat = {'Y2p','Y2m','I',  'I',  'I';
-%             'CZ','CZ',  'I',  'I',  'I';
-%             'I','Y2p','Y2m',  'I',  'I';
-%             'I','CZ',  'CZ',  'I', 'I';
-%             'I','I',  'Y2p','Y2m', 'I';
-%             'I','I',  'CZ',  'CZ', 'I';
-%             'I','I',  'I',  'Y2p','Y2m';
-%             'I','I',  'I',   'CZ','CZ';
-%             'I','I',  'I',    'I','Y2p'};
-%             p = sqc.op.physical.gateParser.parseLogicalProb(gateMat);
-%             figure();bar(p);
-
-            g = sqc.op.physical.gateParser.parseLogical(gateMat);
-            v = zeros(2^size(gateMat,2),1);
-            v(1) = 1;
-            f = g*v;
-            p = real(f).^2+imag(f).^2;
+        function p = parseLogicalProb()
+            
         end
     end
     

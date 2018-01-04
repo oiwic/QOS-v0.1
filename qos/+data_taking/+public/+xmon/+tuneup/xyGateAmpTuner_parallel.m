@@ -94,10 +94,12 @@ function varargout = xyGateAmpTuner(varargin)
 		'detuning',0,'numPi',args.AENumPi,'driveTyp',args.gateTyp,'gui',false,'save',false);
 	
 	data = e.data{1};
-    for ii = 1:numel(data)
-        data{ii}(:,1) = [];
+    if numQs > 1
+        for ii = 1:numel(data)
+            data{ii}(:,1) = [];
+        end
+        data = cell2mat(data);
     end
-	data = cell2mat(data);
 	
 	allGateAmps = nan(1,numQs);
 	for ii = 1:numQs

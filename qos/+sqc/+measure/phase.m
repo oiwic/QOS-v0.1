@@ -6,7 +6,7 @@ classdef phase < sqc.measure.phaseTomography
 
     methods
         function obj = phase(qubits, isParallel)
-			if ischar(qubits)
+			if ~iscell(qubits)
 				qubits = {qubits};
 			end
 			if nargin < 2

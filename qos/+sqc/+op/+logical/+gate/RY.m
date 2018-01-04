@@ -1,6 +1,6 @@
 classdef RY < sqc.op.logical.operator
     % Y rotation
-    % also RX = exp(-1j*theta/2*sigmaY)
+    % also RY = exp(-1j*theta/2*sigmaY)
 
 % Copyright 2015 Yulin Wu, Institute of Physics, Chinese  Academy of Sciences
 % mail4ywu@gmail.com/mail4ywu@icloud.com

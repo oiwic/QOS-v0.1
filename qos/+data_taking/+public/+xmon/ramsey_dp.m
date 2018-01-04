@@ -87,17 +87,20 @@ function varargout = ramsey_dp(varargin)
         phase = 2*pi*detuning.val*delay/daSamplingRate+args.phaseOffset;
         if isPhase
             Z{1}.phase = phase;
+            I{1}.ln = delay;
             proc = X2_{1}*I{1}*Z{1};
-			for ii_ = 1:numQs
-                I{ii}.ln = delay;
+			for ii_ = 2:numQs
+                Z{ii_}.phase = phase;
+                I{ii_}.ln = delay;
 				proc = proc.*(X2_{ii_}*I{ii_}*Z{ii_});
 			end
             R.setProcess(proc);
         else
+            I{1}.ln = delay;
             X2{1}.phi = -phase;
 			proc = X2_{1}*I{1}*X2{1};
-			for ii_ = 1:numQs
-                I{ii}.ln = delay;
+			for ii_ = 2:numQs
+                I{ii_}.ln = delay;
 				X2{ii_}.phi = -phase;
 				proc = proc.*(X2_{ii_}*I{ii_}*X2{ii_});
 			end

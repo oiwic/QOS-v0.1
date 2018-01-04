@@ -47,13 +47,26 @@ function varargout = czAmplitude(varargin)
     fdp_ = fdp;
     fdp_(3)=fdp_(3)-1;
     rd=roots(fdp_);
+    if numel(rd) == 1
+        if ~isreal(rd)
+            rd = [];
+        end
+    else
+        rd = rd([isreal(rd(1)), isreal(rd(2))]);
+    end
     ampBnd = minmax([czAmp(1),czAmp(end)]);
     czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
     if isempty(czamp)
         fdp_ = fdp;
         fdp_(3)=fdp_(3)+1;
         rd=roots(fdp_);
-        rd = rd(isreal(rd));
+        if numel(rd) == 1
+            if ~isreal(rd)
+                rd = [];
+            end
+        else
+            rd = rd([isreal(rd(1)), isreal(rd(2))]);
+        end
         czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
     end
     
@@ -67,10 +80,11 @@ function varargout = czAmplitude(varargin)
                 czAmp,ones(1,length(czAmp)),'--k',czAmp,-ones(1,length(czAmp)),'--k');
             xlabel(ax,'acz amplitude');
             ylabel(ax,'phase(\pi)');
-            legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'})
+            legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'});
+            drawnow;
         end
-        
-        error('acz amplitude not found! Probably out of range.');
+        throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
+            sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
     end
     
     if args.save
@@ -87,6 +101,10 @@ function varargout = czAmplitude(varargin)
         ylabel(ax,'phase(\pi)');
         legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'})
         title(sprintf('acz amplitude: %0.5e',czamp));
+        drawnow;
+        if args.save
+            
+        end
     end
 end
     

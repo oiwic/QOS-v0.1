@@ -39,18 +39,18 @@ function varargout = optReadoutFreq(varargin)
     [~,minIdx1] = min(abs(data(:,1)));
     [~,minIdx2] = min(abs(data(:,2)));
     numPts = size(data,1);
-    if any(abs([minIdx1,minIdx2] - numPts/2) > numPts/2/5*4)
-        if args.gui
-            hf = qes.ui.qosFigure(sprintf('Opt. Readout Freq. | %s', q.name),true);
-            ax_ = axes('parent',hf);
-            plot(ax_,frequency,abs(data(:,1)),'--.r',frequency,abs(data(:,2)),'--.b');legend('|0>','|1>');
-            xlabel('frequency(Hz)');
-            ylabel('|IQ|');
-            title('Error!');
-        end
-        throw(MException('QOS_XmonOptReadoutFreq:inproperSettings',...
-            'inproper r_freq or t_rrDipFWHM_est value, dip(s) out of range.'));
-    end
+%     if any(abs([minIdx1,minIdx2] - numPts/2) > numPts/2/5*4)
+%         if args.gui
+%             hf = qes.ui.qosFigure(sprintf('Opt. Readout Freq. | %s', q.name),true);
+%             ax_ = axes('parent',hf);
+%             plot(ax_,frequency,abs(data(:,1)),'--.r',frequency,abs(data(:,2)),'--.b');legend('|0>','|1>');
+%             xlabel('frequency(Hz)');
+%             ylabel('|IQ|');
+%             title('Error!');
+%         end
+%         throw(MException('QOS_XmonOptReadoutFreq:inproperSettings',...
+%             'inproper r_freq or t_rrDipFWHM_est value, dip(s) out of range.'));
+%     end
 
 %     data(:,1) = smooth(data(:,1),3);
 %     data(:,2) = smooth(data(:,2),3);

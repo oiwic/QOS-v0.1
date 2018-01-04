@@ -75,14 +75,13 @@ td = td/2/1000;
 wci = wci/2/1000;
 %%
 bias2f01 = @(x)x*1e9; % in case of no bias2f01 transformation needed.
-% % bias2f01 = @(x)(- 2.99e-10*x.^2 - 9.005e-06*x + 5.572)*1e9;
-bias2f01 = @(x) -1.11288*x.^2+94.15653*x+5.10766e9;
+bias2f01 = @(x) polyval([-0.53508,31.33263,4.9197e9],x);
 
 figure();
 h = pcolor(bias2f01(bias)/1e9,time,z'); set(h,'EdgeColor','none')
 hold on;
 errorbar(bias2f01(bias)/1e9,td,td-wci(:,1)',wci(:,2)'-td,'ro-','MarkerSize',5,'MarkerFaceColor',[1,1,1]);
-xlabel('Z Bias');
+xlabel('f01 (GHz)');
 ylabel('Time (us)');
 colormap(jet);
 

@@ -1,5 +1,5 @@
 % data_taking.public.scripts.temp.GHZ_5Q()
-function GHZ_5Q()
+function GHZ_4Q()
     import sqc.measure.*
     import sqc.util.qName2Obj
     
@@ -7,18 +7,19 @@ function GHZ_5Q()
     import sqc.measure.*
     import sqc.util.qName2Obj
     
+    import sqc.util.getQSettings
+    import sqc.util.setQSettings
+    
     rAvg = 20000;
     setQSettings('r_avg',rAvg);
-    qNames = {'q1','q2','q3','q4','q5'};          
-    gateMat = {'Y2p','Y2m','I',  'I',  'I';
-               'CZ','CZ',  'I',  'I',  'I';
-               'I','Y2p','Y2m',  'I',  'I';
-               'I','CZ',  'CZ',  'I', 'I';
-               'I','I',  'Y2p','Y2m', 'I';
-               'I','I',  'CZ',  'CZ', 'I';
-               'I','I',  'I',  'Y2p','Y2m';
-               'I','I',  'I',   'CZ','CZ';
-               'I','I',  'I',    'I','Y2p'};
+    qNames = {'q1','q2','q3','q4'};          
+    gateMat = {'Y2p','Y2m','I',  'I';
+               'CZ','CZ',  'I',  'I';
+               'I','Y2p','Y2m',  'I';
+               'I','CZ',  'CZ',  'I';
+               'I','I',  'Y2p','Y2m';
+               'I','I',  'CZ',  'CZ';
+               'I','I',  'I',  'Y2p'};
 
    qubits = cell(1,numel(qNames));
    for ii = 1:numel(qNames)
@@ -29,11 +30,11 @@ function GHZ_5Q()
    Rtomo.setProcess(sqc.op.physical.gateParser.parse(qubits,gateMat));
    tomoData = Rtomo();
    
-   rhoIdeal = zeros(32,32);
+   rhoIdeal = zeros(16,16);
    rhoIdeal(1,1) = 0.5;
-   rhoIdeal(32,1) = 0.5;
-   rhoIdeal(32,32) = 0.5;
-   rhoIdeal(1,32) = 0.5;
+   rhoIdeal(16,1) = 0.5;
+   rhoIdeal(16,16) = 0.5;
+   rhoIdeal(1,16) = 0.5;
    
    ax = qes.util.plotfcn.Rho(tomoData,[],1,true);
    qes.util.plotfcn.Rho(rhoIdeal,ax,0,false);
@@ -46,9 +47,9 @@ function GHZ_5Q()
    timeStamp = datestr(now,'_yymmddTHHMMSS_');
    rndNum = num2str(ceil(99*rand(1,1)),'%0.0f');
    datafile = fullfile(QS.loadSSettings('data_path'),...
-            ['5QGHZ',timeStamp,rndNum,'_.mat']);
+            ['4QGHZ',timeStamp,rndNum,'_.mat']);
    figfile = fullfile(QS.loadSSettings('data_path'),...
-            ['5QGHZ',timeStamp,rndNum,'_.fig']);
+            ['4QGHZ',timeStamp,rndNum,'_.fig']);
         
    save(datafile,'tomoData','qubits','gateMat');
    if ishghandle(ax(1))

@@ -21,8 +21,8 @@ ramsey('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
 %%
 setQSettings('r_avg',5000);
-ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:50:10e3],'detuning',[-2]*1e6,...
+ramsey('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
+      'time',[0:50:2000],'detuning',[0]*1e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true); % P or Phase
 %%
 ramsey_dz('qubit','q1',...

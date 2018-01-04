@@ -58,6 +58,15 @@ if iscell(args.driveQubit) && numel(args.driveQubit) > 1
 	readoutQubit = driveQubit;
 	biasQubit = driveQubit;
 else
+    if iscell(args.driveQubit)
+        args.driveQubit = args.driveQubit{1};
+    end
+    if iscell(args.biasQubit)
+        args.biasQubit = args.biasQubit{1};
+    end
+    if iscell(args.readoutQubit)
+        args.readoutQubit = args.readoutQubit{1};
+    end
 	isParallel = false;	
 	[readoutQubit, biasQubit, driveQubit] =...
 		data_taking.public.util.getQubits(args,{'readoutQubit', 'biasQubit', 'driveQubit'});
