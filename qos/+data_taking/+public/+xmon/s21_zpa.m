@@ -30,7 +30,7 @@ function varargout = s21_zpa(varargin)
     end
 
     Z = op.zBias4Spectrum(q);
-    R = measure.resonatorReadout_ss(q);
+    R = measure.resonatorReadout_ss(q,false,true);
     R.state = 1;
     R.swapdata = true;
     R.name = 'IQ';

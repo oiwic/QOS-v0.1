@@ -42,7 +42,7 @@ X = op.mwDrive4Spectrum(q);
 X.amp = args.xyDriveAmp(1);
 Z = op.zBias4Spectrum(q);
 Z.amp = args.biasAmp;
-R = measure.resonatorReadout_ss(q);
+
 function procFactory(ln)
 	X.ln = ln;
 	Z.ln = ln+2*args.biasLonger;
@@ -53,8 +53,10 @@ end
 
 switch args.dataTyp
     case 'P'
+        R = measure.resonatorReadout_ss(q);
         R.state = 2;
     case 'S21'
+        R = measure.resonatorReadout_ss(q,false,true);
         R.swapdata = true;
         R.name = '|S21|';
         R.datafcn = @(x)mean(abs(x));

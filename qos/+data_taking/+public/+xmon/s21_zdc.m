@@ -28,7 +28,7 @@ function varargout = s21_zdc(varargin)
     dcSrc = qHandle.FindByClassProp('qes.hwdriver.hardware','name',q.channels.z_dc.instru);
     dcChnl = dcSrc.GetChnl(q.channels.z_dc.chnl);
     
-    R = measure.resonatorReadout_ss(q);
+    R = measure.resonatorReadout_ss(q,false,true);
     R.state = 1;
     R.swapdata = true;
     R.name = 'IQ';

@@ -50,7 +50,7 @@ classdef resonatorReadout < qes.measurement.prob
 				jointReadout = true;
 				iqAsExtraData = true;
 			elseif nargin < 3
-				iqAsExtraData = false;
+				iqAsExtraData = true;
 			end
             if ~iscell(qubits)
                 if ~ischar(qubits) && ~isa(qubits,'sqc.qobj.qubit')

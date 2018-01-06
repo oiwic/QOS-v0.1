@@ -144,11 +144,12 @@ function procFactory(amp_)
 	R.delay = ln;
 end
 if numQs == 1
-	R = measure.resonatorReadout_ss(readoutQubit);
 	switch args.dataTyp
 		case 'P'
+            R = measure.resonatorReadout_ss(readoutQubit,false);
 			R.state = 2;
 		case 'S21'
+            R = measure.resonatorReadout_ss(readoutQubit,false,true);
 			R.swapdata = true;
 			R.name = '|IQ|';
 			R.datafcn = @(x)mean(abs(x));

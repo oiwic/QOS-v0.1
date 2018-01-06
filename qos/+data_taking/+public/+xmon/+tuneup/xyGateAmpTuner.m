@@ -100,9 +100,9 @@ function varargout = xyGateAmpTuner(varargin)
         if args.AENumPi <= 11
             amps_ae = linspace(0.9*gateAmp,min(daChnl.vpp,1.1*gateAmp),NUM_RABI_SAMPLING_PTS*2);
         elseif args.AENumPi <= 25
-            amps_ae = linspace(0.95*gateAmp,min(daChnl.vpp,1.05*gateAmp),NUM_RABI_SAMPLING_PTS*3);
+            amps_ae = linspace(0.95*gateAmp,min(daChnl.vpp,1.05*gateAmp),NUM_RABI_SAMPLING_PTS*2);
         else
-            amps_ae = linspace(0.975*gateAmp,min(daChnl.vpp,1.025*gateAmp),NUM_RABI_SAMPLING_PTS*3);
+            amps_ae = linspace(0.975*gateAmp,min(daChnl.vpp,1.025*gateAmp),NUM_RABI_SAMPLING_PTS*2);
         end
 %         switch args.gateTyp
 %             case {'X','Y'}

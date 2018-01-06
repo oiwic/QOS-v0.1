@@ -138,7 +138,6 @@ for II=1:length(inx)
     end
 end
 
-% UCSB fit type
 % function f__ = amp2f01__(param_,x_)
 %     f__ = param_(3)*sqrt(abs(cos(pi*param_(1)*abs(x_-param_(2)))))+...
 %         param_(4)*(sqrt(abs(cos(pi*param_(1)*abs(x_-param_(2)))))-1);

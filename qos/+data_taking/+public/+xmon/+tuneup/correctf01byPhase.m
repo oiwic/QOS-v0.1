@@ -102,12 +102,19 @@ function varargout = correctf01byPhase(varargin)
         if updateSettings
             QS = qes.qSettings.GetInstance();
             QS.saveSSettings({q.name,'f01'},num2str(f01,'%0.6e'));
-            if ~isempty(hf) && isvalid(hf)
-                dataSvName = fullfile(QS.loadSSettings('data_path'),...
-                    ['corrF01_',q.name,'_',datestr(now,'yymmddTHHMMSS'),...
-                    num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
-                saveas(hf,dataSvName);
+            dataFolder = fullfile(QS.loadSSettings('data_path'),'cal','correctF01ByPhase');
+            if ~exist(dataFolder,'dir')
+                mkdir(dataFolder);
             end
+            dataFileName = [q.name,'_',datestr(now,'yymmddTHHMMSS'),...
+                    num2str(ceil(99*rand(1,1)),'%0.0f'),'_'];
+            if ~isempty(hf) && isvalid(hf)
+                figName = fullfile(dataFolder,[dataFileName,'.fig']);
+                saveas(hf,figName);
+            end
+            dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);
+            time = t_; % ns
+            save(dataFileName,'time','phase','p');
         end
         allf01s(ii) = f01;
 	end

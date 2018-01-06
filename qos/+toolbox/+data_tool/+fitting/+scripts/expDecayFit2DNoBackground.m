@@ -75,7 +75,7 @@ td = td/2/1000;
 wci = wci/2/1000;
 %%
 bias2f01 = @(x)x*1e9; % in case of no bias2f01 transformation needed.
-bias2f01 = @(x) polyval([-0.53508,31.33263,4.9197e9],x);
+% bias2f01 = @(x) polyval([-0.17523,1.63354e4,4.42718e9],x);
 
 figure();
 h = pcolor(bias2f01(bias)/1e9,time,z'); set(h,'EdgeColor','none')
@@ -84,4 +84,17 @@ errorbar(bias2f01(bias)/1e9,td,td-wci(:,1)',wci(:,2)'-td,'ro-','MarkerSize',5,'M
 xlabel('f01 (GHz)');
 ylabel('Time (us)');
 colormap(jet);
+
+f01 = bias2f01(bias)/1e9;
+df = diff(f01);
+df = [df(1),df];
+
+mTd = mean(td);
+stdTd = std(td);
+ind = abs(td - mTd) < 2*stdTd;
+td_ = td(ind);
+df_ = df(ind);
+tdAvg = sum(td_.*abs(df_))/sum(abs(df));
+% tdAvg = mean(td_);
+disp(['average T1: ',num2str(tdAvg)]);
 

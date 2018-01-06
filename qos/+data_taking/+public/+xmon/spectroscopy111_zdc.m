@@ -40,7 +40,6 @@ if ~isempty(args.r_avg)
 end
 driveQubit.zdc_amp = args.biasAmp(1);
 X = op.mwDrive4Spectrum(driveQubit);
-
 switch args.dataTyp %add by GM, 20170415
     case 'P'
         R = measure.resonatorReadout_ss(readoutQubit);

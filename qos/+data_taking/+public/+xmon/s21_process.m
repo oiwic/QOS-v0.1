@@ -35,7 +35,7 @@ function varargout = s21_process(varargin)
         args.amp = q.r_amp;
     end
     
-    R = measure.resonatorReadout_ss(q);
+    R = measure.resonatorReadout_ss(q,false,true);
     R.swapdata = true;
     R.name = 'IQ';
     R.datafcn = @(x)mean(x);

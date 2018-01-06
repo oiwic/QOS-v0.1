@@ -26,7 +26,7 @@ function varargout = iqProbStability(varargin)
 
     X = gate.X(q);
     X2 = gate.Y2p(q);
-    R = measure.resonatorReadout(q);
+    R = measure.resonatorReadout(q,false,true);
     R.delay = max(X.length,X2.length);
     
     hf = qes.ui.qosFigure(sprintf('IQ stability' ),false);

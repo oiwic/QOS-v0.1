@@ -168,10 +168,15 @@ classdef iq_ustc_ad < qes.measurement.iq
 				[I, Q]= obj.adI.Run(obj.n);
 				
 				obj.IQ = (I+1j*Q).';
-			else
-				% tic
-				[Vi,Vq] = obj.adI.Run(obj.n);
-             % toc
+            else
+                %%%
+                % constant overhead: 0.167 sec.
+                % relative overhead: 12%,
+                % blows up around obj.n = 1.5e4;
+                % tested on LD system with 150us repetition time on 2018-01-06 
+% 				tic
+                [Vi,Vq] = obj.adI.Run(obj.n);
+%              toc
 				Vi = double(Vi) -127;
 				Vq = double(Vq) -127;
                 
@@ -217,7 +222,8 @@ classdef iq_ustc_ad < qes.measurement.iq
                 % obj.selectidx = obj.startidx:obj.upSampleNum:eidx;
                 % t = (obj.selectidx-obj.startidx)/...
                 %     (obj.adI.samplingRate*obj.upSampleNum);
-                obj.kernel{ii} = exp(-t/obj.T1(ii)-2j*pi*obj.freq(ii).*t);
+                obj.kernel{ii} = exp(-2j*pi*obj.freq(ii).*t);
+%                 obj.kernel{ii} = exp(-t/obj.T1(ii)-2j*pi*obj.freq(ii).*t);
             end
         end
         

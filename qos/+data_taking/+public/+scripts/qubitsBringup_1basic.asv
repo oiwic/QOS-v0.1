@@ -46,7 +46,7 @@ s21_zdc_networkAnalyzer('qubit',qNames{qubitIndex},...% 'NAName' can be ommitted
       'gui',true,'save',true);
 end
 %% s21 with DAC, a coarse scan to find all the qubit readoutFreqs
-s21_rAmp('qubit','q8','freq',[6.78065e9-3e6:0.02e6:6.78065e9+3e6],'amp',6000,...
+s21_rAmp('qubit','q8','freq',[6e3:0.02e6:6.7809e9],'amp',7000,...
       'notes','','gui',true,'save',true);
 %% finds all qubit readoutFreqs automatically by fine s21 scan, session/public/autoConfig.readoutResonators.* has to be properly set for it to work
 [readoutFreqs, pkWithd] = auto.qubitreadoutFreqs();

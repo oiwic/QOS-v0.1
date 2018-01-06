@@ -65,7 +65,7 @@ function varargout = ramsey_dp(varargin)
             R = measure.resonatorReadout_ss(qubits);
             R.state = 2;
         case 'S21'
-            R = measure.resonatorReadout_ss(qubits); 
+            R = measure.resonatorReadout_ss(qubits,false,true); 
             R.swapdata = true;
             R.name = 'iq';
             R.datafcn = @(x)mean(abs(x));

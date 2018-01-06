@@ -37,12 +37,12 @@ if ~isempty(args.r_avg)
 end
 
 X = op.mwDrive4Spectrum(driveQubit);
-R = measure.resonatorReadout_ss(readoutQubit);
-R.delay = X.length;
 switch args.dataTyp
     case 'P'
+        R = measure.resonatorReadout_ss(readoutQubit);
         R.state = 2;
     case 'S21'
+        R = measure.resonatorReadout_ss(readoutQubit,false,true);
         R.swapdata = true;
         R.name = '|S21|';
         R.datafcn = @(x)mean(abs(x));
@@ -51,6 +51,7 @@ switch args.dataTyp
 			'unrecognized dataTyp %s, available dataTyp options are P and S21.',...
 			args.dataTyp));
 end
+R.delay = X.length;
 
 Z = op.zBias4Spectrum(biasQubit);
 Z.amp = args.biasAmp;

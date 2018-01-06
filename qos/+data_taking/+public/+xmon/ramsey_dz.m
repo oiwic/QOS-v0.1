@@ -31,14 +31,14 @@ function varargout = ramsey_dz(varargin)
     X2 = op.XY2(q,pi/2+args.phaseOffset);
     X2_ = op.XY2(q,-pi/2);
     I = op.detune(q);
-    R = measure.resonatorReadout_ss(q);
- 
     switch args.dataTyp
         case 'P'
+            R = measure.resonatorReadout_ss(q);
             R.state = 2;
         case 'S21'
+            R = measure.resonatorReadout_ss(q,false,true);
             R.swapdata = true;
-            R.name = 'iq';
+            R.name = '|IQ|';
             R.datafcn = @(x)mean(abs(x));
         otherwise
             throw(MException('QOS_ramsey_dz:unrcognizedDataTyp',...

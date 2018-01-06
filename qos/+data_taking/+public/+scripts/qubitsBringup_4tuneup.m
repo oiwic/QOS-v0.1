@@ -2,7 +2,7 @@
 % Yulin Wu, 2017/3/11
 q = 'q7';
 
-tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
+tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
 tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
 
@@ -17,7 +17,7 @@ qubits = {'q9','q7','q5','q6','q8'};%'q9','q7',,'q8'
 for ii = 1:numel(qubits)
     q = qubits{ii};
     setQSettings('r_avg',2000);
-    tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save',true);
+    tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save',true);
     % tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save',true);
     setQSettings('r_avg',5000);
     tuneup.correctf01byPhase('qubit',q,'delayTime',1e-6,'gui',true,'save',true);
@@ -37,9 +37,9 @@ tuneup.APE('qubit','q7',...
       'phase',-pi:pi/40:pi,'numI',4,...
       'gui',true,'save',true);
 %%
-setQSettings('r_avg',3000);
-tuneup.DRAGAlphaAPE('qubit','q10','alpha',[-3:0.05:3],...
-    'phase',0,'numI',10,...
+setQSettings('r_avg',1500);
+tuneup.DRAGAlphaAPE('qubit','q4','alpha',[0.5:0.02:2],...
+    'phase',0,'numI',30,...
     'gui',true,'save',true);
 %%
 photonNumberCal('qubit','q1',...

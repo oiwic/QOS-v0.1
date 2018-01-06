@@ -1,7 +1,7 @@
-function varargout = iq2prob_01_multiplexed(varargin)
+function varargout = iq2prob_01(varargin)
 % iq2prob_01: calibrate iq to qubit state probability, |0> and |1>
 % 
-% <[_f_]> = iq2prob_01_multiplexed('qubits',[_c&o_],'numSamples',_i_,...
+% <[_f_]> = iq2prob_01('qubit',_c&o_,'numSamples',_i_,...
 %       'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -13,6 +13,7 @@ function varargout = iq2prob_01_multiplexed(varargin)
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified
 % arguments order not important as long as the form correct pairs.
+
 % Yulin Wu, 2017
 
     import qes.*
@@ -22,43 +23,35 @@ function varargout = iq2prob_01_multiplexed(varargin)
 	numSamples_MIN = 1e4;
 	
 	args = util.processArgs(varargin,{'gui',false,'save',true});
-	qubits = args.qubits;
-	if ~iscell(qubits)
-		qubits = {qubits};
-	end
+	q = data_taking.public.util.getQubits(args,{'qubit'});
 	
-	numQs = numel(qubits);
-	Xs = cell(1,numQs);
-	RDelay = 0;
-    for ii = 1:numQs
-        if ischar(qubits{ii})
-            qubits{ii} = sqc.util.qName2Obj(qubits{ii});
-        end
-		qubits{ii}.r_avg = args.numSamples;
-		Xs{ii} = gate.X(qubits{ii});
-		RDelay = max(RDelay,Xs{ii}.length);
-    end
-
     if args.numSamples < numSamples_MIN
         throw(MException('QOS_iq2prob_01:numSamplesTooSmall',...
 			sprintf('numSamples too small, %0.0f minimu.', numSamples_MIN)));
     end
-	
-    R = measure.resonatorReadout(qubits);
-    R.delay = RDelay; 
-    
-    for jj = 1:numQs
-		Xs{jj}.Run();
-	end
-    R.Run();
-    iq_raw_1 = R.extradata;
-	R.Run();
-    iq_raw_0 = R.extradata;
 
-	for ii = 1:numQs
-	q = qubits{ii};
+    X = gate.X(q);
+    R = measure.resonatorReadout(q);
+    R.delay = X.length; 
+
+    num_reps = ceil(args.numSamples/q.r_avg);
+    iq_raw_1 = NaN*ones(num_reps,q.r_avg);
+    for ii = 1:num_reps
+        X.Run();
+        R.Run();
+        iq_raw_1(ii,:) = R.extradata;
+    end
+    iq_raw_1 = iq_raw_1(:).';
+
+    iq_raw_0 = NaN*ones(num_reps,q.r_avg);
+    for ii = 1:num_reps
+        R.Run();
+        iq_raw_0(ii,:) = R.extradata;
+    end
+    iq_raw_0 = iq_raw_0(:).';
+
     [center0, center1,F00,F11, hf] =... 
-		data_taking.public.dataproc.iq2prob_centers(iq_raw_0(ii,:),iq_raw_1(ii,:),~args.gui);
+		data_taking.public.dataproc.iq2prob_centers(iq_raw_0,iq_raw_1,~args.gui);
 
     if ischar(args.save)
         args.save = false;
@@ -85,7 +78,7 @@ function varargout = iq2prob_01_multiplexed(varargin)
             saveas(hf,dataSvName);
         end
     end
-	end
 
-	varargout{1} = [];
+	varargout{1} = center0;
+	varargout{1} = center1;
 end

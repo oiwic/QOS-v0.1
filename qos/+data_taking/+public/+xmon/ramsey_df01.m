@@ -29,12 +29,13 @@ function varargout = ramsey_df01(varargin)
     X2 = op.XY2(q,pi/2+args.phaseOffset);
     X2_ = op.XY2(q,-pi/2);
     I = gate.I(q);
-    R = measure.resonatorReadout_ss(q);
- 
+
     switch args.dataTyp
         case 'P'
+            R = measure.resonatorReadout_ss(q);
             R.state = 2;
         case 'S21'
+            R = measure.resonatorReadout_ss(q,false,true);
             R.swapdata = true;
             R.name = 'iq';
             R.datafcn = @(x)mean(abs(x));
