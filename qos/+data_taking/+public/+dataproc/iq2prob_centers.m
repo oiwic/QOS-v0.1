@@ -1,4 +1,4 @@
-function [center0, center1, F00,F11,hf] =...
+function [center0, center1, F00,F11,hf,width] =...
 			iq2prob_centers(iq_raw_0,iq_raw_1,auto)
 % iq2prob_centers: finds raw iq centers(where probability of distribution is maximum)
 % F00: the probability of |0> correctly measured as |0>
@@ -34,11 +34,15 @@ function [center0, center1, F00,F11,hf] =...
     %%
     e0r = real(iq_raw_0_);
 	e0r_ = abs(e0r - mean(e0r));
-    outlierInd_r = e0r_ > 2*std(e0r_);
+    width_r = 2*std(e0r_);
+    outlierInd_r = e0r_ > width_r;
     e0i = imag(iq_raw_0_);
     e0i_ = abs(e0i - mean(e0i));
-    outlierInd_i = e0i_ > 2*std(e0i_);
+    width_i = 2*std(e0i_);
+    outlierInd_i = e0i_ > width_i;
     outlierInd = outlierInd_r | outlierInd_i;
+    
+    width = (width_r+width_i)/2;
 	
     e0r(outlierInd) = []; % remove outerliers
     e0i(outlierInd) = []; % remove outerliers

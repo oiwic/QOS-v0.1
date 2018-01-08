@@ -1,16 +1,16 @@
 % tomography and randomized bnenchmarking
 %%
-q = 'q5';
+q = 'q3';
 setQSettings('r_avg',10000);
 state = '|1>';
 data = Tomo_1QState('qubit',q,'state',state,'gui',true,'save',true);
 % rho = sqc.qfcns.stateTomoData2Rho(data);
 % h = figure();bar3(real(rho));h = figure();bar3(imag(rho));
 %%
-q = 'q7';
-setQSettings('r_avg',10000);
-process = 'X';
-data = Tomo_1QProcess_animation('qubit',q,'process',process,'numPts',10,'notes','','save',true);
+q = 'q2';
+setQSettings('r_avg',5000);
+process = 'X/2';
+data = Tomo_1QProcess_animation('qubit',q,'process',process,'numPts',5,'notes','','save',true);
 %%
 gate = 'X/2';
 data = Tomo_1QProcess('qubit','q1','process',gate,'gui',true);
@@ -18,7 +18,7 @@ data = Tomo_1QProcess('qubit','q1','process',gate,'gui',true);
 setQSettings('r_avg',5000);
 % tuneup.iq2prob_01('qubit','q1','numSamples',1e4,'gui',true,'save',true);
 % tuneup.iq2prob_01('qubit','q2','numSamples',1e4,'gui',true,'save',true);
-twoQStateTomoData = Tomo_2QState('qubit1','q1','qubit2','q2',...
+twoQStateTomoData = Tomo_2QState('qubit1','q3','qubit2','q4',...
   'state','|00>',...
  'notes','','gui',true,'save',true);
 %%
@@ -32,10 +32,10 @@ twoQStateTomoData = Tomo_mQState('qubits',qubits,...
  'notes','','gui',true,'save',true);
 %%
 q = 'q1';
-setQSettings('r_avg',700);
+setQSettings('r_avg',1000);
 numGates = int16(unique(round(logspace(1,log10(300),20))));
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
-       'process','X/2','numGates',numGates,'numReps',50,...
+       'process','X/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
 [fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
 %%

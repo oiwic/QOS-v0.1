@@ -378,6 +378,7 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
                 isSuccessed = obj.da_list(k).da.CheckStatus();
 %                 toc
                 if(isSuccessed ~= 1)
+                    disp(obj.da_list(k).da.name);
                     error('ustcadda_v1:Run','There were some task failed!');
                 end
             end

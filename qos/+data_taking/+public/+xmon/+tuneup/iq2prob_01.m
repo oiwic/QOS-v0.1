@@ -4,12 +4,12 @@ function varargout = iq2prob_01(varargin)
 % iq2prob_01: calibrate iq to qubit state probability, |0> and |1>
 % 
 % <[_f_]> = iq2prob_01_multiplexed('qubits',[_c&o_],'numSamples',_i_,...
-%       'gui',<_b_>,'save',<_b_>)
+%       'checkResult',<_b_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
 % _b_: boolean
-% _o_: object
+% _o_: objectve
 % a&b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
@@ -20,10 +20,11 @@ function varargout = iq2prob_01(varargin)
     import qes.*
     import sqc.*
     import sqc.op.physical.*
+    import sqc.util.getQSettings
 	
 	numSamples_MIN = 1e4;
 	
-	args = util.processArgs(varargin,{'gui',false,'save',true});
+	args = util.processArgs(varargin,{'fineTune',false,'gui',false,'save',true});
 	qubits = args.qubits;
 	if ~iscell(qubits)
 		qubits = {qubits};
@@ -73,7 +74,7 @@ function varargout = iq2prob_01(varargin)
 
 	for ii = 1:numQs
         q = qubits{ii};
-        [center0, center1,F00,F11, hf] =... 
+        [center0, center1,F00,F11, hf,iqWidth] =... 
             data_taking.public.dataproc.iq2prob_centers(iq_raw_0(ii,:),iq_raw_1(ii,:),~args.gui);
 
         if ischar(args.save)
@@ -86,10 +87,23 @@ function varargout = iq2prob_01(varargin)
         end
         if args.save
             QS = qes.qSettings.GetInstance();
+            r_iq2prob_center0_o = getQSettings('r_iq2prob_center0',q.name);
+            r_iq2prob_center1_o = getQSettings('r_iq2prob_center1',q.name);
+            if args.fineTune
+                D0 = abs(center0 - r_iq2prob_center0_o);
+                if ~isempty(q.r_iqWidth) && D0 > 0.25*q.r_iqWidth
+                    throw(exceptions.QRuntimeException('iq2prob_01:LargeChange',...
+                        'Large change measured on r_iq2prob_center0'));
+                elseif abs(center1 - center0) < 0.5*abs(r_iq2prob_center1_o - r_iq2prob_center0_o)
+                    throw(exceptions.QRuntimeException('iq2prob_01:LargeChange',...
+                        'Large change measured on center1 center0 distance'));
+                end
+            end
             QS.saveSSettings({q.name,'r_iq2prob_center0'},center0);
             QS.saveSSettings({q.name,'r_iq2prob_center1'},center1);
             QS.saveSSettings({q.name,'r_iq2prob_fidelity'},...
                 sprintf('[%0.3f,%0.3f]',F00,F11));
+            QS.saveSSettings({q.name,'r_iqWidth'},iqWidth);
             if ~isempty(hf) && isvalid(hf)
                 dataSvName = fullfile(QS.loadSSettings('data_path'),...
                     ['iqRaw_',q.name,'_',datestr(now,'yymmddTHHMMSS'),...

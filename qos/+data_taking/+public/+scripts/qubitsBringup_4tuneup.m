@@ -1,10 +1,10 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q7';
+q = 'q1';
 
 tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
-tuneup.iq2prob_01('qubit',q,'numSamples',1e4,'gui',true,'save','askMe');
+tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 
 % tuneup.correctf01bySpc('qubit',q,'gui',true,'save','askMe'); % measure f01 by spectrum
 % tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
@@ -38,8 +38,8 @@ tuneup.APE('qubit','q7',...
       'gui',true,'save',true);
 %%
 setQSettings('r_avg',1500);
-tuneup.DRAGAlphaAPE('qubit','q4','alpha',[0.5:0.02:2],...
-    'phase',0,'numI',30,...
+tuneup.DRAGAlphaAPE('qubit','q2','alpha',[-2:0.05:3],...
+    'phase',0,'numI',25,...
     'gui',true,'save',true);
 %%
 photonNumberCal('qubit','q1',...

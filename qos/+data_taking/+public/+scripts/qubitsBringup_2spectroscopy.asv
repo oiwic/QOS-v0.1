@@ -9,13 +9,13 @@ freq = f01 - 4e6:0.05e6:f01 + 4e6;
 spectroscopy1_zpa('qubit',q,'biasAmp',0,'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true);
 %%
-q = 'q8';
+q = 'q9';
 setQSettings('r_avg',700);
 f01 = getQSettings('f01',q);
-% freq = f01-1e6:0.03e6:f01+0.5e6;
-freq = f01-10e6:0.3e6:f01+10e6;
+freq = f01-3e6:0.1e6:f01+0.5e6;
+% freq = f01-20e6:0.3e6:f01+20e6;
 zdcamp = getQSettings('zdc_amp',q);
-biasamp = zdcamp-200:50:zdcamp+200;
+biasamp = zdcamp-1000:100:zdcamp+2000;
 spectroscopy1_zdc('qubit',q,'biasAmp',biasamp,'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode

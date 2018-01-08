@@ -95,6 +95,7 @@ classdef USTCDAC < handle
         end
          
         function Init(obj)
+            obj.SetTimeOut(10);% add by guocheng @20180107
             obj.SetIsMaster(obj.ismaster);
             obj.SetTrigSel(obj.trig_sel);
             obj.SetTrigInterval(obj.trig_interval);
@@ -470,6 +471,7 @@ classdef USTCDAC < handle
            obj.AutoOpen()
            [ret,isSuccessed] = calllib(obj.driver,'CheckSuccessed',uint32(obj.id),0);
            if(ret == -1)
+               disp(obj.ip);
                error('USTCDAC:CheckStatus','Exist some task failed!');
            end
         end
@@ -517,6 +519,15 @@ classdef USTCDAC < handle
         function SetTrigDelay(obj,num)
             obj.SetTrigStart(floor((obj.trig_delay+ num)/8)+1);
             obj.SetTrigStop(floor((obj.trig_delay+ num)/8)+ 10);
+        end
+        
+        %modified at 20180107 by guocheng
+        function SetTimeOut(obj,time)
+            ret = calllib(obj.driver,'SetTimeOut',obj.id,uint32(0),time);
+            ret = ret + calllib(obj.driver,'SetTimeOut',obj.id,uint32(1),time);
+            if(ret ~= 0)
+               error('USTCDAC:SetTimeOut','Set timeout failed!');
+            end
         end
         
         % removed by Yulin Wu, 170427
