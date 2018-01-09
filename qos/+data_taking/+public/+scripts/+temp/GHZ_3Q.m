@@ -1,30 +1,23 @@
-% data_taking.public.scripts.temp.GHZ_7Q()
-function GHZ_7Q()
+% data_taking.public.scripts.temp.GHZ_3Q()
+function GHZ_3Q()
     import sqc.measure.*
     import sqc.util.qName2Obj
     
     import sqc.op.physical.*
     import sqc.measure.*
     import sqc.util.qName2Obj
+    
+    import sqc.util.getQSettings
     import sqc.util.setQSettings
     
     rAvg = 5000;
     setQSettings('r_avg',rAvg);
-    qNames = {'q1','q2','q3','q4','q5','q6','q7'};          
-    gateMat = {'Y2p','Y2m','I',  'I',  'I',  'I',  'I';
-               'CZ','CZ',  'I',  'I',  'I',  'I',  'I';
-               'I','Y2p','Y2m',  'I',  'I',  'I',  'I';
-               'I','CZ',  'CZ',  'I', 'I',  'I',  'I';
-               'I','I',  'Y2p','Y2m', 'I',  'I',  'I';
-               'I','I',  'CZ',  'CZ', 'I',  'I',  'I';
-               'I','I',  'I',  'Y2p','Y2m',  'I',  'I';
-               'I','I',  'I',   'CZ','CZ',  'I',  'I';
-               'I','I',  'I',    'I','Y2p',  'Y2m',  'I';
-               'I','I',  'I',   'I', 'CZ',  'CZ',  'I';
-               'I','I',  'I',    'I','I',  'Y2p',  'Y2m';
-               'I','I',  'I',   'I', 'I',  'CZ',  'CZ';
-               'I','I',  'I',    'I','I',  'I',  'Y2p';
-               };
+    qNames = {'q1','q2','q3'};          
+    gateMat = {'Y2p','Y2m','I';
+               'CZ','CZ',  'I';
+               'I','Y2p','Y2m';
+               'I','CZ',  'CZ';
+               'I','I',  'Y2p';};
 
    qubits = cell(1,numel(qNames));
    for ii = 1:numel(qNames)
@@ -33,8 +26,7 @@ function GHZ_7Q()
 
    Rtomo = stateTomography(qubits);
    Rtomo.setProcess(sqc.op.physical.gateParser.parse(qubits,gateMat));
-   
-   numReps = 6;
+   numReps = 4;
    tomoData = cell(1,numReps);
    for ii = 1:numReps
        tomoData{ii} = Rtomo();
@@ -46,12 +38,12 @@ function GHZ_7Q()
    end
    tomoData_m = tomoData_m/numReps;
    
-   rhoIdeal = zeros(128,128);
+   rhoIdeal = zeros(8,8);
    rhoIdeal(1,1) = 0.5;
-   rhoIdeal(128,1) = 0.5;
-   rhoIdeal(128,128) = 0.5;
-   rhoIdeal(1,128) = 0.5;
-
+   rhoIdeal(8,1) = 0.5;
+   rhoIdeal(8,8) = 0.5;
+   rhoIdeal(1,8) = 0.5;
+   
    ax = qes.util.plotfcn.Rho(tomoData_m,[],1,true);
    qes.util.plotfcn.Rho(rhoIdeal,ax,0,false);
    
@@ -63,9 +55,9 @@ function GHZ_7Q()
    timeStamp = datestr(now,'_yymmddTHHMMSS_');
    rndNum = num2str(ceil(99*rand(1,1)),'%0.0f');
    datafile = fullfile(QS.loadSSettings('data_path'),...
-            ['7QGHZ',timeStamp,rndNum,'_.mat']);
+            ['3QGHZ',timeStamp,rndNum,'_.mat']);
    figfile = fullfile(QS.loadSSettings('data_path'),...
-            ['7QGHZ',timeStamp,rndNum,'_.fig']);
+            ['3QGHZ',timeStamp,rndNum,'_.fig']);
         
    save(datafile,'tomoData','qubits','gateMat');
    if ishghandle(ax(1))

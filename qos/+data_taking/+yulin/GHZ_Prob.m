@@ -1,5 +1,5 @@
 function GHZ_Prob(numQs)
-
+% data_taking.yulin.GHZ_Prob();
 import sqc.measure.*
 import sqc.util.qName2Obj
     

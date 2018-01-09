@@ -5,16 +5,25 @@ import sqc.op.physical.*
 import sqc.measure.*
 import sqc.util.qName2Obj
 %%
-q = qName2Obj('q8');
+q = qName2Obj('q3');
 g1 = gate.Y2m(q);
 g2 = gate.I(q);
-g2.ln = 500;
-g3 = gate.Y2p(q);
+g2.ln = 4;
+g3 = gate.X2p(q);
 proc = g1*g2*g3;
 R = resonatorReadout(q);
 R.delay = proc.length;
 proc.Run();
 data = R()
+%%
+q1 = qName2Obj('q1');
+q2 = qName2Obj('q2');
+g11 = gate.I(q1); g12 = gate.Y2p(q2);
+g21 = gate.I(q1); g22 = gate.Z2p(q2);
+                 % g22 = gate.I(q2);
+g31 = gate.I(q1); g32 = gate.Y2p(q2);
+proc = (g11.*g12)*(g21.*g22)*(g31.*g32);
+proc.Run();
 %% acz(CNOT) target qubit phase, control qubit: |1>
 q1 = qName2Obj('q9');
 q2 = qName2Obj('q8');

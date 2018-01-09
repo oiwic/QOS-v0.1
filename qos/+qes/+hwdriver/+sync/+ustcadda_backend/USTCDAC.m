@@ -145,6 +145,7 @@ classdef USTCDAC < handle
             end
             
             if(isDACReady == 0)
+                disp(obj.ip);
                 error('USTCDAC:InitError','Config DAC failed!');
             end
 

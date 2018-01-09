@@ -1,4 +1,4 @@
-function [center0, center1, F00,F11,hf,width] =...
+function [center0, center1, F00,F11,hf,axs,width] =...
 			iq2prob_centers(iq_raw_0,iq_raw_1,auto)
 % iq2prob_centers: finds raw iq centers(where probability of distribution is maximum)
 % F00: the probability of |0> correctly measured as |0>
@@ -131,6 +131,7 @@ function [center0, center1, F00,F11,hf,width] =...
         hold(axs(1),'on');
         plot(axs(1),center0,'+','Color','w','MarkerSize',15,'LineWidth',1);
         plot(axs(1),center1,'+','Color','g','MarkerSize',15,'LineWidth',1);
+        hold(axs(1),'off');
     catch
     end
 end

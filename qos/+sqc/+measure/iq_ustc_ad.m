@@ -174,16 +174,17 @@ classdef iq_ustc_ad < qes.measurement.iq
                 % relative overhead: 12%,
                 % blows up around obj.n = 1.5e4;
                 % tested on LD system with 150us repetition time on 2018-01-06 
-% 				tic
+%  				obj.n
+%                  tic
                 [Vi,Vq] = obj.adI.Run(obj.n);
-%              toc
+%               toc
 				Vi = double(Vi) -127;
 				Vq = double(Vq) -127;
                 
                 obj.demod(Vi,Vq);
-				
+% 				toc
 			end           
-               % toc 
+               % toc
             obj.data = mean(obj.IQ,2);
             obj.extradata = obj.IQ;
             

@@ -1,4 +1,4 @@
-% data_taking.public.scripts.temp.GHZ_5Q()
+% data_taking.public.scripts.temp.GHZ_4Q()
 function GHZ_4Q()
     import sqc.measure.*
     import sqc.util.qName2Obj
@@ -10,7 +10,7 @@ function GHZ_4Q()
     import sqc.util.getQSettings
     import sqc.util.setQSettings
     
-    rAvg = 20000;
+    rAvg = 5000;
     setQSettings('r_avg',rAvg);
     qNames = {'q1','q2','q3','q4'};          
     gateMat = {'Y2p','Y2m','I',  'I';
@@ -28,7 +28,17 @@ function GHZ_4Q()
 
    Rtomo = stateTomography(qubits);
    Rtomo.setProcess(sqc.op.physical.gateParser.parse(qubits,gateMat));
-   tomoData = Rtomo();
+   numReps = 4;
+   tomoData = cell(1,numReps);
+   for ii = 1:numReps
+       tomoData{ii} = Rtomo();
+   end
+   
+   tomoData_m = tomoData{1};
+   for ii = 2:numReps
+       tomoData_m = tomoData_m + tomoData{ii};
+   end
+   tomoData_m = tomoData_m/numReps;
    
    rhoIdeal = zeros(16,16);
    rhoIdeal(1,1) = 0.5;
@@ -36,10 +46,10 @@ function GHZ_4Q()
    rhoIdeal(16,16) = 0.5;
    rhoIdeal(1,16) = 0.5;
    
-   ax = qes.util.plotfcn.Rho(tomoData,[],1,true);
+   ax = qes.util.plotfcn.Rho(tomoData_m,[],1,true);
    qes.util.plotfcn.Rho(rhoIdeal,ax,0,false);
    
-   rho = sqc.qfcns.stateTomoData2Rho(tomoData);
+   rho = sqc.qfcns.stateTomoData2Rho(tomoData_m);
    fidelity = sqc.qfcns.fidelity(rho, rhoIdeal);
    title(ax(1),['fidelity: ', num2str(real(fidelity),'%0.3f')]);
 

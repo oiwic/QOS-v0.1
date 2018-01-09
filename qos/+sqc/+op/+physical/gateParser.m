@@ -29,7 +29,7 @@ classdef gateParser
             supportedGates = sqc.op.physical.gateParser.supportedGates();
             g = sqc.op.physical.op.Z_arbPhase(qubits{1},0);
             for ii = 1:matSz(1)
-                g_ = sqc.op.physical.op.Z_arbPhase(qubits{1},0);
+                g_ = [];
                 jj = 1;
                 while jj <= numQs
                     if isempty(gateMat{ii,jj}) || strcmp(gateMat{ii,jj},'I')
@@ -47,15 +47,37 @@ classdef gateParser
                         end
                         jj = jj + 1;
                     else
-                        if ~ismember(gateMat{ii,jj},supportedGates)
-                            error(['unsupported gate: ', gateMat{ii,jj}]);
+                        strLn = numel(gateMat{ii,jj});
+                        [startInd, endInd] = regexp(gateMat{ii,jj},'Z\(.+\)');
+                        if ~isempty(startInd)
+                            if startInd == 1 && endInd == strLn
+                                [startInd, endInd] = regexp(gateMat{ii,jj},'\(.+\)');
+                                if isempty(startInd)
+                                    error(['unsupported gate: ', gateMat{ii,jj}]);
+                                else
+                                    zphase = str2double(gateMat{ii,jj}(startInd+1:endInd-1));
+                                    g__ = feval(str2func('@(q,p)sqc.op.physical.op.Z_arbPhase(q,p)'),qubits{jj},zphase);
+                                end
+                            else
+                                error(['unsupported gate: ', gateMat{ii,jj}]);
+                            end
+                        else
+                            if ~ismember(gateMat{ii,jj},supportedGates)
+                                error(['unsupported gate: ', gateMat{ii,jj}]);
+                            end
+                            g__ = feval(str2func(['@(q)sqc.op.physical.gate.',gateMat{ii,jj},'(q)']),qubits{jj});
                         end
-                        g__ = feval(str2func(['@(q)sqc.op.physical.gate.',gateMat{ii,jj},'(q)']),qubits{jj});
                     end
-                    g_ = g_.*g__;
+                    if isempty(g_)
+                        g_ = g__;
+                    else
+                        g_ = g_.*g__;
+                    end
                     jj = jj + 1;
                 end
-                g = g*g_;
+                if ~isempty(g_)
+                    g = g*g_;
+                end
             end
         end
         function gates = supportedGates()
@@ -187,7 +209,7 @@ classdef gateParser
             g = sqc.op.physical.gateParser.parseLogical(gateMat);
             v = zeros(2^size(gateMat,2),1);
             v(1) = 1;
-            f = g*v;
+            f = (g*v).';
             p = real(f).^2+imag(f).^2;
         end
     end

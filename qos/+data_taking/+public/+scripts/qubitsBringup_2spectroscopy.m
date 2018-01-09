@@ -3,11 +3,11 @@
 %%
 
 setQSettings('r_avg',700);
-q = 'q1';
+q = 'q2';
 f01 = getQSettings('f01',q);
-freq = f01 - 4e6:0.05e6:f01 + 4e6;
-spectroscopy1_zpa('qubit',q,'biasAmp',0,'driveFreq',[freq],...
-       'dataTyp','S21','gui',true,'save',true);
+freq = f01 - 5e6:0.2e6:f01 + 5e6;
+spectroscopy1_zpa('qubit',q,'biasAmp',1000,'driveFreq',[freq],...
+       'dataTyp','P','gui',true,'save',true);
 %%
 q = 'q8';
 setQSettings('r_avg',700);

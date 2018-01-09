@@ -34,7 +34,8 @@ function varargout = iq2prob_01(varargin)
         throw(MException('QOS_iq2prob_01:numSamplesTooSmall',...
 			sprintf('numSamples too small, %0.0f minimu.', numSamples_MIN)));
     end
-    N = numSamples_MIN;
+    
+    N = 4500; 
     numQs = numel(qubits);
     for ii = 1:numQs
         if ischar(qubits{ii})
@@ -74,9 +75,19 @@ function varargout = iq2prob_01(varargin)
 
 	for ii = 1:numQs
         q = qubits{ii};
-        [center0, center1,F00,F11, hf,iqWidth] =... 
+        [center0, center1,F00,F11, hf,axs,iqWidth] =... 
             data_taking.public.dataproc.iq2prob_centers(iq_raw_0(ii,:),iq_raw_1(ii,:),~args.gui);
-
+        r_iq2prob_center0_o = getQSettings('r_iq2prob_center0',q.name);
+        r_iq2prob_center1_o = getQSettings('r_iq2prob_center1',q.name);
+        if ~isempty(axs)
+            try 
+                hold(axs(1),'on');
+                plot(axs(1),r_iq2prob_center0_o,'+','Color','w','MarkerSize',10,'LineWidth',0.5);
+                plot(axs(1),r_iq2prob_center1_o,'+','Color','g','MarkerSize',10,'LineWidth',0.5);
+                hold(axs(1),'off');
+            catch
+            end
+        end
         if ischar(args.save)
             args.save = false;
             choice  = questdlg('Update settings?','Save options',...
@@ -87,16 +98,15 @@ function varargout = iq2prob_01(varargin)
         end
         if args.save
             QS = qes.qSettings.GetInstance();
-            r_iq2prob_center0_o = getQSettings('r_iq2prob_center0',q.name);
-            r_iq2prob_center1_o = getQSettings('r_iq2prob_center1',q.name);
+            
             if args.fineTune
                 D0 = abs(center0 - r_iq2prob_center0_o);
-                if ~isempty(q.r_iqWidth) && D0 > 0.25*q.r_iqWidth
+                if ~isempty(q.r_iqWidth) && D0 > 0.5*q.r_iqWidth
                     throw(exceptions.QRuntimeException('iq2prob_01:LargeChange',...
-                        'Large change measured on r_iq2prob_center0'));
+                        [q.name,': Large change measured on r_iq2prob_center0']));
                 elseif abs(center1 - center0) < 0.5*abs(r_iq2prob_center1_o - r_iq2prob_center0_o)
                     throw(exceptions.QRuntimeException('iq2prob_01:LargeChange',...
-                        'Large change measured on center1 center0 distance'));
+                        [q.name,': Large change measured on center1 center0 distance']));
                 end
             end
             QS.saveSSettings({q.name,'r_iq2prob_center0'},center0);

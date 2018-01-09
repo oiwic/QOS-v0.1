@@ -25,9 +25,11 @@ function varargout = randBenchMarking(varargin)
     args = util.processArgs(varargin,{'state','|0>','reps',1,'gui',false,'notes','','detuning',0,'save',true});
     if isempty(args.qubit2)
         q = data_taking.public.util.getQubits(args,{'qubit1'});
+        figTitle = q.name;
     else
         [q1,q2] = data_taking.public.util.getQubits(args,{'qubit1','qubit2'});
         q = {q1,q2};
+        figTitle = [q1.name,',',q2.name];
     end
 
     if numel(q) == 1
@@ -110,7 +112,7 @@ function varargout = randBenchMarking(varargin)
 
         if args.gui
             if ~ishghandle(ax)
-                h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s', args.process),false);
+                h = qes.ui.qosFigure(sprintf('Randomized Benchmarking | %s:%s', figTitle,args.process),false);
                 ax = axes('parent',h);
             end
             try

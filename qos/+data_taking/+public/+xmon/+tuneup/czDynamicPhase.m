@@ -53,9 +53,9 @@ function varargout = czDynamicPhase(varargin)
         data = NaN(1, args.numCZs);
         for ii = 1:args.numCZs
             disp(['Iter: ', num2str(count), 'num CZ: ', num2str(ii),' of ', num2str(args.numCZs)]);
-            p = Y*(CZ^ii);
+            process = Y*(CZ^ii);
             R = sqc.measure.phase(qd);
-            R.setProcess(p);
+            R.setProcess(process);
             data(ii) = R();
         end
         data = unwrap(data);

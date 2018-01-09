@@ -469,7 +469,7 @@ classdef operator < handle & matlab.mixin.Copyable
             % operator(base) objects must have empty GenWave methods, do not add any code!
             % pass
         end
-        % overide the MATLAB class
+        % overide the MATLAB method class
         function cls = class(obj)
             cls =  obj.gateClass;
         end
@@ -508,17 +508,11 @@ classdef operator < handle & matlab.mixin.Copyable
 			end  
         end
 		function obj = mtimes(obj2, obj1)
-            % ordering changed from [right to left] to [left to right] for convinience
+            % change ordering for convinience
 %        function obj = mtimes(obj1, obj2)
 %            % implement regular matrix, scalar multiplication and gate operation on a quantum state
 %            % order: second applied first to follow the quantum mechanics
 %            % convention: U1U2|s>, U2 is applied to state |s> first
-
-% checking removed for efficiency, the caller has to gaurante the validity      
-%             if ~isa(obj1,'sqc.op.physical.operator') || ~isa(obj2,'sqc.op.physical.operator')
-%                 throw(MException('sqc_op_pysical_operator:invalidInput',...
-%                     'at least one of obj1, obj2 is not a sqc.op.physical.operator class object.'));
-%             end
             
             if isempty(obj2)
 				obj =  obj1;
@@ -549,8 +543,20 @@ classdef operator < handle & matlab.mixin.Copyable
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
                 obj.phaseShift = -obj2.phase;
             end
+            Obj2QInds = 1:numel(obj2.qubits);
             if isa(obj1,'sqc.op.physical.gate.Z_phase_base')
-                obj.phaseShift = obj.phaseShift - obj1.phase;
+                idx = qes.util.find(obj1.qubits{1},obj.qubits);
+                if ~isempty(idx)
+                    obj.phaseShift(idx) = obj.phaseShift(idx) - obj1.phase;
+                else
+                    obj.phaseShift = [obj.phaseShift, -obj1.phase];
+                    obj.qubits{end+1} = obj1.qubits{1};
+                    obj.xy_wv{end+1} = [];
+					obj.xy_daChnl{end+1} = [];
+					obj.xy_daChnl{end+1} = [];
+                    obj.z_wv{end+1} = [];
+                    obj.z_daChnl{end+1} = [];
+                end
                 return;
             end
             
@@ -565,7 +571,7 @@ classdef operator < handle & matlab.mixin.Copyable
             for jj = 1:numel(obj.xy_wv)
                 if ~isempty(obj.xy_wv{jj}) && obj.xy_wv{jj}.length < obj.length
                     % this will never happen if the gates are properly implemented, that is a fudamental gate
-                    % eight has empty waveforms or the waveform length equals to the length of the gate.
+                    % must has empty waveforms or the waveform length equals to the length of the gate.
                     % its is added just in case some one implemented a gate not knowing the above rule
                     error('bug!');
                     % obj.xy_wv{jj} = [obj.xy_wv{jj},qes.waveform.spacer(obj.length-obj.xy_wv{jj}.length)];
@@ -613,7 +619,7 @@ classdef operator < handle & matlab.mixin.Copyable
             else
                 padWv2 = qes.waveform.spacer(GB+obj1ln);
             end
-            Obj2QInds = 1:numel(obj2.qubits);
+            
             for ii = 1:numel(obj1.qubits)
 				idx = qes.util.find(obj1.qubits{ii},obj.qubits);
                 if isempty(idx)

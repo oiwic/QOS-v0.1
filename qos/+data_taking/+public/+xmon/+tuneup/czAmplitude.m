@@ -83,8 +83,8 @@ function varargout = czAmplitude(varargin)
             legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'});
             drawnow;
         end
-        throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
-            sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
+            throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
+                sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
     end
     
     if args.save
@@ -102,8 +102,11 @@ function varargout = czAmplitude(varargin)
         legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'})
         title(sprintf('acz amplitude: %0.5e',czamp));
         drawnow;
-        if args.save
-            
+        if args.save && ~isempty(hf) && isvalid(hf)
+            dataSvName = fullfile(QS.loadSSettings('data_path'),...
+                ['czAmp_',qc.name,qt.name,'_',datestr(now,'yymmddTHHMMSS'),...
+                num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
+            saveas(hf,dataSvName);
         end
     end
 end
