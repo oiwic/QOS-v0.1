@@ -20,9 +20,10 @@ package domain;
   */
 public final class SystemStatus {
     public enum Status{
-        ACTIVE,         // 正常运行中
+        ACTIVE,         // 正常运行
         MAINTANANCE,    // 维护中
-        CALIBRATION     // 校准中
+        CALIBRATION,     // 校准中
+        OFFLINE         // 离线
     }
 
     // 系统当前状态
@@ -31,6 +32,11 @@ public final class SystemStatus {
     private float fridgeTemperature;
     // 系统最后校准时间
     private String lastCalibrationTime;
+    // 公告，通知，说明等(中文)
+	private String noticeCN;
+	// 公告，通知，说明等(英文)
+	private String noticeEN;
+
 
     public SystemStatus(){}
 
@@ -57,4 +63,20 @@ public final class SystemStatus {
     public void setLastCalibrationTime(String lastCalibrationTime) {
         this.lastCalibrationTime = lastCalibrationTime;
     }
+
+    public String getNoticeCN() {
+        return noticeCN;
+    }
+
+    public String getNoticeEN() {
+        return noticeEN;
+    }
+
+    public void setNoticeCN(String notice){
+		this.noticeCN = notice;
+	}
+	
+	public void setNoticeEN(String notice){
+		this.noticeEN = notice;
+	}
 }

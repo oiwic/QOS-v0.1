@@ -1,4 +1,4 @@
-import com.alibaba.quantum.domain.ResultModel;
+﻿import com.alibaba.quantum.domain.ResultModel;
 import domain.*;
 
 import java.util.List;
@@ -20,9 +20,11 @@ import java.util.List;
  */
 public interface QuantumComputerPlatformService {
     // 获取任务
-    ResultModel<QuantumTask> getLastTask();
+    ResultModel<QuantumTask> getTask();
     // 推送结果
     ResultModel pushResult(QuantumResult var1);
+    // 获取列队任务（等待执行任务）数
+    ResultModel<Integer> getNumQueuingTasks ();
     // 更新系统设置
     ResultModel updateSystemConfig(SystemConfig var1);
     // 更新系统状态
