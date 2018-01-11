@@ -171,7 +171,7 @@ numGates = int16(unique(round(logspace(1,log10(300),20))));
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
        'process','X/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
-[fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+[fidelity,h] = toolbox.data_tool.randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
 
 tuneup.iq2prob_01('qubits',q,'numSamples',2e4,'gui',true,'fineTune',false,'save',true);
 tuneup.correctf01byPhase('qubits',q,'delayTime',0.7e-6,'gui',true,'save',true);
@@ -180,7 +180,7 @@ tuneup.iq2prob_01('qubits',q,'numSamples',2e4,'gui',true,'fineTune',false,'save'
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
        'process','Y/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
-[fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+[fidelity,h] = toolbox.data_tool.randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
 
 %%
 q = 'q3';
@@ -194,7 +194,8 @@ numGates = int16(unique(round(logspace(1,log10(300),20))));
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
        'process','X/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
-[fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+[fidelity,h] = toolbox.data_tool.randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+
 tuneup.iq2prob_01('qubits',q,'numSamples',2e4,'gui',true,'fineTune',false,'save',true);
 tuneup.correctf01byPhase('qubits',q,'delayTime',0.7e-6,'gui',true,'save',true);
 tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X/2','AE',true,'gui',true,'save',true);
@@ -202,4 +203,4 @@ tuneup.iq2prob_01('qubits',q,'numSamples',2e4,'gui',true,'fineTune',false,'save'
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
        'process','Y/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
-[fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+[fidelity,h] = toolbox.data_tool.randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');

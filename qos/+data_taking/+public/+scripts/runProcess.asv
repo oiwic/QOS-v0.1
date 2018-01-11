@@ -40,27 +40,28 @@ R = phase(q2);
 R.setProcess(proc);
 phaseMeasured = R();
 disp(['phase measured: ', num2str(phaseMeasured)]);
-%% CZ Z Pulse Trailing PHASE
+%% CZ PHASE
 q1 = qName2Obj('q3');
 q2 = qName2Obj('q2');
 g1 = gate.Y2m(q2);
 g2 = gate.CZ(q1,q2);
 g3 = gate.I(q2);
-R = phase(q2);
-ln = 1:20:600;
+ln = 1:20:400
 numLn = numel(ln);
-phaseMeasured = nan(1,numLn);
-figure();
+
 for ii = 1:numLn
-    g3.ln = ln(ii);
+    g3.ln = 1;
     proc = g1*g2*g3;
+    R = phase(q2);
     R.setProcess(proc);
-    phaseMeasured(ii) = R();
-    plot(ln/2, phaseMeasured);
-    xlabel('measurement delay(ns)');
-    ylabel('phase(rad)');
-    drawnow;
+    phaseMeasured = R();
 end
+g3.ln = 1;
+proc = g1*g2*g3;
+R = phase(q2);
+R.setProcess(proc);
+phaseMeasured = R();
+disp(['phase measured: ', num2str(phaseMeasured)]);
 %%
 q1 = qName2Obj('q1');
 q2 = qName2Obj('q2');

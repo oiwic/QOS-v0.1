@@ -18,3 +18,17 @@ p = Z*X*Z*X*Z*X*Z*X;
 p.Run();
 
 % plot the waveforms to check
+
+%% validate Z_arbPhase
+q = qName2Obj('q1');
+g1 = gate.Y2m(q);
+g2 = gate.I(q);
+g2.ln = 2;
+phaseSet = 2;
+g3 = op.Z_arbPhase(q,phaseSet);
+proc = g1*g2*g3;
+R = phase(q);
+R.setProcess(proc);
+phaseMeasured = R();
+disp('<<<< validate arbitary z rotation >>>>');
+disp(['phase set: ', num2str(phaseSet), ', phase measured: ', num2str(phaseMeasured)]);

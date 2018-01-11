@@ -31,7 +31,11 @@ function SendWave(obj,chnl,DASequence,isI)
 			else
 				samples = samples(2,:);
             end
-            WaveformData = uint16([zeros(1,software_delay),samples]+32768);
+            if software_delay >= 0
+                WaveformData = uint16([zeros(1,software_delay),samples]+32768);
+            else
+                WaveformData = uint16(samples(1-software_delay:end)+32768);
+            end
             
              % version specific
             WaveformData(32e3:end) = [];

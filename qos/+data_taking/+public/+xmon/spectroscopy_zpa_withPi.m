@@ -7,7 +7,7 @@ function varargout = spectroscopy_zpa_withPi(varargin)
 % the selelcted qubits can be listed with:
 % QS.loadSSettings('selected'); % QS is the qSettings object
 % 
-% <_o_> = spectroscopy_zpa_withPi('q',_c&o_,'biasAmp',<[_f_]>,...
+% <_o_> = spectroscopy_zpa_withPi('q',_c|o_,'biasAmp',<[_f_]>,...
 %       'driveFreq',<[_f_]>,...
 %       'driveDelay',_i_,'zLength',_i_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
@@ -16,7 +16,7 @@ function varargout = spectroscopy_zpa_withPi(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

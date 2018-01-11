@@ -37,5 +37,5 @@ numGates = int16(unique(round(logspace(1,log10(300),20))));
 [Pref,Pgate] = randBenchMarking('qubit1',q,'qubit2',[],...
        'process','X/2','numGates',numGates,'numReps',60,...
        'gui',true,'save',true);   
-[fidelity,h] = randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
+[fidelity,h] = toolbox.data_tool.randBenchMarking(numGates, Pref, Pgate, 1, 'X/2');
 %%

@@ -5,7 +5,7 @@ function varargout = Tomo_2QProcess(varargin)
 % that process tomography is working properly.
 % process options are: 'CZ','CNOT'
 %
-% <_o_> = Tomo_2QProcess('qubit1',_c&o_,'qubit1',_c&o_,...
+% <_o_> = Tomo_2QProcess('qubit1',_c|o_,'qubit1',_c|o_,...
 %       'process',<_c_>,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
@@ -13,7 +13,7 @@ function varargout = Tomo_2QProcess(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

@@ -2,7 +2,7 @@ function varargout = randBenchMarking(varargin)
 % randBenchMarking
 % process options are: 'X','Z','Y','X/2','-X/2','Y/2','-Y/2', 'CZ'
 %
-% <_o_> = randBenchMarking('qubit1',_c&o_,'qubit2',<_c&o_>,...
+% <_o_> = randBenchMarking('qubit1',_c|o_,'qubit2',<_c|o_>,...
 %       'process',<_c_>,'numGates',[_i_],'numReps',_i_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
@@ -10,7 +10,7 @@ function varargout = randBenchMarking(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

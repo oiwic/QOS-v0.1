@@ -4,7 +4,7 @@ function varargout = rabi_long1_freq(varargin)
 %
 % sweeps xy drive pulse length and frequency detuning(mixer lo frequency is fixed)
 %
-% <_o_> = rabi_long1_freq('qubit',_c&o_,'biasAmp',[_f_],'biasLonger',<_i_>,...
+% <_o_> = rabi_long1_freq('qubit',_c|o_,'biasAmp',[_f_],'biasLonger',<_i_>,...
 %       'xyDriveAmp',_f_,'detuning',<[_f_]>,...
 %       'dataTyp','_c_',...   % S21 or P
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
@@ -13,7 +13,7 @@ function varargout = rabi_long1_freq(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

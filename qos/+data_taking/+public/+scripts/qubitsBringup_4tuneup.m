@@ -62,10 +62,24 @@ zPulseRipple('qubit','q7',...
     s.type = 'function';
     s.funcName = 'qes.waveform.xfrFunc.gaussianExp';
     s.bandWidht = 0.25;
+     
+%     q = 'q1';
+%     s.r = [0.025,-0.019,0.015]; % q2
+%     s.td = [900,500,250]; % q2
     
+% %     q = 'q2';
+% %     s.r = [0.013]; % q2
+% %     s.td = [833]; % q2
+%     
 %     q = 'q2';
-%     s.r = [0.013]; % q2
-%     s.td = [833]; % q2
+%     s.r = [0.0135, -0.003, 0.0035]; % q2
+%     s.td = [833, 400, 200]; % q2
+
+    
+    q = 'q3';
+    s.r = [0.035,-0.017,-0.013,0.023]; % q2
+    s.td = [900,400,200,100]; % q2
+
 %     q = 'q4';
 %     s.r = [0.014]; % q4
 %     s.td = [634]; % q4
@@ -82,28 +96,33 @@ zPulseRipple('qubit','q7',...
 %       s.r = [0.025]; % q6
 %       s.td = [870]; % q6
       
-      q = 'q11';
-      s.r = [0.021]; % q6
-      s.td = [954]; % q6
+%       q = 'q11';
+%       s.r = [0.021]; % q6
+%       s.td = [954]; % q6
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
     xfrFunc_inv = xfrFunc.inv();
     xfrFunc_lp = com.qos.waveform.XfrFuncFastGaussianFilter(0.13);
     xfrFunc_f = xfrFunc_lp.add(xfrFunc_inv);
 
-%     fi = fftshift(qes.util.fftFreq(6000,1));
+%     fi = fftshift(qes.util.fftFreq(20000,1));
 %     fsamples = xfrFunc_inv.samples_t(fi);
-%     figure();
+%      figure();
 %     plot(fi, fsamples(1:2:end),'-r');
-%     fsamples = xfrFunc_f.samples_t(fi);
-%     hold on; plot(fi, fsamples(1:2:end),'-b');
+%     fsamples = xfrFunc.samples_t(fi);
+%     hold on; plot(fi, fsamples(1:2:end),'-g');
 
 
-delayTime = [0:50:1500];
-setQSettings('r_avg',5000);
+delayTime = [0:50:2000];
+setQSettings('r_avg',3000);
 zPulseRipplePhase('qubit',q,'delayTime',delayTime,...
-       'xfrFunc',[xfrFunc_f],'zAmp',1e4,'s',s,...
+       'xfrFunc',[xfrFunc_f],'zAmp',-1.5e4,'s',s,...
        'notes','','gui',true,'save',true);
+%%
+[sOpt,LPFBW] = zPulseXfrFunc('qubit','q1','delayTime',[30,100,300,700,1500],...
+       'maxFEval',50,'numTerms',1,'rAmp0',[0.01],'td0',[700],'zAmp',-3e4);
+%%
+sqc.util.setZXfrFunc(q,xfrFunc_f);
 %%
 s = struct();
 s.type = 'function';

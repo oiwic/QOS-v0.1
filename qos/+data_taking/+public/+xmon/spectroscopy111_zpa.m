@@ -6,16 +6,16 @@ function varargout = spectroscopy111_zpa(varargin)
 % the selelcted qubits can be listed with:
 % QS.loadSSettings('selected'); % QS is the qSettings object
 % 
-% <_o_> = spectroscopy111_zpa('biasQubit',_c&o_,'biasAmp',<[_f_]>,...
-%       'driveQubit',_c&o_,'driveFreq',<[_f_]>,...
-%       'readoutQubit',_c&o_,'dataTyp',<_c_>,...
+% <_o_> = spectroscopy111_zpa('biasQubit',_c|o_,'biasAmp',<[_f_]>,...
+%       'driveQubit',_c|o_,'driveFreq',<[_f_]>,...
+%       'readoutQubit',_c|o_,'dataTyp',<_c_>,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

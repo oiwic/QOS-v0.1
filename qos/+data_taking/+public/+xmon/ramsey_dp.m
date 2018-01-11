@@ -4,7 +4,7 @@ function varargout = ramsey_dp(varargin)
 % ramsey: ramsey oscillation,..
 % detune by changing the second pi/2 pulse tracking frame
 % 
-% <_o_> = ramsey_dp('qubit',[_c&o_],...
+% <_o_> = ramsey_dp('qubit',[_c|o_],...
 %       'time',[_i_],'detuning',<[_f_]>,'phaseOffset',<_f_>,...
 %       'dataTyp',<'_c_'>,...   % S21, P or Phase
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
@@ -13,7 +13,7 @@ function varargout = ramsey_dp(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

@@ -71,7 +71,6 @@ function saveSettings(spath, field, value)
             % regist old_value to history
             try
                 old_value = qes.util.loadSettings(spath, field);
-                settings_exists = true;
             catch ME
                 if strcmp(ME.identifier,'loadSettings:invalidInput')
                     warning('saveSettings:addNewField','field %s not found, this field will be add into the setttings.', field{1});
@@ -102,14 +101,23 @@ function saveSettings(spath, field, value)
                 else
                     fid = fopen(history_file,'a+');
                 end
-                if isreal(old_value)
-                    fprintf(fid,'%s\t%0.5e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
-                else
-                    fprintf(fid,'%s\t%0.5e%+0.5ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
+                if ischar(old_value)
+                    fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                elseif isnumeric(old_value)
+                    if iscolumn(old_value)
+                        old_value = old_value.';
+                    end
+                    if numel(old_value) > 1
+                        fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
+                    elseif isreal(old_value)
+                        fprintf(fid,'%s\t%0.5e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                    else
+                        fprintf(fid,'%s\t%0.5e%+0.5ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
+                    end
                 end
                 fclose(fid);
             catch
-                warning('regist old value to history file failed');
+                warning('log old value to history file failed');
             end
         elseif numFields == 1
             ln_field = numel(field{1});
@@ -148,14 +156,18 @@ function saveSettings(spath, field, value)
                             mkdir(history_dir);
                         end
                         history_file = fullfile(history_dir,[field{1},'.his']);
-                        if ~exist(history_file,'file') ||...
-                                numel(dir(history_file)) > 1 % a folder
-                            fid = fopen(history_file,'w');
-                        else
-                            fid = fopen(history_file,'a+');
+                        try
+                            if ~exist(history_file,'file') ||...
+                                    numel(dir(history_file)) > 1 % a folder
+                                fid = fopen(history_file,'w');
+                            else
+                                fid = fopen(history_file,'a+');
+                            end
+                            fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                            fclose(fid);
+                        catch
+                            warning('log old value to history file failed');
                         end
-                        fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
-                        fclose(fid);
                         return;
                     case '=' % in case of numeric settings value, we allow the caller to convert the numeric value to a string, this is usefull since
                         % only the caller knows how much number of digits to
@@ -192,7 +204,7 @@ function saveSettings(spath, field, value)
                         catch
                             % pass, in case of setting to the current value
                         end
-                        % regist old_value to history
+                        % log old_value to history
                         try
                             old_value = qes.util.loadSettings(spath, field);
                             settings_exists = true;
@@ -225,14 +237,19 @@ function saveSettings(spath, field, value)
                             else
                                 fid = fopen(history_file,'a+');
                             end
-                            if isreal(old_value)
+                            if iscolumn(old_value)
+                                old_value = old_value.';
+                            end
+                            if numel(old_value) > 1
+                               fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
+                            elseif isreal(old_value)
                                 fprintf(fid,'%s\t%0.5e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
                             else
                                 fprintf(fid,'%s\t%0.5e%+0.5ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
                             end
                             fclose(fid);
                         catch
-                            warning('regist old value to history file failed');
+                            warning('log old value to history file failed');
                         end
                         return;
                 end

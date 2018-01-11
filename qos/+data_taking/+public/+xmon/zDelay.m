@@ -1,14 +1,14 @@
 function varargout = zDelay(varargin)
 % measures the syncronization of Z pulse
 % 
-% <_o_> = zDelay('zQubit',_c&o_,'xyQubit',_c&o_,'zAmp',[_f_],'zLn',<_i_>,'zDelay',[_i_],...
+% <_o_> = zDelay('zQubit',_c|o_,'xyQubit',_c|o_,'zAmp',[_f_],'zLn',<_i_>,'zDelay',[_i_],...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

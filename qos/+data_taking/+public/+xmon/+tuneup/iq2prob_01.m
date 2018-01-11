@@ -35,7 +35,7 @@ function varargout = iq2prob_01(varargin)
 			sprintf('numSamples too small, %0.0f minimu.', numSamples_MIN)));
     end
     
-    N = 4500; 
+    N = 3000; 
     numQs = numel(qubits);
     for ii = 1:numQs
         if ischar(qubits{ii})

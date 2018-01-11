@@ -1,5 +1,5 @@
 function varargout = czDetuneQPhaseRB(varargin)
-% <_o_> = czDetuneQPhaseRB('controlQ',_c&o_,'targetQ',_c&o_,'detuneQ',_c&o_,...
+% <_o_> = czDetuneQPhaseRB('controlQ',_c|o_,'targetQ',_c|o_,'detuneQ',_c|o_,...
 %       'phase',[_i_],'numGates',_i_,'numShots',_i_,...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
@@ -7,7 +7,7 @@ function varargout = czDetuneQPhaseRB(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

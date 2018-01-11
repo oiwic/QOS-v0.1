@@ -1,5 +1,5 @@
 function varargout = acz_ampLength(varargin)
-% <_o_> = acz_ampLength('controlQ',_c&o_,'targetQ',_c&o_,...
+% <_o_> = acz_ampLength('controlQ',_c|o_,'targetQ',_c|o_,...
 %       'czLength',[_i_],'czAmp',[_f_],'cState','0',...
 %       'dataTyp',<_c_>,...  % options: P, or Phase
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
@@ -8,7 +8,7 @@ function varargout = acz_ampLength(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified

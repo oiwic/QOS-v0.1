@@ -4,9 +4,9 @@ function varargout = T1_111(varargin)
 % q1, q2, q3 can be the same qubit or diferent qubits,
 % q1, q2, q3 all has to be the selected qubits in the current session,
 % 
-% <_o_> = T1_111('biasQubit',_c&o_,'biasAmp',<[_f_]>,'biasDelay',<_i_>,...
+% <_o_> = T1_111('biasQubit',_c|o_,'biasAmp',<[_f_]>,'biasDelay',<_i_>,...
 %       'backgroundWithZBias',<_b_>,...
-%       'driveQubit',_c&o_,'readoutQubit',_c&o_,...
+%       'driveQubit',_c|o_,'readoutQubit',_c|o_,...
 %       'time',[_i_],...
 %       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
@@ -14,7 +14,7 @@ function varargout = T1_111(varargin)
 % _c_: char or char string
 % _b_: boolean
 % _o_: object
-% a&b: default type is a, but type b is also acceptable
+% a|b: default type is a, but type b is also acceptable
 % []: can be an array, scalar also acceptable
 % {}: must be a cell array
 % <>: optional, for input arguments, assume the default value if not specified
