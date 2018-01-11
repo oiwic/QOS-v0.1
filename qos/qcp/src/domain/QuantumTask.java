@@ -1,4 +1,4 @@
-package domain;
+﻿package domain;
 
 /**
  * Copyright (c) 2017 onward, Yulin Wu. All rights reserved.
@@ -20,8 +20,8 @@ package domain;
  */
 public class QuantumTask {
     private long taskId;
-    private long slot; // 这是什么
-    private long seed; // 这是什么
+    private long slot;
+    private long seed;
     /*
     * circuit 是原 QuantumTaskDO 中的 data 属性
     * 数据格式： N行，M 列， M： 比特数目，目前是12
@@ -36,6 +36,8 @@ public class QuantumTask {
     *   "I",	"I",  	"I",    "I",	"Y2p",	...}};
     */
     private String[][] circuit;
+    // 测量比特，比如 {"q1","q3","q8"}
+    private String[] measureQubits;
 
     // 以上是QuantumTaskDO原有的属性，增加以下属性:
 
@@ -108,5 +110,21 @@ public class QuantumTask {
 
     public void setSubmissionTime(String submissionTime) {
         this.submissionTime = submissionTime;
+    }
+
+    public String[] getMeasureQubits() {
+        return measureQubits;
+    }
+
+    public void setMeasureQubits(String[] measureQubits) {
+        this.measureQubits = measureQubits;
+    }
+
+    public boolean isUseCache() {
+        return useCache;
+    }
+
+    public void setUseCache(boolean useCache) {
+        this.useCache = useCache;
     }
 }

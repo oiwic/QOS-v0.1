@@ -16,16 +16,22 @@ package domain;
  * University of Science and Technology of China.
  */
 /*
-* 获取用户信息
+* 用户信息
  */
 public class UserInfo {
+    public enum Language{
+        CHINESE,         // 中文
+        ENGLISH         // 英文
+    }
+
     private int userId;
     private String email;
     private String firstName;
     private String lastName;
     // 所属机构
     private String organization;
-
+    // 用户语言偏好，用于选择语言推送广播，回复消息
+    private Language preferredLanguage;
     // 注册日期
     private String registrationData;
 
@@ -77,5 +83,13 @@ public class UserInfo {
 
     public void setRegistrationData(String registrationData) {
         this.registrationData = registrationData;
+    }
+
+    public Language getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(Language preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 }

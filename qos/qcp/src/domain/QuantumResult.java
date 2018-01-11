@@ -25,7 +25,16 @@ public class QuantumResult {
     private String[][] finalCircuit;
     // 任务运行结果，长度：2^比特数, null 表示线路无法运行或运行错误
     private float[] result;
-
+	// fidelity[0][j-1] :  第j个读取比特|0>态读取保真度
+	// fidelity[1][j-1] :  第j个读取比特|1>态读取保真度
+	private float[][] readoutFidelity;
+	// 单次event结果， 比特数 x 重复次数（QuantumTask 中 stats 属性定义）
+	private boolean[][] singleShotEvents;
+	// 说明： 可能会有对实验过程、方法、结果的一个说明（中文）
+	private String noteCN;
+    // 说明： 可能会有对实验过程、方法、结果的一个说明（中文）
+	private String noteEN;
+	
     /* 返回实际输出的控制波形作为额外数据，null 表示没有这个数据
         * 3x比特数 行：
         * waveforms[0]: 第一个比特 xy I 波形
@@ -35,8 +44,6 @@ public class QuantumResult {
         * ...
         */
     private float[][] waveforms;
-    // 线路无法运行或运行错误情况下的错误信息，正常运行为 null
-    private String errorMsg;
 
     public QuantumResult(){}
 
@@ -53,7 +60,7 @@ public class QuantumResult {
     }
 
     public void setFinalCircuit(String[][] finalCircuit) {
-        this.finalCircuit = finalCircuit;
+        this.finalCircuit = finalCircuit.clone();
     }
 
     public float[] getResult() {
@@ -61,22 +68,54 @@ public class QuantumResult {
     }
 
     public void setResult(float[] result) {
-        this.result = result;
+        this.result = result.clone();
+    }
+	
+	public float [][] getReadoutFidelities() {
+        return readoutFidelity.clone();
+    }
+	
+	public void setReadoutFidelities(float[][] readoutFidelity) {
+        this.readoutFidelity = readoutFidelity.clone();
+    }
+	
+	public boolean[][] getSingleShotEvents() {
+        return singleShotEvents.clone();
+    }
+	
+	public void setSingleShotEvents(boolean[][] singleShotEvents) {
+        this.singleShotEvents = singleShotEvents.clone();
     }
 
     public float[][] getWaveforms() {
-        return waveforms;
+        return waveforms.clone();
     }
 
     public void setWaveforms(float[][] waveforms) {
-        this.waveforms = waveforms;
+        this.waveforms = waveforms.clone();
     }
 
-    public String getErrorMsg() {
-        return errorMsg;
+    public String getNoteCN() {
+        return noteCN;
+    }
+	
+	public void setNoteCN(String note) {
+        this.noteCN = note;
+    }
+	
+	public String getNoteEN() {
+        return noteEN;
+    }
+	
+	public void setNoteEN(String note) {
+        this.noteCN = note;
     }
 
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
+    public float[][] getReadoutFidelity() {
+        return readoutFidelity;
+    }
+
+    public void setReadoutFidelity(float[][] readoutFidelity) {
+        this.readoutFidelity = readoutFidelity;
     }
 }
