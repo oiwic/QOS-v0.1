@@ -176,7 +176,6 @@ classdef iq_ustc_ad < qes.measurement.iq
                 % tested on LD system with 150us repetition time on 2018-01-06 
 %  				obj.n
 %                  tic
-%                 toc
                 [Vi,Vq] = obj.adI.Run(obj.n);
 %               toc
 				Vi = double(Vi) -127;

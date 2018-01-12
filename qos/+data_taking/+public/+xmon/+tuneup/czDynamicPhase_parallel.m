@@ -86,7 +86,13 @@ function varargout = czDynamicPhase(varargin)
                 title([dynamicPhaseQs{jj}.name, ' dynamic phase correction: ', num2str(p(1),'%0.4f')]);
                 drawnow;
             end
-            czs.dynamicPhases(qdInd(jj)) = czs.dynamicPhases(qdInd(jj)) + p(1); % update for the next interation
+            dp = czs.dynamicPhases(qdInd(jj)) + p(1);
+            if dp > pi
+                dp = dp - 2*pi;
+            elseif dp <= -pi
+                dp = dp + 2*pi;
+            end
+            czs.dynamicPhases(qdInd(jj)) = dp; % update for the next interation
         end
     end
 

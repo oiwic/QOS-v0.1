@@ -64,41 +64,45 @@ zPulseRipple('qubit','q7',...
     s.bandWidht = 0.25;
      
 %     q = 'q1';
-%     s.r = [0.025,-0.019,0.015]; % q2
-%     s.td = [900,500,250]; % q2
+%     s.r = [0.025,-0.019,0.015]; 
+%     s.td = [900,500,250]; 
+    
+    q = 'q1';
+    s.r = [0.017]; 
+    s.td = [1000]; 
     
 % %     q = 'q2';
-% %     s.r = [0.013]; % q2
-% %     s.td = [833]; % q2
+% %     s.r = [0.013]; 
+% %     s.td = [833]; 
 %     
 %     q = 'q2';
-%     s.r = [0.0135, -0.003, 0.0035]; % q2
-%     s.td = [833, 400, 200]; % q2
+%     s.r = [0.0135, -0.003, 0.0035]; 
+%     s.td = [833, 400, 200]; 
 
     
-    q = 'q3';
-    s.r = [0.035,-0.017,-0.013,0.023]; % q2
-    s.td = [900,400,200,100]; % q2
+%     q = 'q3';
+%     s.r = [0.035,-0.017,-0.013,0.023]; 
+%     s.td = [900,400,200,100]; 
 
 %     q = 'q4';
-%     s.r = [0.014]; % q4
-%     s.td = [634]; % q4
+%     s.r = [0.014]; 
+%     s.td = [634]; 
 %     q = 'q5';
-%     s.r = [0.017]; % q5
-%     s.td = [664]; % q5
+%     s.r = [0.017]; 
+%     s.td = [664]; 
 %     q = 'q6';
-%     s.r = [0.035]; % q6
-%     s.td = [554]; % q6
+%     s.r = [0.035]; 
+%     s.td = [554]; 
 %       q = 'q8';
-%       s.r = [0.019]; % q6
-%       s.td = [570]; % q6   
+%       s.r = [0.019]; 
+%       s.td = [570]; 
 %       q = 'q10';
-%       s.r = [0.025]; % q6
-%       s.td = [870]; % q6
+%       s.r = [0.025]; 
+%       s.td = [870]; 
       
 %       q = 'q11';
-%       s.r = [0.021]; % q6
-%       s.td = [954]; % q6
+%       s.r = [0.021]; 
+%       s.td = [954]; 
 
     xfrFunc = qes.util.xfrFuncBuilder(s);
     xfrFunc_inv = xfrFunc.inv();
@@ -116,7 +120,7 @@ zPulseRipple('qubit','q7',...
 delayTime = [0:50:2000];
 setQSettings('r_avg',3000);
 zPulseRipplePhase('qubit',q,'delayTime',delayTime,...
-       'xfrFunc',[xfrFunc_f],'zAmp',-1.5e4,'s',s,...
+       'xfrFunc',[xfrFunc_f],'zAmp',-2.5e4,'s',s,...
        'notes','','gui',true,'save',true);
 %%
 [sOpt,LPFBW] = zPulseXfrFunc('qubit','q1','delayTime',[30,100,300,700,1500],...

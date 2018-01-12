@@ -39,7 +39,7 @@ function varargout = zPulseRipplePhase(varargin)
     import sqc.*
     import sqc.op.physical.*
     
-    Z_LENGTH = 2000;
+    Z_LENGTH = 1000;
 
 	if nargin > 1  % otherwise playback
 		fcn_name = 'data_taking.public.xmon.zPulseRipplePhase'; % this and args will be saved with data

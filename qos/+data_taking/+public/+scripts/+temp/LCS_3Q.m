@@ -21,7 +21,7 @@ function LCS_3Q()
     for ii = 1:numel(qNames)
         qubits{ii} = qName2Obj(qNames{ii});
     end
-    %% XZXZ
+    % XZXZ
     XZGateMat = {'Y2p', 'I', 'I';
               'CZ', 'CZ',  'I';
               'I',  'CZ',  'CZ';
@@ -45,8 +45,31 @@ function LCS_3Q()
    xlabel('|q3,q2,q1>:|000> -> |111>');
    ylabel('P');
    title('XZX');
-   
    return;
+%     % XZXZ
+%     XZGateMat = {'Y2p', 'Y2p', 'Y2p';
+%               'CZ', 'CZ',  'I';
+%               'I',  'CZ',  'CZ';
+%                ['Z(',num2str(dynamicPhases(1)),')'],['Z(',num2str(dynamicPhases(2)),')'],['Z(',num2str(dynamicPhases(3)),')'];
+%                'Y2p', 'I',   'Y2p';
+%               };
+%     proc = sqc.op.physical.gateParser.parse(qubits,XZGateMat);
+%     R = resonatorReadout(qubits);
+%     R.delay = proc.length;
+% 
+%    proc.Run();
+%    XZData = R();
+%    
+%    XZGateMat = {'Y2p', 'Y2p', 'Y2p';
+%                'CZ', 'CZ',  'I';
+%                'I',  'CZ',  'CZ';
+%                'Y2p','I',   'Y2p';
+%               };
+%    Pideal = sqc.op.physical.gateParser.parseLogicalProb(XZGateMat);
+%    hfxz = figure();bar([Pideal;XZData].');
+%    xlabel('|q3,q2,q1>:|000> -> |111>');
+%    ylabel('P');
+%    title('XZX');
    %% ZXZX
    ZXGateMat = {'Y2p', 'Y2p', 'Y2p';
                'CZ', 'CZ',  'I';
