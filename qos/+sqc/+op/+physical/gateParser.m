@@ -47,9 +47,28 @@ classdef gateParser
                         end
                         jj = jj + 1;
                     else
-                        strLn = numel(gateMat{ii,jj});
-                        [startInd, endInd] = regexp(gateMat{ii,jj},'Z\(.+\)');
-                        if ~isempty(startInd)
+						parts = strsplit(gateMat{ii,jj},'(');
+						if ~ismember(parts{1},supportedGates)
+                            error(['unsupported gate: ', gateMat{ii,jj}]);
+						elseif length(parts) > 2
+							error(['illegal gate format: ', gateMat{ii,jj}]);
+						end
+						if length(parts) == 1
+							if ~strcmp(parts{2}(end,')') || length(parts{2}) == 1
+								error(['illegal gate format: ', gateMat{ii,jj}]);
+							end
+							pParts = strsplit(parts{2}(1:end-1));
+							numParams = numel(pParts);
+							if numParams > 2
+								error(['illegal gate format: ', gateMat{ii,jj}]);
+							elseif numParams == 1
+								param1 = str2double(pParts{1});
+								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p)')],qubits{jj},param1);
+							else
+								param1 = str2double(pParts{1});
+								param2 = str2double(pParts{2});
+								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p1,p2)')],qubits{jj},param1,param2);
+							end
                             if startInd == 1 && endInd == strLn
                                 [startInd, endInd] = regexp(gateMat{ii,jj},'\(.+\)');
                                 if isempty(startInd)
@@ -62,10 +81,7 @@ classdef gateParser
                                 error(['unsupported gate: ', gateMat{ii,jj}]);
                             end
                         else
-                            if ~ismember(gateMat{ii,jj},supportedGates)
-                                error(['unsupported gate: ', gateMat{ii,jj}]);
-                            end
-                            g__ = feval(str2func(['@(q)sqc.op.physical.gate.',gateMat{ii,jj},'(q)']),qubits{jj});
+                            g__ = feval(str2func(['@(q)sqc.op.physical.gate.',parts{1},'(q)']),qubits{jj});
                         end
                     end
                     if isempty(g_)
@@ -84,7 +100,9 @@ classdef gateParser
             gates = {'I','H',...
                 'X','X2p','X2m',...
                 'Y','Y2p','Y2m',...
-                'Z','Z2p','Z2m','Z4p','Z4m','S','Sd',...
+				'Rx','Ry','Rz',...
+                'Z','Z2p','Z2m','Z4p','Z4m','S','Sd','T','Td',...
+				'Rz',...
                 'CZ'
                 };
         end
