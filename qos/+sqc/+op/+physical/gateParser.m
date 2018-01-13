@@ -27,7 +27,7 @@ classdef gateParser
 				end
             end
             supportedGates = sqc.op.physical.gateParser.supportedGates();
-            g = sqc.op.physical.op.Z_arbPhase(qubits{1},0);
+            g = sqc.op.physical.gate.ZArbPhase(qubits{1},0);
             for ii = 1:matSz(1)
                 g_ = [];
                 jj = 1;

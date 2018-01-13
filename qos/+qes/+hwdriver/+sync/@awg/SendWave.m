@@ -41,8 +41,6 @@ function SendWave(obj,chnl,DASequence,isI)
             WaveformData(32e3:end) = [];
             
 % %             to plot the waveform data
-%             global OPERATOR_SHOW_WAVEDATA;
-%             OPERATOR_SHOW_WAVEDATA = true;
 %             persistent ax;
 %             try
 %                 if ~isempty(OPERATOR_SHOW_WAVEDATA) && OPERATOR_SHOW_WAVEDATA
@@ -56,15 +54,15 @@ function SendWave(obj,chnl,DASequence,isI)
 %                 end
 %             catch
 %             end
-%             
-%             % setChnlOutputDelay before SendWave, otherwise output delay
-%             % will not take effect till next next Run:
-%             % SendWave(...); setChnlOutputDelay(...,100);
-%             % Run(...); % delay not 100*4 ns
-%             % SendWave(...); setChnlOutputDelay(...,200);
-%             % Run(..); % now delay is 100*4 ns, not 200*4 ns,
-%             % 200*4 ns will be the delay amount of next Run.
-%             % this is a da driver bug, might be corrected in a future version. 
+            
+            % setChnlOutputDelay before SendWave, otherwise output delay
+            % will not take effect till next next Run:
+            % SendWave(...); setChnlOutputDelay(...,100);
+            % Run(...); % delay not 100*4 ns
+            % SendWave(...); setChnlOutputDelay(...,200);
+            % Run(..); % now delay is 100*4 ns, not 200*4 ns,
+            % 200*4 ns will be the delay amount of next Run.
+            % this is a da driver bug, might be corrected in a future version. 
             
             obj.interfaceobj.setChnlOutputDelay(chnl,output_delay_count);
             obj.interfaceobj.SendWave(chnl,WaveformData);

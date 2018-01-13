@@ -150,7 +150,7 @@ classdef (Sealed = true)RegEditor < handle
                 end
                 SSGroups = [SSGroups, {fInfo(ii).name}];
             end
-            selectedSSGroups = ['public',obj.qs.loadSSettings('selected')];
+            selectedSSGroups = ['shared',obj.qs.loadSSettings('selected')];
             ss = uitreenode('v0', 'session settings', [obj.qs.user, '-',obj.qs.session], '.NULL', false);
             ss.setIcon(im2java(qes.app.RegEditor.ico_user()));
             for ii = 1:numel(SSGroups)
