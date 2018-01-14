@@ -18,24 +18,24 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
     end
     if ~iscell(fields)
         if ~ischar(fields)
-            throw(MException('QOS_loadSettings:invalidInput',...
+            throw(MException('QOS:loadSettings:invalidInput',...
 				sprintf('fileds should be a cell array of char strings or a single char string.')));
         else
             fields = {fields};
         end
     end
     if ~isdir(spath)
-        throw(MException('QOS_loadSettings:invalidInput',sprintf('%s is not a valid directory.', strrep(spath,'\','\\'))));
+        throw(MException('QOS:loadSettings:invalidInput',sprintf('%s is not a valid directory.', strrep(spath,'\','\\'))));
     end
     if ~exist(spath,'dir')
-        throw(MException('QOS_loadSettings:settingsNotFound',...
+        throw(MException('QOS:loadSettings:settingsNotFound',...
 					sprintf('settings path %s not found.', strrep(spath,'\','\\'))));
     end
     numFields = numel(fields);
     ii = 1;
     while ii <= numFields
         if ~ischar(fields{ii})
-            throw(MException('QOS_loadSettings:invalidInput',...
+            throw(MException('QOS:loadSettings:invalidInput',...
 				sprintf('field name can not be a(n) ''%s'', char string only.', class(fields{ii}))));
         end
         subFields = strsplit(fields{ii},'.');
@@ -45,7 +45,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
         end
         fields = [fields(1:ii-1), subFields, fields(ii+1:end)];
         if ~isvarname(fields{ii})
-            throw(MException('QOS_loadSettings:invalidInput',sprintf('invalid field name ''%s''', fields{ii})));
+            throw(MException('QOS:loadSettings:invalidInput',sprintf('invalid field name ''%s''', fields{ii})));
         end
         ii = ii +1;
     end
@@ -55,7 +55,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
         if strcmp(fileinfo(ii).name,'.') || strcmp(fileinfo(ii).name,'..') ||...
                 strcmp(fileinfo(ii).name(1),'_') % files, directories starts with an underscore are special purpose files/folders
             if ii == numFiles && ~isempty(fields)
-                throw(MException('QOS_loadSettings:settingsNotFound',...
+                throw(MException('QOS:loadSettings:settingsNotFound',...
 					sprintf('no field ''%s'' found in settings path %s.',fields{end}, strrep(spath,'\','\\'))));
             end
             continue;
@@ -87,7 +87,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                     if isvarname(fieldname)
 %                        data.(fieldname) = strsplit(strtrim(fileinfo(ii).name(cidx(end)+1:end-4)),',');
                         if isfield(data,fieldname)
-                            throw(MException('QOS_loadSettings:duplicateSettingsEntry',...
+                            throw(MException('QOS:loadSettings:duplicateSettingsEntry',...
                                 'duplicate settings entry ''%s'' found in settings path %s', fieldname, strrep(spath,'\','\\')));
                         end
 						data.(fieldname) = strtrim(fileinfo(ii).name(cidx(end)+1:end-4));
@@ -115,7 +115,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                             duplicateFile = fullfile(spath,fileinfo(ii).name);
                             delete(duplicateFile);
                             warning(['duplicate file : ', duplicateFile, ' deleted.']);
-%                             throw(MException('QOS_loadSettings:duplicateSettingsEntry',...
+%                             throw(MException('QOS:loadSettings:duplicateSettingsEntry',...
 %                                 'duplicate settings entry ''%s'' found in settings path %s', fieldname, strrep(spath,'\','\\')));
                         end
                         data.(fieldname) = data_;
@@ -126,13 +126,13 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
 % %                        data.(fieldname) = strsplit(strtrim(fileinfo(ii).name(cidx(end)+1:end-4)),',');
 % 						datafile = fullfile(spath,'_data',strtrim(fileinfo(ii).name(cidx(end)+1:end-4))));
 % 						if ~exist(datafile,'file')
-% 							throw(MException('QOS_loadSettings:invalidSettingsValue',...
+% 							throw(MException('QOS:loadSettings:invalidSettingsValue',...
 % 								sprintf('data for field ''%s'' not found.', fields{1})));
 % 						end
 % 						try
 % 							data.(fieldname) = load(datafile);
 % 						catch
-% 							throw(MException('QOS_loadSettings:invalidSettingsValue',...
+% 							throw(MException('QOS:loadSettings:invalidSettingsValue',...
 % 								sprintf('failed in loading data for field ''%s''.', fields{1})));
 % 						end
 % 					end
@@ -148,7 +148,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
             end
             if fileinfo(ii).isdir || length(fileinfo(ii).name) < 5 || ~strcmp(fileinfo(ii).name(end-2:end),'key')
                 if ii == numFiles
-                    throw(MException('QOS_loadSettings:settingsNotFound',...
+                    throw(MException('QOS:loadSettings:settingsNotFound',...
 						sprintf('no field ''%s'' found in settings path %s', fields{1}, strrep(spath,'\','\\'))));
                 end
                 continue;
@@ -184,7 +184,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                         continue;
                     end
                     if ~isfield(jdata,fields{jj})
-                        throw(MException('QOS_loadSettings:settingsNotFound',...
+                        throw(MException('QOS:loadSettings:settingsNotFound',...
 							sprintf('no field ''%s'' found in settings path %s', fields{1}, strrep(spath,'\','\\'))));
                     end
                     if jj == numFields
@@ -259,14 +259,14 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
 						case '#' % data
 							datafile = fullfile(spath,'_data',strtrim(fileinfo(ii).name(ln_field+2:end-4)));
 							if ~exist(datafile,'file')
-								throw(MException('QOS_loadSettings:invalidSettingsValue',...
+								throw(MException('QOS:loadSettings:invalidSettingsValue',...
 									sprintf('data for field ''%s'' not found in %s',...
                                     fields{1}, strrep(fullfile(spath,'_data'),'\','\\'))));
 							end
 							try
 								data = load(datafile); % a loadable data file
 							catch
-								throw(MException('QOS_loadSettings:invalidSettingsValue',...
+								throw(MException('QOS:loadSettings:invalidSettingsValue',...
 									sprintf('failed in loading data file %s for field ''%s''.',...
                                     strrep(datafile,'\','\\'), fields{1})));
 							end
@@ -275,7 +275,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
             end
         end
         if ii == numFiles && ~isempty(fields)
-            throw(MException('QOS_loadSettings:settingsNotFound',...
+            throw(MException('QOS:loadSettings:settingsNotFound',...
 				sprintf('no field ''%s'' found in settings path %s', fields{end}, strrep(spath,'\','\\'))));
         end
     end
