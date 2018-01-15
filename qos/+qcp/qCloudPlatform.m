@@ -67,5 +67,54 @@ classdef qCloudPlatform < handle
                 throw(MException('QOS:qcp:pushResultException',resp.getMessage));
             end
         end
+		function numTasks = getNumQueuingTasks(obj)
+			resp = obj.backend.getNumQueuingTasks();
+            if ~resp.isSuccess()
+                throw(MException('QOS:qcp:getNumQueuingTasksException',resp.getMessage));
+            end
+			numTasks = resp.getData();
+		end
+		function updateSystemConfig(obj,sysConfig)
+            jSysConfig = com.alibaba.quantum.domain.v2.SystemConfig();
+            jSysConfig.setOneQGates(sysConfig.oneQGates);
+            jSysConfig.setOneQGatesLabel(result.oneQGatesLabel);
+			jSysConfig.setTwoQGates(sysConfig.twoQGates);
+            jSysConfig.setTwoQGatesLabel(result.twoQGatesLabel);
+            resp = obj.backend.updateSystemConfig(jSysConfig);
+            if ~resp.isSuccess()
+                throw(MException('QOS:qcp:updateSystemConfigException',resp.getMessage));
+            end
+		end
+		function updateSystemStatus(obj,sysStatus)
+			jSysStatus = com.alibaba.quantum.domain.v2.SystemStatus();
+			switch sysStatus.status
+				case 'ACTIVE'
+					status = com.alibaba.quantum.domain.v2.SystemStatus.Status.ACTIVE;
+					jSysStatus.setStatus(status);
+				case 'MAINTANANCE'
+					status = com.alibaba.quantum.domain.v2.SystemStatus.Status.MAINTANANCE;
+					jSysStatus.setStatus(status);
+				case 'CALIBRATION'
+					status = com.alibaba.quantum.domain.v2.SystemStatus.Status.CALIBRATION;
+					jSysStatus.setStatus(status);
+				case 'OFFLINE'
+					status = com.alibaba.quantum.domain.v2.SystemStatus.Status.OFFLINE;
+					jSysStatus.setStatus(status);
+			end
+            jSysStatus.setFridgeTemperature(sysStatus.fridgeTemperature);
+            jSysStatus.setLastCalibrationTime(sysStatus.lastCalibrationTime);
+			jSysStatus.setNoticeCN(sysStatus.noticeCN);
+            jSysStatus.setNoticeEN(sysStatus.noticeEN);
+            resp = obj.backend.updateSystemStatus(jSysStatus);
+            if ~resp.isSuccess()
+                throw(MException('QOS:qcp:updateSystemStatusException',resp.getMessage));
+            end
+		end
+		function updateOneQGateFidelities(fidelities)
+		end
+		function updateTwoQGateFidelities(fidelities)
+		end
+		function updateQubitParemeters(parameters)
+		end
     end
 end

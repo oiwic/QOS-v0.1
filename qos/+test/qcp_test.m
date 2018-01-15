@@ -18,3 +18,4 @@ result.noteCN = '';
 result.noteEN = '';
 %%
 qcpInstatnce.pushResult(result);
+%%
