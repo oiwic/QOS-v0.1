@@ -12,7 +12,7 @@ ustcaddaObj = ustcadda_v1.GetInstance();
 %%
 ustcaddaObj.close()
 %% run all channels
-numChnls = 64;
+numChnls = 60;
 numRuns = 50;
 % wavedata=[32768*zeros(1,10),65535*zeros(1,10),32768*zeros(1,1)];
 wavedata=[3e4*zeros(1,2000),0*zeros(1,2000)];

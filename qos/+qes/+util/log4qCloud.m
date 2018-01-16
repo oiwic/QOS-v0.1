@@ -41,7 +41,7 @@ classdef log4qCloud < qes.util.log4m
             self.notifier.receiver = receiver;
         end
         function notify(self)
-            if ~isempty(self.notifier)
+            if ~isempty(self.notifier) && ~isempty(self.tag) && ~isempty(self.message)
                 self.notifier.title = self.tag;
                 self.notifier.message = self.message;
                 switch self.tag

@@ -201,7 +201,7 @@ classdef qSettings < handle
         function saveHwSettings(obj,field,value)
             % saves hardware settings specified by fields
             selected_hw_settings_group = qes.util.loadSettings(obj.root,{'hardware','selected'});
-            if isempty(dir(fullfile(obj.root,'hardware',selected_hw_settings_group)));
+            if isempty(dir(fullfile(obj.root,'hardware',selected_hw_settings_group)))
                 throw(MException('QOS:qSettings:settingsNotFound',... 
 					sprintf('hardware settings group %s is selected, but no such settings group is found.',...
 					selected_hw_settings_group)));
