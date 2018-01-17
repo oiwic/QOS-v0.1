@@ -202,6 +202,7 @@ classdef qCloudPlatform < handle
             obj.logger.info('qCloud.restart','qCloud restarted.');
         end
         function Run(obj)
+			
         end
         function Stop(obj)
             
