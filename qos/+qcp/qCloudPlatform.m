@@ -1,5 +1,5 @@
 classdef qCloudPlatform < handle
-    % Quantum Computing Cloud Platform:
+    % Quantum Computing Cloud Platform backend
     % http://quantumcomputer.ac.cn/index.html
     
 % Copyright 2018 Yulin Wu, USTC
@@ -16,6 +16,7 @@ classdef qCloudPlatform < handle
         
         user
         qosSettingsRoot
+        
     end
     methods (Access = private)
         function obj = qCloudPlatform(qCloudSettingsPath)
@@ -33,13 +34,73 @@ classdef qCloudPlatform < handle
             logger.setNotifier(pushoverAPIKey,pushoverReceiver);
             obj.logger = logger;
         end
+        function calibration(obj)
+            % TODO
+        end
+        function [result, singleShotEvents, waveformSamples] =...
+                runCircuit(obj,circuit,opQs,measureQs,measureTyp,isParallel)
+            import sqc.op.physical.*
+            import sqc.measure.*
+            import sqc.util.qName2Obj
+
+            numOpQs = numel(opQs);
+            opQubits = cell(1,numOpQs);
+            for ii = 1:numOpQs
+                opQubits{ii} = qName2Obj(opQs{ii});
+            end
+            process = sqc.op.physical.gateParser.parse(opQubits,circuit);
+            process.logSequenceSample = true;
+            waveformLogger = sqc.op.physical.sequenceSampleLogger.GetInstance();
+            numMeasureQs = numel(measureQs);
+            measureQubits = cell(1,numel(numMeasureQs));
+            for ii = 1:numMeasureQs
+                measureQubits{ii} = qName2Obj(measureQs{ii});
+            end
+            switch measureTyp
+                case 'stateTomography'
+                    R = stateTomography(measureQubits,isParallel);
+                    R.setProcess(process);
+                case 'phaseTomography'
+                    R = phase(measureQubits);
+                    R.setProcess;
+                otherwise
+                    R = resonatorReadout(measureQubits,~isParallel,false);
+                    process.Run();
+            end
+            result = R();
+            singleShotEvents = R.extradata;
+            [qubits, xySequenceSamples, zSequenceSamples] = waveformLogger.get();
+            if numel(qubits) ~= numOpQs
+                obj.logger.error('QOS:qCloudPlatform:waveformSampleException',...
+                    'number of waveform sample qubits not equal to number of operation qubits.');
+                waveformSamples = [];
+                return;
+            end
+            sampleLength = 0;
+            for ii = 1:numOpQs
+                sampleLength = max([sampleLength, size(xySequenceSamples{ii},2),...
+                    size(zSequenceSamples{ii},2)]);
+            end
+            waveformSamples = nan(3*numOpQs,sampleLength);
+            for ii = 1:numOpQs
+                ind = 3*(ii-1);
+                if ~isempty(xySequenceSamples{ii})
+                    waveformSamples(ind+1,:) = xySequenceSamples{ii}(1,:);
+                    waveformSamples(ind+2,:) = xySequenceSamples{ii}(2,:);
+                end
+                if ~isempty(zSequenceSamples{ii})
+                    waveformSamples(ind+3,:) = zSequenceSamples{ii};
+                end
+            end
+        end
     end
     methods (Static = true)
         function obj = GetInstance(qCloudSettingsPath)
             persistent instance;
             if isempty(instance) || ~isvalid(instance)
                 if nargin < 1 || ~isdir(qCloudSettingsPath)
-                    throw(MException('QOS:qCloudPlatform:notEnoughArguments','qCloudSettingPath not given or not a valid path.'))
+                    throw(MException('QOS:qCloudPlatform:notEnoughArguments',...
+                        'qCloudSettingPath not given or not a valid path.'))
                 else
                     instance = qcp.qCloudPlatform(qCloudSettingsPath);
                 end
@@ -198,16 +259,37 @@ classdef qCloudPlatform < handle
                 end
             end
             obj.logger.info('qCloud.restart','hardware deleted.');
-            obj.Start();
+            try
+                obj.Start();
+            catch ME
+                obj.logger.fatal('qCloud.restart',['restart failed due to: ', ME.message]);
+            end
             obj.logger.info('qCloud.restart','qCloud restarted.');
         end
         function Run(obj)
-			
+
+            
+            
+           obj.logger.info('qCloud.run','qCloud now running...'); 
         end
         function Stop(obj)
             
             
             obj.logger.info('qCloud.restart','qCloud stopped.');
+        end
+        function RunTask(obj)
+            qTask = obj.connection.getTask();
+            if isempty(qTask)
+                return;
+            end
+            %%%%%%%%% TODO
+            qTask.measureTyp  = 'Prob';
+            qTask.isParallel  = false;
+            %%%%%%%%%
+            [result, singleShotEvents, waveformSamples] =...
+                obj.runCircuit(qTask.circuit,qTask.opQubits,...
+                qTask.measureQubits,qTask.measureTyp,qTask.isParallel);
+            
         end
     end
 end

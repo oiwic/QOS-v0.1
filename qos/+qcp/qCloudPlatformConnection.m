@@ -14,7 +14,7 @@ classdef qCloudPlatformConnection < handle
              obj.backend = com.alibaba.quantum.impl.QuantumComputerPlatformHttpClientImplV2();
 %             obj.backend = com.alibaba.quantum.impl.QuantumComputerPlatformServiceV2MockImpl();
             obj.logger = qes.util.log4qCloud.getLogger();
-            obj.logger.info('qCloud.PlatformConnection','connection to frontend established.');
+            obj.logger.info('qCloud.qCloudPlatformConnection','connection to frontend established.');
         end
     end
     methods (Static = true)
@@ -64,6 +64,21 @@ classdef qCloudPlatformConnection < handle
             task.useCache = jTask.isUseCache();
             obj.logger.info('qCloud.getTask',['got task, task id: ',...
                 num2str(task.taskId,'%0.0f')]);
+        end
+        function pushTask(obj,circuit,measureQubits,stats)
+            % for testing
+            obj.logger.info('qCloud.pushTask','pushing task...');
+            jTask = com.alibaba.quantum.domain.v2.QuantumTask();
+            jTask.setCircuit(circuit);
+            jTask.setMeasureQubits(measureQubits);
+            jTask.setStats(stats);
+            resp = obj.backend.pushTask(jTask);
+            if ~resp.isSuccess()
+                msg = cell(resp.getMessage());
+                obj.logger.error('qCloud.pushTask',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:pushTaskException',msg{1}));
+            end
+            obj.logger.info('qCloud.pushTask','push task to server done.');
         end
         function pushResult(obj,result)
             obj.logger.info('qCloud.pushResult',['pushing result, task id: ',...
