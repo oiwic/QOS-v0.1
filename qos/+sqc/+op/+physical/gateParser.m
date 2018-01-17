@@ -53,21 +53,21 @@ classdef gateParser
 						elseif length(parts) > 2
 							error(['illegal gate format: ', gateMat{ii,jj}]);
 						end
-						if length(parts) == 1
-							if ~strcmp(parts{2}(end,')') || length(parts{2}) == 1
+						if length(parts) > 1
+							if ~strcmp(parts{2}(end),')') || length(parts{2}) == 1
 								error(['illegal gate format: ', gateMat{ii,jj}]);
-							end
+                            end
 							pParts = strsplit(parts{2}(1:end-1));
 							numParams = numel(pParts);
 							if numParams > 2
 								error(['illegal gate format: ', gateMat{ii,jj}]);
 							elseif numParams == 1
 								param1 = str2double(pParts{1});
-								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p)')],qubits{jj},param1);
+								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p)']),qubits{jj},param1);
 							else
 								param1 = str2double(pParts{1});
 								param2 = str2double(pParts{2});
-								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p1,p2)')],qubits{jj},param1,param2);
+								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p1,p2)']),qubits{jj},param1,param2);
 							end
                             if startInd == 1 && endInd == strLn
                                 [startInd, endInd] = regexp(gateMat{ii,jj},'\(.+\)');

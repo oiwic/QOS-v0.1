@@ -1,6 +1,6 @@
 classdef sequenceSampleLogger < handle
     properties (SetAccess = private, GetAccess = private)
-        qubits
+        qubits = {};
         xySequenceSamples
         zSequenceSamples
     end
@@ -52,9 +52,9 @@ classdef sequenceSampleLogger < handle
                 qubitInd(ii) = str2double(instance.qubits{ii}(2:end));
             end
             [~,ind] = sort(qubitInd);
-            instance.qubits = instance.qubits{ind};
-            instance.xySequenceSamples = instance.xySequenceSamples{ind};
-            instance.zSequenceSamples = instance.zSequenceSamples{ind};
+            instance.qubits = instance.qubits(ind);
+            instance.xySequenceSamples = instance.xySequenceSamples(ind);
+            instance.zSequenceSamples = instance.zSequenceSamples(ind);
         end
         function axs = plot(axs)
             instance = sqc.op.physical.sequenceSampleLogger.GetInstance();

@@ -4,32 +4,32 @@ cd('D:\QOSv1.1\qos');
 addpath('D:\QOSv1.1\qos\dlls');
 QCLOUD_SETTINGS_PATH = 'D:\data\qCloud\settings\';
 %%
-qcpInstatnce = qcp.qCloudPlatform.GetInstance(QCLOUD_SETTINGS_PATH);
+qcpInstatnce = qcp.qCloudPlatformConnection.GetInstance();
 %%
 qcpInstatnce.Start();
 %%
 QS = qes.qSettings.GetInstance();
 %%
+circuit  = {'Y2p','Y2p','Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p','Y2p',  'Y2p','Y2p';
+            'Y2m','Y2m','Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m','Y2m',  'Y2m','Y2m'};
+measureQs = {'q1','q2','q3','q4','q5'};
+qcpInstatnce.pushTask(circuit,measureQs,1000);
 %%
-qTask = qcpInstatnce.getTask()
+qTask = qcpInstatnce.getTask();
 %%
 result = struct();
-result.taskId = 1;
-result.finalCircuit = {'X'};
-nQs = 1;
-% result.taskId = qTask.taskId;
-% result.finalCircuit = qTask.circuit;
-% nQs = numel(qTask.opQubits);
+result.taskId = qTask.taskId;
+result.finalCircuit = qTask.circuit;
+nQs = numel(qTask.opQubits);
 result.result = ones(1,2^nQs)/2^nQs;
-result.fidelity = ones(2,nQs);
-singleShotEvents = rand(nQs,1000);
-% singleShotEvents = rand(nQs,qTask.stats);
+singleShotEvents = rand(nQs,qTask.stats);
 singleShotEvents(singleShotEvents > 0.7) = 1;
 singleShotEvents(singleShotEvents <= 0.7) = 0;
 result.singleShotEvents = singleShotEvents;
 result.waveforms = ones(3*nQs,5e3);
-result.noteCN = '';
-result.noteEN = '';
+result.fidelity = 0.9*ones(2,nQs);
+result.noteCN = '²âÊÔ';
+result.noteEN = 'test';
 %%
 qcpInstatnce.pushResult(result);
 %%
@@ -68,3 +68,15 @@ for ii = 1:numel(qNames)
     s.qubit = str2double(qNames{ii}(2:end));
     qcpInstatnce.updateQubitParemeters(s);
 end
+%%%
+%%%
+%%%
+%%
+cd('D:\QOSv1.1\qos');
+addpath('D:\QOSv1.1\qos\dlls');
+QCLOUD_SETTINGS_PATH = 'D:\data\qCloud\settings\';
+%%
+qcpInstatnce = qcp.qCloudPlatform.GetInstance(QCLOUD_SETTINGS_PATH);
+qcpInstatnce.Start();
+%%
+qcpInstatnce.RunTask();
