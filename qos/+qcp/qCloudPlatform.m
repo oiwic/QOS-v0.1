@@ -33,6 +33,47 @@ classdef qCloudPlatform < handle
             logger.setNotifier(pushoverAPIKey,pushoverReceiver);
             obj.logger = logger;
         end
+        function [result, singleShotEvents, waveformSamples] =...
+                runCircuit(circuit,opQs,measureQs,measureTyp,isParallel)
+            import sqc.op.physical.*
+            import sqc.measure.*
+            import sqc.util.qName2Obj
+
+            numOpQs = numel(opQs);
+            opQubits = cell(1,numOpQs);
+            for ii = 1:numOpQs
+                opQubits{ii} = qName2Obj(opQs{ii});
+            end
+            process = sqc.op.physical.gateParser.parse(opQubits,circuit);
+            process.logSequenceSample = true;
+            waveformLogger = sqc.op.physical.sequenceSampleLogger.GetInstance();
+            numMeasureQs = numel(measureQs);
+            measureQubits = cell(1,numel(numMeasureQs));
+            for ii = 1:numMeasureQs
+                measureQubits{ii} = qName2Obj(measureQs{ii});
+            end
+            switch measureTyp
+                case 'stateTomography'
+                    R = stateTomography(measureQubits,isParallel);
+                    R.setProcess(process);
+                case 'phaseTomography'
+                    R = phase(measureQubits);
+                    R.setProcess;
+                otherwise
+                    R = resonatorReadout(measureQubits,~isParallel,false);
+                    process.Run();
+            end
+            result = R();
+            singleShotEvents = R.extradata;
+            [qubits, xySequenceSamples, zSequenceSamples] = waveformLogger.get();
+            if numel(qubits) ~= numOpQs
+                obj.logger.error('');
+            end
+            sampleLength = 0;
+            for ii = 1:numOpQs
+                waveformSamples = nan(3*numOpQs,size);
+            end
+        end
     end
     methods (Static = true)
         function obj = GetInstance(qCloudSettingsPath)
