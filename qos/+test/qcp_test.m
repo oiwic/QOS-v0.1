@@ -1,82 +1,26 @@
-
-%%
 cd('D:\QOSv1.1\qos');
 addpath('D:\QOSv1.1\qos\dlls');
 QCLOUD_SETTINGS_PATH = 'D:\data\qCloud\settings\';
-%%
-qcpInstatnce = qcp.qCloudPlatformConnection.GetInstance();
-%%
-qcpInstatnce.Start();
-%%
-QS = qes.qSettings.GetInstance();
-%%
-circuit  = {'Y2p','Y2p','Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p','Y2p',  'Y2p','Y2p';
-            'Y2m','Y2m','Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m','Y2m',  'Y2m','Y2m'};
-measureQs = {'q1','q2','q3','q4','q5'};
-qcpInstatnce.pushTask(circuit,measureQs,1000);
-%%
-qTask = qcpInstatnce.getTask();
-%%
-result = struct();
-result.taskId = qTask.taskId;
-result.finalCircuit = qTask.circuit;
-nQs = numel(qTask.opQubits);
-result.result = ones(1,2^nQs)/2^nQs;
-singleShotEvents = rand(nQs,qTask.stats);
-singleShotEvents(singleShotEvents > 0.7) = 1;
-singleShotEvents(singleShotEvents <= 0.7) = 0;
-result.singleShotEvents = singleShotEvents;
-result.waveforms = ones(3*nQs,5e3);
-result.fidelity = 0.9*ones(2,nQs);
-result.noteCN = '²âÊÔ';
-result.noteEN = 'test';
-%%
-qcpInstatnce.pushResult(result);
-%%
-numTasks = qcpInstatnce.getNumQueuingTasks()
-%%
-sysConfig = QS.loadSSettings({'shared','qCloud','systemConfig'});
-qcpInstatnce.updateSystemConfig(sysConfig);
-%%
-systemStatus = QS.loadSSettings({'shared','qCloud','systemStatus'});
-qcpInstatnce.updateSystemStatus(systemStatus);
-%%
-oneQFidelities = QS.loadSSettings({'shared','qCloud','oneQGateFidelities'});
-qNames = fieldnames(oneQFidelities);
-for ii = 1:numel(qNames)
-    s = oneQFidelities.(qNames{ii});
-    s.qubit = str2double(qNames{ii}(2:end));
-    qcpInstatnce.updateOneQGateFidelities(s);
-end
-%%
-twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQGateFidelities'});
-czSets = fieldnames(twoQFidelities);
-for ii = 1:numel(czSets)
-    s.cz = twoQFidelities.(czSets{ii});
-    [ind1, ind2] = regexp(czSets{ii},'_q\d+_');
-    s.q1= str2double(czSets{ii}(ind1+2:ind2-1));
-    str = czSets{ii}(ind2:end);
-    [ind1, ind2] = regexp(str,'_q\d+');
-    s.q2= str2double(str(ind1+2:ind2));
-    qcpInstatnce.updateTwoQGateFidelities(s);
-end
-%%
-qubitParameters = QS.loadSSettings({'shared','qCloud','qubitParameters'});
-qNames = fieldnames(qubitParameters);
-for ii = 1:numel(qNames)
-    s = qubitParameters.(qNames{ii});
-    s.qubit = str2double(qNames{ii}(2:end));
-    qcpInstatnce.updateQubitParemeters(s);
-end
-%%%
-%%%
-%%%
-%%
-cd('D:\QOSv1.1\qos');
-addpath('D:\QOSv1.1\qos\dlls');
-QCLOUD_SETTINGS_PATH = 'D:\data\qCloud\settings\';
-%%
 qcpInstatnce = qcp.qCloudPlatform.GetInstance(QCLOUD_SETTINGS_PATH);
 qcpInstatnce.Start();
+%%
+sysConfig = qes.util.loadSettings(QCLOUD_SETTINGS_PATH,{'systemConfig'});
+% overwrite default
+qcpInstatnce.updateSystemConfig(sysConfig);
+%%
+sysStatus = qes.util.loadSettings(QCLOUD_SETTINGS_PATH,{'systemStatus'});
+% overwrite default
+qcpInstatnce.updateSystemStatus(sysStatus);
+%%
+QS = qes.qSettings.GetInstance();
+oneQFidelities = QS.loadSSettings({'shared','qCloud','oneQGateFidelities'});
+% overwrite default
+qcpInstatnce.updateOneQGateFidelities(oneQFidelities);
+
+%%
+QS = qes.qSettings.GetInstance();
+twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQGateFidelities'});
+% overwrite default
+qcpInstatnce.updateTwoQGateFidelities(twoQFidelities);
 %%
 qcpInstatnce.RunTask();

@@ -14,7 +14,36 @@ classdef gateParser
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
     methods (Static  = true)
-        function g = parse(qubits,gateMat)
+        function gateMat = shiftConcurrentCZ(gateMat)
+            matSz = size(gateMat);
+            for ii = 1:matSz(1)
+                jj = 1;
+                CZCount = 0;
+                while jj <= matSz(2)
+                    if isempty(gateMat{ii,jj}) || strcmp(gateMat{ii,jj},'I') ||...
+                         ~strcmp(gateMat{ii,jj},'CZ')   
+                        jj = jj+1;
+                        continue;
+                    end
+                    CZCount = CZCount + 1;
+                    if CZCount > 1
+                        gateMat = [gateMat(1:ii,:);gateMat(ii,:);gateMat(ii+1:end,:)];
+                        gateMat(ii,jj:end) = {'I'};
+                        gateMat(ii+1,1:jj-1) = {'I'};
+                        gateMat = sqc.op.physical.gateParser.shiftConcurrentCZ(gateMat);
+                        return;
+                    end
+                    jj = jj +2;
+                end
+            end
+        end
+        function g = parse(qubits,gateMat,noConcurrentCZ)
+            if nargin < 3
+                noConcurrentCZ = false;
+            end
+            if noConcurrentCZ
+                gateMat = sqc.op.physical.gateParser.shiftConcurrentCZ(gateMat);
+            end
             if ~iscell(qubits)
                 qubits = {qubits};
             end

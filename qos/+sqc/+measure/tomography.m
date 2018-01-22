@@ -82,7 +82,7 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
 			while true
 				idx = idx + 1;
 				if obj.showProgress
-					disp(sprintf('%sState tomography: %0.0f of %0.0f',...
+					disp(sprintf('%sTomography: %0.0f of %0.0f',...
 						obj.progInfoPrefix, idx-1, numShots));
 				end
 				rGates = lpr();

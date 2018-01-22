@@ -42,9 +42,7 @@ classdef (Abstract = true) XY_base < sqc.op.physical.operator
             wv = feval(['qes.waveform.',obj.qubits{1}.qr_xy_wvTyp],wvArgs{:});
             if obj.qubits{1}.qr_xy_dragPulse
                 wv = qes.waveform.fcns.DRAG(wv,...
-                                            obj.qubits{1}.qr_xy_dragAlpha,...
-                                            obj.qubits{1}.f01,...
-                                            obj.qubits{1}.f02);
+                                            obj.qubits{1}.qr_xy_dragAlpha);
             end
             
             persistent da

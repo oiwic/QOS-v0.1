@@ -16,16 +16,25 @@ classdef qCloudPlatform < handle
         
         user
         qosSettingsRoot
+        dataPath
+        defaultResultMsgCN
+        defaultResultMsgEN
         
+        runErrorCount = 0
+        runtErrorTime
+        
+        noConcurrentCZ
     end
     methods (Access = private)
         function obj = qCloudPlatform(qCloudSettingsPath)
             obj.qCloudSettingsPath = qCloudSettingsPath;
-            logPath = qes.util.loadSettings(qCloudSettingsPath, 'logPath');
+            obj.defaultResultMsgCN = qes.util.loadSettings(qCloudSettingsPath, 'defaultResultMsgCN');
+            obj.defaultResultMsgEN = qes.util.loadSettings(qCloudSettingsPath, 'defaultResultMsgEN');
             pushoverAPIKey = qes.util.loadSettings(qCloudSettingsPath, {'pushover','key'});
             pushoverReceiver = qes.util.loadSettings(qCloudSettingsPath, {'pushover','receiver'});
             obj.user = qes.util.loadSettings(qCloudSettingsPath, 'user');
             obj.qosSettingsRoot = qes.util.loadSettings(qCloudSettingsPath, 'qosSettingsRoot');
+            logPath = qes.util.loadSettings(qCloudSettingsPath, 'logPath');
             logfile = fullfile(logPath, [datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_qos.log']);
             logger = qes.util.log4qCloud.getLogger(logfile);
             logger.setFilename(logfile);
@@ -33,12 +42,19 @@ classdef qCloudPlatform < handle
             logger.setLogLevel(logger.INFO);  
             logger.setNotifier(pushoverAPIKey,pushoverReceiver);
             obj.logger = logger;
+            dataPath = qes.util.loadSettings(qCloudSettingsPath, 'dataPath');
+            if ~isdir(dataPath)
+                obj.logger.error('qCloud:invalidPath',sprintf('data path %s is not a valid path.', dataPath));
+                throw(MException('QOS:qCloudPlatform:invalidDataPath',sprintf('data path %s is not a valid path.', dataPath)));
+            end
+            obj.dataPath = dataPath;
+            obj.noConcurrentCZ = qes.util.loadSettings(qCloudSettingsPath, 'noConcurrentCZ');
         end
         function calibration(obj)
             % TODO
         end
-        function [result, singleShotEvents, waveformSamples] =...
-                runCircuit(obj,circuit,opQs,measureQs,measureTyp,isParallel)
+        function [result, singleShotEvents, waveformSamples, finalCircuit] =...
+                runCircuit(obj,circuit,opQs,measureQs,measureType)
             import sqc.op.physical.*
             import sqc.measure.*
             import sqc.util.qName2Obj
@@ -48,30 +64,50 @@ classdef qCloudPlatform < handle
             for ii = 1:numOpQs
                 opQubits{ii} = qName2Obj(opQs{ii});
             end
-            process = sqc.op.physical.gateParser.parse(opQubits,circuit);
-            process.logSequenceSample = true;
+            obj.logger.info('qCloud.runCircuit','parsing circuit...');
+            if obj.noConcurrentCZ
+                finalCircuit = sqc.op.physical.gateParser.shiftConcurrentCZ(circuit);
+            else
+                finalCircuit = circuit;
+            end
+            process = sqc.op.physical.gateParser.parse(opQubits,circuit,obj.noConcurrentCZ);
+            obj.logger.info('qCloud.runCircuit','parse circuit done.');
+            obj.logger.info('qCloud.runCircuit','running circuit...');
+            process.logSequenceSamples = true;
             waveformLogger = sqc.op.physical.sequenceSampleLogger.GetInstance();
             numMeasureQs = numel(measureQs);
             measureQubits = cell(1,numel(numMeasureQs));
             for ii = 1:numMeasureQs
                 measureQubits{ii} = qName2Obj(measureQs{ii});
             end
-            switch measureTyp
-                case 'stateTomography'
-                    R = stateTomography(measureQubits,isParallel);
+            switch measureType
+                case 'Mtomoj'
+                    R = stateTomography(measureQubits,true);
                     R.setProcess(process);
-                case 'phaseTomography'
+                case 'Mtomop'
+                    R = stateTomography(measureQubits,false);
+                    R.setProcess(process);
+                case 'Mphase'
                     R = phase(measureQubits);
                     R.setProcess;
-                otherwise
-                    R = resonatorReadout(measureQubits,~isParallel,false);
+                case 'Mzj'
+                    R = resonatorReadout(measureQubits,true,false);
                     process.Run();
+                case 'Mzp'
+                    R = resonatorReadout(measureQubits,false,false);
+                    process.Run();
+                otherwise
+                    obj.logger.error('qCloud:runTask:unsupportedMeasurementType',...
+                        ['unsupported measurement type: ', measureType]);
+                    throw(MException('QOS:qCloudPlatform:unsupportedMeasurementType',...
+                        ['unsupported measurement type: ', measureType]));
             end
             result = R();
             singleShotEvents = R.extradata;
             [qubits, xySequenceSamples, zSequenceSamples] = waveformLogger.get();
+            obj.logger.info('qCloud.runCircuit','run circuit done.');
             if numel(qubits) ~= numOpQs
-                obj.logger.error('QOS:qCloudPlatform:waveformSampleException',...
+                obj.logger.error('qCloud:runTask:waveformSampleException',...
                     'number of waveform sample qubits not equal to number of operation qubits.');
                 waveformSamples = [];
                 return;
@@ -81,7 +117,7 @@ classdef qCloudPlatform < handle
                 sampleLength = max([sampleLength, size(xySequenceSamples{ii},2),...
                     size(zSequenceSamples{ii},2)]);
             end
-            waveformSamples = nan(3*numOpQs,sampleLength);
+            waveformSamples = zeros(3*numOpQs,sampleLength);
             for ii = 1:numOpQs
                 ind = 3*(ii-1);
                 if ~isempty(xySequenceSamples{ii})
@@ -110,6 +146,9 @@ classdef qCloudPlatform < handle
     end
     methods
         function Start(obj)
+            if obj.started
+                return;
+            end
             obj.logger.info('qCloud.startup','initilizing QOS settings...');
             try
                 QS = qes.qSettings.GetInstance(obj.qosSettingsRoot);
@@ -239,6 +278,7 @@ classdef qCloudPlatform < handle
            obj.logger.notify();
         end
         function Restart(obj)
+            obj.started = false;
             obj.logger.info('qCloud.restart','restarting qCloud...');
             if obj.running % otherwise STANDBY
                 obj.logger.info('qCloud.restart','qCloud running, stopping qCloud...');
@@ -250,15 +290,15 @@ classdef qCloudPlatform < handle
             catch
             end
             obj.logger.info('qCloud.restart','deleting hardware objects...');
-            hwObjs = qes.qHandle.FindByClass('qes.hwdriver.hardware');
+            hwObjs = qes.qSettings.FindByClass('qes.hwdriver.hardware');
             for ii = 1:numel(hwObjs)
                 try
                     hwObjs{ii}.delete();
                 catch ME
-                    obj.logger.warn('qCloud.restart',['error at deleting hardware: ', ME.message]);
+                    obj.logger.warn('qCloud.restart',['error at deleting hardware objects: ', ME.message]);
                 end
             end
-            obj.logger.info('qCloud.restart','hardware deleted.');
+            obj.logger.info('qCloud.restart','hardware objects deleted.');
             try
                 obj.Start();
             catch ME
@@ -267,13 +307,13 @@ classdef qCloudPlatform < handle
             obj.logger.info('qCloud.restart','qCloud restarted.');
         end
         function Run(obj)
-
-            
-            
+ 
+ 
+ 
            obj.logger.info('qCloud.run','qCloud now running...'); 
         end
         function Stop(obj)
-            
+            % TODO...
             
             obj.logger.info('qCloud.restart','qCloud stopped.');
         end
@@ -282,14 +322,138 @@ classdef qCloudPlatform < handle
             if isempty(qTask)
                 return;
             end
-            %%%%%%%%% TODO
-            qTask.measureTyp  = 'Prob';
-            qTask.isParallel  = false;
-            %%%%%%%%%
-            [result, singleShotEvents, waveformSamples] =...
-                obj.runCircuit(qTask.circuit,qTask.opQubits,...
-                qTask.measureQubits,qTask.measureTyp,qTask.isParallel);
+            obj.logger.info('qCloud.runTask',['running task: ', num2str(qTask.taskId,'%0.0f')]);
+            errorMsg = '';
+            try
+                [result, singleShotEvents, waveformSamples, finalCircuit] =...
+                    obj.runCircuit(qTask.circuit,qTask.opQubits,...
+                    qTask.measureQubits,qTask.measureType);
+            catch ME
+                errorMsg = [ME.message,char(13),char(10)];
+                obj.logger.error('qCloud.runTask.runTaskException',ME.message);
+                obj.logger.notify();
+                obj.runErrorCount = obj.runErrorCount + 1;
+                obj.runtErrorTime(end+1) = now;
+                ln = numel(obj.runtErrorTime);
+                if obj.runtErrorTime(end) - obj.runtErrorTime(max(1,ln-4)) > 0.00694 % 10 min
+                    throw(ME);
+                end
+            end
             
+            taskResult = struct();
+            taskResult.taskId = qTask.taskId;
+            taskResult.finalCircuit = finalCircuit;
+            taskResult.result = result;
+            taskResult.singleShotEvents = singleShotEvents;
+            taskResult.waveforms = waveformSamples;
+            QS = qes.qSettings.GetInstance();
+            numMQs = numel(qTask.measureQubits);
+            taskResult.fidelity = -ones(numMQs,2);
+            for ii = 1:numMQs
+                try
+                    taskResult.fidelity(ii,:) = QS.loadSSettings({qTask.measureQubits{ii},'r_iq2prob_fidelity'});
+                catch ME
+                    msg = sprintf('load readout fidelity for %s failed due to: %s',...
+                        qTask.measureQubits{ii},ME.message);
+                    errorMsg = [errorMsg,msg];
+                    obj.logger.error('qCloud.runTask',msg);
+                end
+            end
+            
+            taskResult.noteCN = [obj.defaultResultMsgCN, errorMsg];
+            taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
+            datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
+            save(datafile,'qTask','taskResult','errorMsg');
+            obj.connection.pushResult(taskResult);
+            obj.logger.info('qCloud.runTask',sprintf('task: %0.0f done.', qTask.taskId));
         end
+        function pushTask(obj,circuit,measureQs, stats,measureType)
+            % for testing
+            % circuit  = {'Y2p','Y2p','Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p',  'Y2p','Y2p',  'Y2p','Y2p';
+            %    'Y2m','Y2m','Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m',  'Y2m','Y2m',  'Y2m','Y2m'};
+            % measureQs = {'q1','q2','q3','q4','q5'};
+            obj.connection.pushTask(obj,circuit,measureQs,stats,measureType);
+        end
+        function updateSystemConfig(obj,sysConfig)
+            if nargin < 2
+                try
+                    sysConfig = qes.util.loadSettings(obj.qCloudSettingsPath, 'systemConfig');
+                catch ME
+                    obj.logger.error('qCloud.updateSystemConfig',sprintf('load systemConfig settings failed: %s', ME.message));
+                    return;
+                end
+            end
+            obj.connection.updateSystemConfig(sysConfig);
+        end
+        function updateSystemStatus(obj,sysStatus)
+            if nargin < 2
+                try
+                    sysStatus = qes.util.loadSettings(obj.qCloudSettingsPath, 'sysStatus');
+                catch ME
+                    obj.logger.error('qCloud.updateSystemStatus',sprintf('load sysStatus settings failed: %s', ME.message));
+                    return;
+                end
+            end
+            obj.connection.updateSystemStatus(sysStatus);
+        end
+        function updateOneQGateFidelities(obj,oneQFidelities)
+            if nargin < 2
+                try
+                    QS = qes.qSettings.getInstance();
+                    oneQFidelities = QS.loadSSettings({'shared','qCloud','oneQGateFidelities'});
+                catch ME
+                    obj.logger.error('qCloud.updateOneQGateFidelities',...
+                        sprintf('load updateOneQGateFidelities settings failed: %s', ME.message));
+                    return;
+                end
+            end
+            qNames = fieldnames(oneQFidelities);
+            for ii = 1:numel(qNames)
+                s = oneQFidelities.(qNames{ii});
+                s.qubit = str2double(qNames{ii}(2:end));
+                obj.connection.updateOneQGateFidelities(s);
+            end
+        end
+        function updateTwoQGateFidelities(obj,twoQFidelities)
+            if nargin < 2
+                try
+                    QS = qes.qSettings.getInstance();
+                    twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQFidelities'});
+                catch ME
+                    obj.logger.error('qCloud.updateTwoQGateFidelities',...
+                        sprintf('load updateTwoQGateFidelities settings failed: %s', ME.message));
+                    return;
+                end
+            end
+            czSets = fieldnames(twoQFidelities);
+            for ii = 1:numel(czSets)
+                s.cz = twoQFidelities.(czSets{ii});
+                [ind1, ind2] = regexp(czSets{ii},'_q\d+_');
+                s.q1= str2double(czSets{ii}(ind1+2:ind2-1));
+                str = czSets{ii}(ind2:end);
+                [ind1, ind2] = regexp(str,'_q\d+');
+                s.q2= str2double(str(ind1+2:ind2));
+                obj.connection.updateTwoQGateFidelities(s);
+            end
+        end
+        function updateQubitParemeters(obj,qubitParameters)
+            if nargin < 2
+                try
+                    QS = qes.qSettings.getInstance();
+                    qubitParameters = QS.loadSSettings({'shared','qCloud','qubitParameters'});
+                catch ME
+                    obj.logger.error('qCloud.updateQubitParemeters',...
+                        sprintf('load updateQubitParemeters settings failed: %s', ME.message));
+                    return;
+                end
+            end
+            qNames = fieldnames(qubitParameters);
+            for ii = 1:numel(qNames)
+                s = qubitParameters.(qNames{ii});
+                s.qubit = str2double(qNames{ii}(2:end));
+                obj.connection.updateQubitParemeters(s);
+            end
+        end
+        
     end
 end

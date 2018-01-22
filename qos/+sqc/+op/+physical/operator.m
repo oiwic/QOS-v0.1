@@ -24,7 +24,7 @@ classdef operator < handle & matlab.mixin.Copyable
 		% operators with different delays are not allowed to do mtimes operation
         delay_z  % problematic for crosstalk qubits that are not in the qubits;
         
-        logSequenceSample = false
+        logSequenceSamples = false
     end
     properties (SetAccess = protected)
         % for atomic gates we can always use the Class(gate) to get the
@@ -343,8 +343,8 @@ classdef operator < handle & matlab.mixin.Copyable
 %                 end
 %             end
 %         end
-        function set.logSequenceSample(obj,val)
-            obj.logSequenceSample = val;
+        function set.logSequenceSamples(obj,val)
+            obj.logSequenceSamples = val;
             if val
                 obj.sequenceSampleLogger = sqc.op.physical.sequenceSampleLogger.GetInstance();
             end
@@ -370,7 +370,7 @@ classdef operator < handle & matlab.mixin.Copyable
                     + obj.qubits{ii}.syncDelay_xy;
 				obj.xy_daChnl{1,ii}.SendWave(DASequence,true); % send I
 				obj.xy_daChnl{2,ii}.SendWave(DASequence,false); % send Q
-                if obj.logSequenceSample
+                if obj.logSequenceSamples
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,true);
                 end
             end
@@ -425,7 +425,7 @@ classdef operator < handle & matlab.mixin.Copyable
 				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0];
 
 				obj.z_daChnl{1,ii}.SendWave(DASequence,true);
-                if obj.logSequenceSample
+                if obj.logSequenceSamples
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,false);
                 end
             end

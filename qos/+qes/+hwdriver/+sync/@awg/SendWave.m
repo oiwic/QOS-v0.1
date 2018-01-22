@@ -37,21 +37,19 @@ function SendWave(obj,chnl,DASequence,isI)
                 WaveformData = uint16(samples(1-software_delay:end)+32768);
             end
             
-             % version specific
-            WaveformData(32e3:end) = [];
-            
+%              % version specific
+%             WaveformData(32e3:end) = [];
+%             
 % %             to plot the waveform data
 %             persistent ax;
 %             try
-%                 if ~isempty(OPERATOR_SHOW_WAVEDATA) && OPERATOR_SHOW_WAVEDATA
-%                     if isempty(ax) || ~isvalid(ax)
-%                         h = figure();
-%                         ax = axes('parent',h);
-%                     end
-% 
-%                     hold(ax,'on');
-%                     plot(ax,[zeros(1,software_delay),samples]);
+%                 if isempty(ax) || ~isvalid(ax)
+%                     h = figure();
+%                     ax = axes('parent',h);
 %                 end
+% 
+%                 hold(ax,'on');
+%                 plot(ax,[zeros(1,software_delay),samples]);
 %             catch
 %             end
             
