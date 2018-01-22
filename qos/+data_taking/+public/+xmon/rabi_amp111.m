@@ -152,7 +152,7 @@ if numQs == 1
             R = measure.resonatorReadout_ss(readoutQubit,false,true);
 			R.swapdata = true;
 			R.name = '|IQ|';
-			R.datafcn = @(x)mean(abs(x));
+			R.datafcn = @(x)abs(mean(x));
 		otherwise
 			throw(MException('QOS_rabi_amp111:unsupportedDataTyp',...
 				'unrecognized dataTyp %s, available dataTyp options are P and S21.',...

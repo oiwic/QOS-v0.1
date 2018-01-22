@@ -82,7 +82,7 @@ function saveSettings(spath, field, value)
                 if strcmp(class(old_value),class(value))
                     sz_o = size(old_value);
                     sz_n = size(value);
-                    if length(sz_o) == length(sz_n) && all(sz_o == sz_n) && all(old_value == value) % case of cell is neganected
+                    if length(sz_o) == length(sz_n) && all(sz_o == sz_n) && all(old_value == value) % case of cell is neglected
                         return;
                     end
                 end
@@ -110,9 +110,9 @@ function saveSettings(spath, field, value)
                     if numel(old_value) > 1
                         fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
                     elseif isreal(old_value)
-                        fprintf(fid,'%s\t%0.5e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                        fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
                     else
-                        fprintf(fid,'%s\t%0.5e%+0.5ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
+                        fprintf(fid,'%s\t%0.6e%+0.6ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
                     end
                 end
                 fclose(fid);
@@ -130,7 +130,7 @@ function saveSettings(spath, field, value)
                         end
                         newfilename = [field{1},'@',value,'.key'];
                         movefile(fullfile(spath,fileinfo(ii).name),fullfile(spath,newfilename));
-                        % regist old_value to history
+                        % register old_value to history
                         try
                             old_value = qes.util.loadSettings(spath, field);
                             settings_exists = true;
@@ -219,7 +219,7 @@ function saveSettings(spath, field, value)
                             if strcmp(class(old_value),class(value))
                                 sz_o = size(old_value);
                                 sz_n = size(value);
-                                if length(sz_o) == length(sz_n) && all(sz_o == sz_n) && all(old_value == value) % case of cell is neganected
+                                if length(sz_o) == length(sz_n) && all(sz_o == sz_n) && all(old_value == value) % case of cell is neglected
                                     return;
                                 end
                             end
@@ -243,9 +243,9 @@ function saveSettings(spath, field, value)
                             if numel(old_value) > 1
                                fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
                             elseif isreal(old_value)
-                                fprintf(fid,'%s\t%0.5e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                                fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
                             else
-                                fprintf(fid,'%s\t%0.5e%+0.5ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
+                                fprintf(fid,'%s\t%0.6e%+0.6ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
                             end
                             fclose(fid);
                         catch

@@ -59,19 +59,21 @@ classdef qCloudPlatformConnection < handle
             task.circuit = circuit;
             task.opQubits = opQubits;
             task.measureQubits = cell(jTask.getMeasureQubits()).';
+            task.measureType = jTask.getMeasureType();
             submissionTime = cell(jTask.getSubmissionTime());
             task.submissionTime = submissionTime{1};
             task.useCache = jTask.isUseCache();
             obj.logger.info('qCloud.getTask',['got task, task id: ',...
                 num2str(task.taskId,'%0.0f')]);
         end
-        function pushTask(obj,circuit,measureQubits,stats)
+        function pushTask(obj,circuit,measureQubits,stats,measureType)
             % for testing
             obj.logger.info('qCloud.pushTask','pushing task...');
             jTask = com.alibaba.quantum.domain.v2.QuantumTask();
             jTask.setCircuit(circuit);
             jTask.setMeasureQubits(measureQubits);
             jTask.setStats(stats);
+            jTask.setMeasureType(measureType)
             resp = obj.backend.pushTask(jTask);
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
@@ -116,6 +118,7 @@ classdef qCloudPlatformConnection < handle
             jSysConfig.setOneQGatesLabel(sysConfig.oneQGatesLabel);
 			jSysConfig.setTwoQGates(sysConfig.twoQGates);
             jSysConfig.setTwoQGatesLabel(sysConfig.twoQGatesLabel);
+            jSysConfig.setMeasureSizeUpperLimit(sysConfig.measureSizeUpperLimit);
             resp = obj.backend.updateSystemConfig(jSysConfig);
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());

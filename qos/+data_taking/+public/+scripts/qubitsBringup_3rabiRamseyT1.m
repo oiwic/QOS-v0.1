@@ -1,9 +1,9 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-amp = [0:150:2e4];
-rabi_amp1('qubit','q7','biasAmp',[0],'biasLonger',20,...
+amp = [0e4:300:2.2e4];
+rabi_amp1('qubit','q10','biasAmp',[0],'biasLonger',20,...
       'xyDriveAmp',amp,'detuning',[0],'driveTyp','X/2',...
-      'dataTyp','P','gui',true,'save',true);
+      'dataTyp','S21','gui',true,'save',true);
 % rabi_amp1('qubit','q2','xyDriveAmp',[0:500:3e4]);  % lazy mode
 %%
 rabi_long1_amp('qubit','q9','biasAmp',0,'biasLonger',5,...
@@ -34,8 +34,8 @@ spin_echo('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
       'time',[0:50:8000],'detuning',[2]*1e6,...
       'notes','','gui',true,'save',true);
 %%
-setQSettings('r_avg',2000);
-T1_1('qubit','q3','biasAmp',[9000],'biasDelay',20,'time',[20:20:5e3],... % [20:200:2.8e4]
+setQSettings('r_avg',1500);
+T1_1('qubit','q1','biasAmp',[0],'biasDelay',20,'time',[20:100:28e3],... % [20:200:2.8e4]
       'gui',true,'save',true);
 %%
 resonatorT1('qubit','q2',...

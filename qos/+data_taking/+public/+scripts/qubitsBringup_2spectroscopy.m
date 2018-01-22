@@ -3,19 +3,19 @@
 %%
 
 setQSettings('r_avg',700);
-q = 'q2';
+q = 'q11';
 f01 = getQSettings('f01',q);
-freq = f01 - 5e6:0.2e6:f01 + 5e6;
-spectroscopy1_zpa('qubit',q,'biasAmp',1000,'driveFreq',[freq],...
-       'dataTyp','P','gui',true,'save',true);
+freq = f01 - 5e6:0.15e6:f01 + 5e6;
+spectroscopy1_zpa('qubit',q,'biasAmp',0,'driveFreq',[freq],...
+       'dataTyp','S21','gui',true,'save',true);
 %%
-q = 'q8';
+q = 'q9';
 setQSettings('r_avg',700);
 f01 = getQSettings('f01',q);
 % freq = f01-1e6:0.03e6:f01+0.5e6;
-freq = f01-10e6:0.3e6:f01+10e6;
+freq = f01-10e6:0.15e6:f01+2e6;
 zdcamp = getQSettings('zdc_amp',q);
-biasamp = zdcamp-200:50:zdcamp+200;
+biasamp = zdcamp-3000:500:zdcamp+3000;
 spectroscopy1_zdc('qubit',q,'biasAmp',biasamp,'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true); % dataTyp: S21 or P
 % spectroscopy1_zpa('qubit','q2'); % lazy mode
@@ -69,10 +69,10 @@ spectroscopy1_zpa_bndSwp('qubit',q,...
 %        'biasAmp',[6000:50:9750],'driveFreq',[5.56e9:0.2e6:5.77e9],...
 %        'gui',false,'save',true);
 %%
-setQSettings('r_avg',700);
-spectroscopy1_zpa_auto('qubit','q9','biasAmp',-1e4:200:1e4,...
+% setQSettings('r_avg',700);
+spectroscopy1_zpa_auto('qubit','q2','biasAmp',-2e3:300:2e3,...
     'swpInitf01',[],'swpInitBias',0,...
-    'swpBandWdth',10e6,'swpBandStep',0.1e6,...
+    'swpBandWdth',10e6,'swpBandStep',0.5e6,...
     'dataTyp','P','r_avg',700,'gui',true);
 
 

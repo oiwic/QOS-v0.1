@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q1';
+q = 'q11';
 
 tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
@@ -9,7 +9,7 @@ tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 % tuneup.correctf01bySpc('qubit',q,'gui',true,'save','askMe'); % measure f01 by spectrum
 % tuneup.correctf01byRamsey('qubit',q,'robust',true,'gui',true,'save','askMe');
 
-tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X/2','AE',true,'gui',true,'save','askMe');
+tuneup.xyGateAmpTuner('qubit',q,'gateTyp','X/2','AE',true,'AENumPi',31,'gui',true,'save','askMe');
 
 tuneup.correctf01byPhase('qubits',q,'delayTime',1e-6,'gui','true','save','askMe');
 %% fully auto callibration
@@ -38,8 +38,8 @@ tuneup.APE('qubit','q7',...
       'gui',true,'save',true);
 %%
 setQSettings('r_avg',1500);
-tuneup.DRAGAlphaAPE('qubit','q2','alpha',[-2:0.05:3],...
-    'phase',0,'numI',25,...
+tuneup.DRAGAlphaAPE('qubit','q11','alpha',[-0.2:0.02:1],...
+    'phase',0,'numI',30,...
     'gui',true,'save',true);
 %%
 photonNumberCal('qubit','q1',...
@@ -67,9 +67,9 @@ zPulseRipple('qubit','q7',...
 %     s.r = [0.025,-0.019,0.015]; 
 %     s.td = [900,500,250]; 
     
-    q = 'q1';
-    s.r = [0.017]; 
-    s.td = [1000]; 
+%     q = 'q1';
+%     s.r = [0.017];
+%     s.td = [1000];
     
 % %     q = 'q2';
 % %     s.r = [0.013]; 
@@ -80,9 +80,9 @@ zPulseRipple('qubit','q7',...
 %     s.td = [833, 400, 200]; 
 
     
-%     q = 'q3';
-%     s.r = [0.035,-0.017,-0.013,0.023]; 
-%     s.td = [900,400,200,100]; 
+    q = 'q3';
+    s.r = [0.035,-0.017,-0.013,0.023]; 
+    s.td = [900,400,200,100]; 
 
 %     q = 'q4';
 %     s.r = [0.014]; 
@@ -116,9 +116,8 @@ zPulseRipple('qubit','q7',...
 %     fsamples = xfrFunc.samples_t(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-g');
 
-
 delayTime = [0:50:2000];
-setQSettings('r_avg',3000);
+setQSettings('r_avg',2000);
 zPulseRipplePhase('qubit',q,'delayTime',delayTime,...
        'xfrFunc',[xfrFunc_f],'zAmp',-2.5e4,'s',s,...
        'notes','','gui',true,'save',true);

@@ -9,16 +9,16 @@ data = Tomo_1QState('qubit',q,'state',state,'gui',true,'save',true);
 %%
 q = 'q10';
 setQSettings('r_avg',5000);
-process = 'X/2';
+process = 'X';
 data = Tomo_1QProcess_animation('qubit',q,'process',process,'numPts',5,'notes','','save',true);
 %%
 gate = 'X/2';
 data = Tomo_1QProcess('qubit','q1','process',gate,'gui',true);
 %%
-setQSettings('r_avg',5000);
+setQSettings('r_avg',3000);
 % tuneup.iq2prob_01('qubit','q1','numSamples',1e4,'gui',true,'save',true);
 % tuneup.iq2prob_01('qubit','q2','numSamples',1e4,'gui',true,'save',true);
-twoQStateTomoData = Tomo_2QState('qubit1','q7','qubit2','q8',...
+twoQStateTomoData = Tomo_2QState('qubit1','q1','qubit2','q2',...
   'state','|00>',...
  'notes','','gui',true,'save',true);
 %%
