@@ -70,11 +70,14 @@ function varargout = xyGateAmpTuner(varargin)
         amps = linspace(0,(1-daChnl.dynamicReserve)*daChnl.vpp/2,NUM_RABI_SAMPLING_PTS*2);
         numPi0 = 1;
     else
-        if args.AENumPi < 15
-            amps = linspace(0.5*currentGateAmp,min(1.5*currentGateAmp,(1-daChnl.dynamicReserve)*daChnl.vpp/2),NUM_RABI_SAMPLING_PTS);
-            numPi0 = 1;
+        if args.AENumPi < 7
+            amps = linspace(0.7*currentGateAmp,min(1.3*currentGateAmp,(1-daChnl.dynamicReserve)*daChnl.vpp/2),NUM_RABI_SAMPLING_PTS);
+            numPi0 = 3;
+        elseif args.AENumPi < 15
+            amps = linspace(0.85*currentGateAmp,min(1.15*currentGateAmp,(1-daChnl.dynamicReserve)*daChnl.vpp/2),NUM_RABI_SAMPLING_PTS);
+            numPi0 = 5;
         else
-            amps = linspace(0.9*currentGateAmp, min(daChnl.vpp,1.1*currentGateAmp),NUM_RABI_SAMPLING_PTS);
+            amps = linspace(0.95*currentGateAmp, min(daChnl.vpp,1.05*currentGateAmp),NUM_RABI_SAMPLING_PTS);
             numPi0 = 11;
         end
         
@@ -154,6 +157,8 @@ function varargout = xyGateAmpTuner(varargin)
         end
 %         ylim = get(ax,'YLim');
         ylim = [0,1];
+        gateAmp0 = sqc.util.getQSettings(gateAmpSettingsKey,q.name);
+        plot(ax,[gateAmp0,gateAmp0],ylim,'--','Color',[1,0.7,0.7]);
         plot(ax,[gateAmp,gateAmp],ylim,'--r');
 		xlabel(ax,'xy drive amplitude');
 		ylabel(ax,'P|1>');
@@ -166,11 +171,14 @@ function varargout = xyGateAmpTuner(varargin)
         end
         set(ax,'YLim',ylim);
         drawnow;
-	end
+	else
+            hf = [];
+        end
 	if ischar(args.save)
         args.save = false;
-        choice  = questdlg('Update settings?','Save options',...
-                'Yes','No','No');
+        choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
+%         choice  = questdlg('Update settings?','Save options',...
+%                 'Yes','No','No');
         if ~isempty(choice) && strcmp(choice, 'Yes')
             args.save = true;
         end

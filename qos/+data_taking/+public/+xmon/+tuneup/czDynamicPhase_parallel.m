@@ -85,7 +85,9 @@ function varargout = czDynamicPhase(varargin)
                 legend(ax,{'data','linear fit'});
                 title([dynamicPhaseQs{jj}.name, ' dynamic phase correction: ', num2str(p(1),'%0.4f')]);
                 drawnow;
-            end
+            else
+            hf = [];
+        end
             dp = czs.dynamicPhases(qdInd(jj)) + p(1);
             if dp > pi
                 dp = dp - 2*pi;
@@ -95,7 +97,15 @@ function varargout = czDynamicPhase(varargin)
             czs.dynamicPhases(qdInd(jj)) = dp; % update for the next interation
         end
     end
-
+    if ischar(args.save)
+        args.save = false;
+        choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
+%         choice  = questdlg('Update settings?','Save options',...
+%                 'Yes','No','No');
+        if ~isempty(choice) && strcmp(choice, 'Yes')
+            args.save = true;
+        end
+    end
     if args.save
         QS = qes.qSettings.GetInstance();
         QS.saveSSettings({'shared','g_cz',czs.key,'dynamicPhases'},czs.dynamicPhases);

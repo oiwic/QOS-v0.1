@@ -6,7 +6,10 @@ function zpa = detune2zpa(q,detune)
 % Copyright 2017 Yulin Wu, USTC
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 
-    r0 = sqc.util.zpa2f01Offset(q);
+    if ischar(q)
+        q = sqc.util.qName2Obj(q);
+    end
+    r0 = -sqc.util.zpa2f01XShift(q);
 
     p = q.zpls_amp2f01;
     p(end) = p(end) - q.f01 - detune;

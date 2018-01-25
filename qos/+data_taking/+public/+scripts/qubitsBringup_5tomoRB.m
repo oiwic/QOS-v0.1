@@ -1,8 +1,8 @@
 % tomography and randomized bnenchmarking
 %%
-q = 'q3';
-setQSettings('r_avg',10000);
-state = '|1>';
+q = 'q2';
+setQSettings('r_avg',3000);
+state = '|0>';
 data = Tomo_1QState('qubit',q,'state',state,'gui',true,'save',true);
 % rho = sqc.qfcns.stateTomoData2Rho(data);
 % h = figure();bar3(real(rho));h = figure();bar3(imag(rho));
@@ -18,8 +18,8 @@ data = Tomo_1QProcess('qubit','q1','process',gate,'gui',true);
 setQSettings('r_avg',3000);
 % tuneup.iq2prob_01('qubit','q1','numSamples',1e4,'gui',true,'save',true);
 % tuneup.iq2prob_01('qubit','q2','numSamples',1e4,'gui',true,'save',true);
-twoQStateTomoData = Tomo_2QState('qubit1','q1','qubit2','q2',...
-  'state','|00>',...
+twoQStateTomoData = Tomo_2QState('qubit1','q3','qubit2','q2',...
+  'state','|11>',...
  'notes','','gui',true,'save',true);
 %%
 gate = 'X/2';

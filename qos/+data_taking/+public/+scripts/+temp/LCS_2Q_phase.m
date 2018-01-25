@@ -1,5 +1,5 @@
-% data_taking.public.scripts.temp.LCS_3Q_phase()
-function dynamicPhases = LCS_3Q_phase(qNames)
+% data_taking.public.scripts.temp.LCS_2Q_phase()
+function dynamicPhases = LCS_2Q_phase()
     import sqc.measure.*
     import sqc.util.qName2Obj
     
@@ -13,6 +13,7 @@ function dynamicPhases = LCS_3Q_phase(qNames)
     rAvg = 5000;
     setQSettings('r_avg',rAvg);
     
+    qNames = {'q1','q2'}; 
     qubits = cell(1,numel(qNames));
     for ii = 1:numel(qNames)
         qubits{ii} = qName2Obj(qNames{ii});
@@ -22,7 +23,6 @@ function dynamicPhases = LCS_3Q_phase(qNames)
     %%
     XZGateMat = {'Y2p', 'I', 'I';
                'CZ', 'CZ',  'I';
-               'I(100)',   'I(100)',     'I(100)';
                'I',  'CZ',  'CZ';
               };
     proc = sqc.op.physical.gateParser.parse(qubits,XZGateMat);
@@ -33,7 +33,6 @@ function dynamicPhases = LCS_3Q_phase(qNames)
    %%
    XZGateMat = {'I', 'Y2p', 'I';
                'CZ', 'CZ',  'I';
-               'I(100)',   'I(100)',     'I(100)';
                'I',  'CZ',  'CZ';
               };
     proc = sqc.op.physical.gateParser.parse(qubits,XZGateMat);
@@ -45,7 +44,6 @@ function dynamicPhases = LCS_3Q_phase(qNames)
    %%
    XZGateMat = {'I', 'I', 'Y2p';
                'CZ', 'CZ',  'I';
-               'I(100)',   'I(100)',     'I(100)';
                'I',  'CZ',  'CZ';
               };
     proc = sqc.op.physical.gateParser.parse(qubits,XZGateMat);

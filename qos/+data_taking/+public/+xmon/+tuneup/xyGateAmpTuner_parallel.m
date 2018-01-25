@@ -1,4 +1,4 @@
-function varargout = xyGateAmpTuner(varargin)
+function varargout = xyGateAmpTuner_parallel(varargin)
 % tune xy gate amplitude: X, X/2, -X/2, X/4, -X/4, Y, Y/2, -Y/2, Y/4, -Y/4
 % 
 % <_f_> = xyGateAmpTuner('qubit',_c&o_,'gateTyp',_c_,...
@@ -146,11 +146,14 @@ function varargout = xyGateAmpTuner(varargin)
         end
         set(ax,'YLim',ylim);
         drawnow;
-	end
+	else
+            hf = [];
+        end
 	if ischar(args.save)
         args.save = false;
-        choice  = questdlg('Update settings?','Save options',...
-                'Yes','No','No');
+        choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
+%         choice  = questdlg('Update settings?','Save options',...
+%                 'Yes','No','No');
         if ~isempty(choice) && strcmp(choice, 'Yes')
             args.save = true;
         end

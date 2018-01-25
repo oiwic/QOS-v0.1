@@ -129,7 +129,11 @@ function saveSettings(spath, field, value)
                             error('saveSettings:invalidInput','value type of the current settings field is char string, %s given.', class(value));
                         end
                         newfilename = [field{1},'@',value,'.key'];
-                        movefile(fullfile(spath,fileinfo(ii).name),fullfile(spath,newfilename));
+                        try
+                            movefile(fullfile(spath,fileinfo(ii).name),fullfile(spath,newfilename));
+                        catch ME
+%                             warning(ME.message);
+                        end
                         % register old_value to history
                         try
                             old_value = qes.util.loadSettings(spath, field);
@@ -201,8 +205,9 @@ function saveSettings(spath, field, value)
                         newfilename = [field{1},'=',value,'.key'];
                         try
                             movefile(fullfile(spath,fileinfo(ii).name),fullfile(spath,newfilename));
-                        catch
+                        catch ME
                             % pass, in case of setting to the current value
+%                             warning(ME.message);
                         end
                         % log old_value to history
                         try

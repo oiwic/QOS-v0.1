@@ -161,12 +161,18 @@ function bttnautocallback(hObject, eventdata, handles)
             istate = ishow-1;
             [theta] = thetafit(pexp(istate,:,:),pid(istate,:,:));
     end
+    theta_ = theta; % Yulin Wu
     for ii2=1:numQs
-        set(hsldtheta(ii2),'Value',theta(ii2)*180/pi);
-        set(hsldtheta(ii2),'Value',theta(ii2)*180/pi);
+        if theta_(ii2) <= -pi
+            theta_(ii2) = theta(ii2) + 2*pi;
+        elseif theta_(ii2) > pi
+            theta_(ii2) = theta(ii2) - 2*pi;
+        end
+        set(hsldtheta(ii2),'Value',theta_(ii2)*180/pi);
+        set(hsldtheta(ii2),'Value',theta_(ii2)*180/pi);
     end
     showdata();
-    disp(['[' num2str(-theta)  ']'])
+    disp(['[' num2str(-theta_)  ']'])
 end
 end
 
