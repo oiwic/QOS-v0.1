@@ -26,7 +26,7 @@ function varargout = czAmplitude(varargin)
     QS = qes.qSettings.GetInstance();
     scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
     
-    czAmp= round(scz.amp*linspace(0.97,1.03,25));
+    czAmp= round(scz.amp*linspace(0.97,1.03,20));
     acz1= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
        'dataTyp','Phase',...
        'czLength',scz.aczLn,'czAmp',czAmp,'cState','1',...
@@ -86,7 +86,15 @@ function varargout = czAmplitude(varargin)
             throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
                 sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
     end
-    
+    if ischar(args.save)
+        args.save = false;
+        choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
+%         choice  = questdlg('Update settings?','Save options',...
+%                 'Yes','No','No');
+        if ~isempty(choice) && strcmp(choice, 'Yes')
+            args.save = true;
+        end
+    end
     if args.save
         QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'},czamp);
     end

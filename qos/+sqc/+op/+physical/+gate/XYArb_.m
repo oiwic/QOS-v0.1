@@ -41,7 +41,7 @@ classdef XYArb_ < sqc.op.physical.gate.XY_base
                             obj.phase = -phi;
                         end
                     else
-                        error('illegal usage, do not XYArb_ directly, use XYArb instead');
+                        error('illegal usage, do not XYArb_ directly, use XYArb or Rxy instead');
                     end
                 otherwise
                     error('unrecognized XY gate implimentation: %s, available XY gate implementation options are: pi and hPi',...

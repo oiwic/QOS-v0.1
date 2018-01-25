@@ -4,7 +4,7 @@ function g = Z2m(qubit)
 % Copyright 2017 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
 	import sqc.op.physical.gate.*
-	switch qubit.g_Z_imp
+	switch qubit.g_Z_impl
 		case 'z' % implemented by z pulse
 			g = Z2m_z(qubit);
 		case 'xy' % implemented by X Y gates

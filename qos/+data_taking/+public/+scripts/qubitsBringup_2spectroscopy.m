@@ -1,15 +1,14 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
 %%
-
 setQSettings('r_avg',700);
-q = 'q11';
+q = 'q9';
 f01 = getQSettings('f01',q);
-freq = f01 - 5e6:0.15e6:f01 + 5e6;
-spectroscopy1_zpa('qubit',q,'biasAmp',0,'driveFreq',[freq],...
+freq = f01 -3e6:0.3e6:f01 + 15e6;
+spectroscopy1_zpa('qubit',q,'biasAmp',[0],'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true);
 %%
-q = 'q9';
+q = 'q7';
 setQSettings('r_avg',700);
 f01 = getQSettings('f01',q);
 % freq = f01-1e6:0.03e6:f01+0.5e6;

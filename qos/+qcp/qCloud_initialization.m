@@ -23,4 +23,9 @@ twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQGateFidelities'});
 % overwrite default
 qcpInstatnce.updateTwoQGateFidelities(twoQFidelities);
 %%
+QS = qes.qSettings.GetInstance();
+qubitParameters = QS.loadSSettings({'shared','qCloud','qubitParameters'});
+% overwrite default
+qcpInstatnce.updateQubitParemeters(qubitParameters);
+%%
 qcpInstatnce.RunTask();

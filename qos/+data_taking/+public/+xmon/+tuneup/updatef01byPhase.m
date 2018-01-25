@@ -1,14 +1,14 @@
-% data_taking.public.xmon.tuneup.correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
-%       'gui',<_b_>,'save',<_b_>,'doCorrection',<_b_>)
-function varargout = correctf01byPhase(varargin)
+% data_taking.public.xmon.tuneup.updatef01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
+%       'gui',<_b_>,'save',<_b_>)
+function varargout = updatef01byPhase(varargin)
 % support multi-qubit parallel correction
 % 
-% correct f01  in case f01 has drifted away slightly:
-% 1st step: measrue drift by phase tomo(T2* time can not be too short);
-% 2nd step: adjust zdc_amp to set f01 to the f01_set
-
+% correct f01 at the current working point(defined by zdc_amp in registry)
+% by phase tomo: f01 already set previously, correctf01byPhase is just to
+% remeasure f01 in case f01 has drifted away slightly.
+% note: T2* time can not be too short
 %
-% <_f_> = correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
+% <_f_> = updatef01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
 %       'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -25,7 +25,7 @@ function varargout = correctf01byPhase(varargin)
     
     import data_taking.public.xmon.ramsey
     
-    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true,'doCorrection',true});
+    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true});
 	
 	qubits = args.qubits;
 	if ~iscell(qubits)
@@ -79,8 +79,6 @@ function varargout = correctf01byPhase(varargin)
             ylabel(ax,'phase(rad)');
             title(['detune frequency: ', num2str(df/1e6,'%0.5fMHz')]);
             grid on;
-        else
-            hf = [];
         end
 
         if abs(df) > 10e6
@@ -118,20 +116,6 @@ function varargout = correctf01byPhase(varargin)
             dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);
             time = t_; % ns
             save(dataFileName,'time','phase','p');
-            if args.doCorrection
-                f01_set = QS.loadSSettings({q.name,'f01_set'});
-                if isempty(f01_set)
-                    warning('QOS_correctf01byPhase:noF01_set',...
-                        'f01_set value empty in registry, f01 updated but no corrected.');
-                else
-                    if abs(f01_set - f01) > 20e6
-                        warning('QOS_correctf01byPhase:driftTooLarge',...
-                        'f01 far away from f01_set, it might be a wrong result, f01 updated but no corrected.');
-                    else
-                        sqc.util.SetWorkingPoint(q.name, f01_set, false);
-                    end
-                end
-            end
         end
         allf01s(ii) = f01;
 	end

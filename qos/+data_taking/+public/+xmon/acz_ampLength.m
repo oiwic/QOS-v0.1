@@ -23,7 +23,7 @@ function varargout = acz_ampLength(varargin)
 
 	if nargin > 1  % otherwise playback
 		fcn_name = 'data_taking.public.xmon.acz_ampLength'; % this and args will be saved with data
-		args = util.processArgs(varargin,{'cState','0','readoutQubit',[],'gui',false,'notes','','save',true});
+		args = util.processArgs(varargin,{'czLength',[],'cState','0','readoutQubit',[],'gui',false,'notes','','save',true});
 	end
 	
     [qc,qt] = data_taking.public.util.getQubits(args,{'controlQ','targetQ'});
@@ -70,10 +70,11 @@ function varargout = acz_ampLength(varargin)
             throw(MException('QOS_ramsey_dp:unrcognizedDataTyp',...
             'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
     end
-    
-    % H = gate.
-    CZ = gate.CZ(qc,qt);
 
+    CZ = gate.CZ(qc,qt);
+    if isempty(args.czLength)
+        args.czLength = CZ.aczLn;
+    end
     isTomography = false;
     switch args.dataTyp
         case 'P'

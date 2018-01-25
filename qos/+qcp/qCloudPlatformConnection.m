@@ -52,16 +52,72 @@ classdef qCloudPlatformConnection < handle
             for ii = 1:nc
                 if all(strcmp(circuit(:,ii),'I') | strcmp(circuit(:,ii),''))
                     idleQInd = [idleQInd, ii];
+                else
+                    opQubits{end+1} = ['q',num2str(ii,'%0.0f')];
                 end
-                opQubits{end+1} = ['q',num2str(ii,'%0.0f')];
             end
             circuit(:,idleQInd) = [];
+            sz = size(circuit);
+            for ii = 1:sz(1)
+                for jj = 1:sz(2)
+                    if length(circuit{ii,jj}) > 2 && strcmp(circuit{ii,jj}(1:3),'CZ_')
+                        circuit{ii,jj} = 'CZ';
+                    end
+                    gate_ = circuit{ii,jj};
+                    pStartInd = regexp(circuit{ii,jj},'_.+');
+                    if ismember(circuit{ii,jj}(1:pStartInd-1),{'Rx','Ry','Rz','Rxy'})
+                        convertDeg2Rad = true;
+                    else
+                        convertDeg2Rad = false;
+                    end
+                    if ~isempty(pStartInd)
+                        circuit{ii,jj}(pStartInd(1)) = '(';
+                        circuit{ii,jj} = [circuit{ii,jj},')'];
+                        sInd = regexp(circuit{ii,jj},'_.+');
+                        if isempty(sInd)
+                            if convertDeg2Rad
+                                circuit{ii,jj} = [circuit{ii,jj}(1:pStartInd),...
+                                    num2str(str2double(circuit{ii,jj}(pStartInd+1:end-1))*pi/180,'%0.5f'),')'];
+                            end
+                            continue;
+                        elseif length(sInd) > 1
+                            obj.logger.info('qCloud.getTask',sprintf('illegal gate format %s in task: %s',...
+                                    gate_, num2str(task.taskId,'%0.0f')));
+                        else
+                            if convertDeg2Rad
+                                circuit{ii,jj} = [circuit{ii,jj}(1:pStartInd),...
+                                    num2str(str2double(circuit{ii,jj}(pStartInd+1:sInd-1))*pi/180,'%0.5f'),...
+                                    ','...
+                                    num2str(str2double(circuit{ii,jj}(sInd+1:end-1))*pi/180,'%0.5f'),...
+                                    ')'];
+                            else
+                                circuit{ii,jj}(sInd) = ',';
+                            end
+                        end
+                    end
+                end
+            end
+            for jj = 1:sz(2)
+                if strcmp(circuit{sz(1),jj},'M')
+                    circuit(sz(1),:) = [];
+                    break;
+                end
+            end
             task.circuit = circuit;
             task.opQubits = opQubits;
             task.measureQubits = cell(jTask.getMeasureQubits()).';
+            measureQubits = cell(jTask.getMeasureQubits()).';
+            numMQs = numel(measureQubits);
+            if numMQs == 0
+                measureQubits = opQubits;
+            else
+                for ii = 1:numMQs
+                    measureQubits{ii} = ['q',num2str(str2double(measureQubits{ii}(2:end))+1,'%0.0f')];
+                end
+            end
+            task.measureQubits = measureQubits;
             task.measureType = jTask.getMeasureType();
-            submissionTime = cell(jTask.getSubmissionTime());
-            task.submissionTime = submissionTime{1};
+            task.submissionTime = jTask.getSubmissionTime();
             task.useCache = jTask.isUseCache();
             obj.logger.info('qCloud.getTask',['got task, task id: ',...
                 num2str(task.taskId,'%0.0f')]);
@@ -196,14 +252,24 @@ classdef qCloudPlatformConnection < handle
             if s.H > 0
                 jOneQGateFidelities.setH(java.lang.Float(s.H));
             end
-            resp = obj.backend.updateOneQGateFidelities(jOneQGateFidelities);
+            obj.backend.updateOneQGateFidelities(jOneQGateFidelities);
+%             if ~resp.isSuccess()
+%                 msg = cell(resp.getMessage());
+%                 obj.logger.error('qCloud.updateOneQGateFidelities',msg{1});
+%                 throw(MException('QOS:qCloudPlatformConnection:updateOneQGateFidelities',msg{1}));
+%             end
+%             obj.logger.info('qCloud.updateOneQGateFidelities','gate fidelities updated.');
+        end
+        function commitOneQGateFidelities(obj)
+            obj.logger.info('qCloud.commitOneQGateFidelities','commit one qubit gate fidelities.');
+            resp = obj.backend.commitOneQGateFidelities();
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
-                obj.logger.error('qCloud.updateOneQGateFidelities',msg{1});
-                throw(MException('QOS:qCloudPlatformConnection:updateOneQGateFidelities',msg{1}));
+                obj.logger.error('qCloud.commitOneQGateFidelities',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:commitOneQGateFidelities',msg{1}));
             end
-            obj.logger.info('qCloud.updateOneQGateFidelities','gate fidelities updated.');
-		end
+            obj.logger.info('qCloud.commitOneQGateFidelities','one qubit gate fidelities updated.');
+        end
 		function updateTwoQGateFidelities(obj,s)
             obj.logger.info('qCloud.updateTwoQGateFidelities',...
                 sprintf('updating two qubit gate fidelity: q%s-q%s',...
@@ -215,14 +281,24 @@ classdef qCloudPlatformConnection < handle
             if s.cz > 0
                 jTwoQGateFidelity.setCz(java.lang.Float(s.cz));
             end
-            resp = obj.backend.updateTwoQGateFidelities(jTwoQGateFidelity);
+            obj.backend.updateTwoQGateFidelities(jTwoQGateFidelity);
+%             if ~resp.isSuccess()
+%                 msg = cell(resp.getMessage());
+%                 obj.logger.error('qCloud.updateTwoQGateFidelities',msg{1});
+%                 throw(MException('QOS:qCloudPlatformConnection:updateTwoQGateFidelities',msg{1}));
+%             end
+%             obj.logger.info('qCloud.updateTwoQGateFidelities','gate fidelity updated.');
+        end
+        function commitTwoQGateFidelities(obj)
+            obj.logger.info('qCloud.commitTwoQGateFidelities','commit two-qubit gate fidelities.');
+            resp = obj.backend.commitTwoQGateFidelities();
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
-                obj.logger.error('qCloud.updateTwoQGateFidelities',msg{1});
-                throw(MException('QOS:qCloudPlatformConnection:updateTwoQGateFidelities',msg{1}));
+                obj.logger.error('qCloud.commitTwoQGateFidelities',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:commitTwoQGateFidelities',msg{1}));
             end
-            obj.logger.info('qCloud.updateTwoQGateFidelities','gate fidelity updated.');
-		end
+            obj.logger.info('qCloud.commitTwoQGateFidelities','two-qubit gate fidelities updated.');
+        end
 		function updateQubitParemeters(obj,s)
             obj.logger.info('qCloud.updateQubitParemeters',...
                 sprintf('updating parameters for qubit: %s',...
@@ -236,13 +312,23 @@ classdef qCloudPlatformConnection < handle
             jQubitParameters.setT1(s.T1);
             jQubitParameters.setT2star(s.T2star);
             jQubitParameters.setReadoutFidelity(s.readoutFidelity);
-            resp = obj.backend.updateQubitParemeters(jQubitParameters);
+            obj.backend.updateQubitParemeters(jQubitParameters);
+%             if ~resp.isSuccess()
+%                 msg = cell(resp.getMessage());
+%                 obj.logger.error('qCloud.updateQubitParemeters',msg{1});
+%                 throw(MException('QOS:qCloudPlatformConnection:updateQubitParemeters',msg{1}));
+%             end
+%             obj.logger.info('qCloud.updateQubitParemeters','qubit parameters updated.');
+        end
+        function commitQubitParameters(obj)
+            obj.logger.info('qCloud.commitQubitParameters','commit changes of qubit parameters.');
+            resp = obj.backend.commitQubitParemeters();
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
-                obj.logger.error('qCloud.updateQubitParemeters',msg{1});
-                throw(MException('QOS:qCloudPlatformConnection:updateQubitParemeters',msg{1}));
+                obj.logger.error('qCloud.commitQubitParameters',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:commitQubitParameters',msg{1}));
             end
-            obj.logger.info('qCloud.updateQubitParemeters','qubit parameters updated.');
-		end
+            obj.logger.info('qCloud.commitQubitParameters','qubit parameters updated.');
+        end
     end
 end

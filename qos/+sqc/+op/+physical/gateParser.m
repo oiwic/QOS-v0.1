@@ -82,11 +82,11 @@ classdef gateParser
 						elseif length(parts) > 2
 							error(['illegal gate format: ', gateMat{ii,jj}]);
 						end
-						if length(parts) > 1
+						if length(parts) > 1 % with parameters
 							if ~strcmp(parts{2}(end),')') || length(parts{2}) == 1
 								error(['illegal gate format: ', gateMat{ii,jj}]);
                             end
-							pParts = strsplit(parts{2}(1:end-1));
+							pParts = strsplit(parts{2}(1:end-1),',');
 							numParams = numel(pParts);
 							if numParams > 2
 								error(['illegal gate format: ', gateMat{ii,jj}]);
@@ -96,19 +96,19 @@ classdef gateParser
 							else
 								param1 = str2double(pParts{1});
 								param2 = str2double(pParts{2});
-								g__ = feval(str2func(['@(q,p)sqc.op.physical.gate.',parts{1},'(q,p1,p2)']),qubits{jj},param1,param2);
+								g__ = feval(str2func(['@(q,p1,p2)sqc.op.physical.gate.',parts{1},'(q,p1,p2)']),qubits{jj},param1,param2);
 							end
-                            if startInd == 1 && endInd == strLn
-                                [startInd, endInd] = regexp(gateMat{ii,jj},'\(.+\)');
-                                if isempty(startInd)
-                                    error(['unsupported gate: ', gateMat{ii,jj}]);
-                                else
-                                    zphase = str2double(gateMat{ii,jj}(startInd+1:endInd-1));
-                                    g__ = feval(str2func('@(q,p)sqc.op.physical.op.Z_arbPhase(q,p)'),qubits{jj},zphase);
-                                end
-                            else
-                                error(['unsupported gate: ', gateMat{ii,jj}]);
-                            end
+%                             if startInd == 1 && endInd == strLn
+%                                 [startInd, endInd] = regexp(gateMat{ii,jj},'\(.+\)');
+%                                 if isempty(startInd)
+%                                     error(['unsupported gate: ', gateMat{ii,jj}]);
+%                                 else
+%                                     zphase = str2double(gateMat{ii,jj}(startInd+1:endInd-1));
+%                                     g__ = feval(str2func('@(q,p)sqc.op.physical.op.Z_arbPhase(q,p)'),qubits{jj},zphase);
+%                                 end
+%                             else
+%                                 error(['unsupported gate: ', gateMat{ii,jj}]);
+%                             end
                         else
                             g__ = feval(str2func(['@(q)sqc.op.physical.gate.',parts{1},'(q)']),qubits{jj});
                         end
@@ -129,9 +129,8 @@ classdef gateParser
             gates = {'I','H',...
                 'X','X2p','X2m',...
                 'Y','Y2p','Y2m',...
-				'Rx','Ry','Rz',...
+				'Rx','Ry','Rz','Rxy',...
                 'Z','Z2p','Z2m','Z4p','Z4m','S','Sd','T','Td',...
-				'Rz',...
                 'CZ'
                 };
         end

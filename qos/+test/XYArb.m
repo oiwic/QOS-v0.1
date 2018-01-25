@@ -13,7 +13,7 @@ XY3 = XYArb(q1,-pi/3,pi/4);
 XY4 = X(q1);
 
 p = XY1*XY2*XY3;
-p.logSequenceSample = true;
+p.logSequenceSamples = true;
 p.Run();
 % p = XY4^2;
 % p.Run();

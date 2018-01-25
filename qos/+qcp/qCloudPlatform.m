@@ -104,30 +104,9 @@ classdef qCloudPlatform < handle
             end
             result = R();
             singleShotEvents = R.extradata;
-            [qubits, xySequenceSamples, zSequenceSamples] = waveformLogger.get();
+            waveformSamples = waveformLogger.get(opQs);
+%             waveformLogger.plotSequenceSamples(sequenceSamples);
             obj.logger.info('qCloud.runCircuit','run circuit done.');
-            if numel(qubits) ~= numOpQs
-                obj.logger.error('qCloud:runTask:waveformSampleException',...
-                    'number of waveform sample qubits not equal to number of operation qubits.');
-                waveformSamples = [];
-                return;
-            end
-            sampleLength = 0;
-            for ii = 1:numOpQs
-                sampleLength = max([sampleLength, size(xySequenceSamples{ii},2),...
-                    size(zSequenceSamples{ii},2)]);
-            end
-            waveformSamples = zeros(3*numOpQs,sampleLength);
-            for ii = 1:numOpQs
-                ind = 3*(ii-1);
-                if ~isempty(xySequenceSamples{ii})
-                    waveformSamples(ind+1,:) = xySequenceSamples{ii}(1,:);
-                    waveformSamples(ind+2,:) = xySequenceSamples{ii}(2,:);
-                end
-                if ~isempty(zSequenceSamples{ii})
-                    waveformSamples(ind+3,:) = zSequenceSamples{ii};
-                end
-            end
         end
     end
     methods (Static = true)
@@ -322,10 +301,18 @@ classdef qCloudPlatform < handle
             end
             obj.logger.info('qCloud.runTask',['running task: ', num2str(qTask.taskId,'%0.0f')]);
             errorMsg = '';
+            taskResult = struct();
+            taskResult.taskId = qTask.taskId;
             try
+                measureType = cell(qTask.measureType);
+                measureType = measureType{1};
                 [result, singleShotEvents, waveformSamples, finalCircuit] =...
                     obj.runCircuit(qTask.circuit,qTask.opQubits,...
-                    qTask.measureQubits,qTask.measureType);
+                    qTask.measureQubits,measureType);
+                taskResult.finalCircuit = finalCircuit;
+                taskResult.result = result;
+                taskResult.singleShotEvents = singleShotEvents;
+                taskResult.waveforms = waveformSamples;
             catch ME
                 errorMsg = [ME.message,char(13),char(10)];
                 obj.logger.error('qCloud.runTask.runTaskException',ME.message);
@@ -333,17 +320,15 @@ classdef qCloudPlatform < handle
                 obj.runErrorCount = obj.runErrorCount + 1;
                 obj.runtErrorTime(end+1) = now;
                 ln = numel(obj.runtErrorTime);
-                if obj.runtErrorTime(end) - obj.runtErrorTime(max(1,ln-4)) > 0.00694 % 10 min
+                if ln > 4 && obj.runtErrorTime(end) - obj.runtErrorTime(ln-4) < 0.00694 % 10 min
                     throw(ME);
                 end
+                taskResult.finalCircuit = {};
+                taskResult.result = [];
+                taskResult.singleShotEvents = [];
+                taskResult.waveforms = [];
             end
-            
-            taskResult = struct();
-            taskResult.taskId = qTask.taskId;
-            taskResult.finalCircuit = finalCircuit;
-            taskResult.result = result;
-            taskResult.singleShotEvents = singleShotEvents;
-            taskResult.waveforms = waveformSamples;
+
             QS = qes.qSettings.GetInstance();
             numMQs = numel(qTask.measureQubits);
             taskResult.fidelity = -ones(numMQs,2);
@@ -411,6 +396,7 @@ classdef qCloudPlatform < handle
                 s.qubit = str2double(qNames{ii}(2:end));
                 obj.connection.updateOneQGateFidelities(s);
             end
+            obj.connection.commitOneQGateFidelities();
         end
         function updateTwoQGateFidelities(obj,twoQFidelities)
             if nargin < 2
@@ -433,6 +419,7 @@ classdef qCloudPlatform < handle
                 s.q2= str2double(str(ind1+2:ind2));
                 obj.connection.updateTwoQGateFidelities(s);
             end
+            obj.connection.commitTwoQGateFidelities();
         end
         function updateQubitParemeters(obj,qubitParameters)
             if nargin < 2
@@ -451,6 +438,7 @@ classdef qCloudPlatform < handle
                 s.qubit = str2double(qNames{ii}(2:end));
                 obj.connection.updateQubitParemeters(s);
             end
+            obj.connection.commitQubitParameters();
         end
         
     end

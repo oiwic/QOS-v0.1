@@ -1,10 +1,10 @@
-function varargout = correctf01byRamsey(varargin)
-% correct f01 at the current working point(defined by zdc_amp in registry)
+function varargout = updatef01byRamsey(varargin)
+% update f01 at the current working point(defined by zdc_amp in registry)
 % by ramsey: f01 already set previously, correctf01byRamsey is just to
 % remeasure f01 in case f01 has drifted away slightly.
 % note: T2* time can not be too short
 %
-% <_f_> = correctf01byRamsey('qubit',_c&o_,...
+% <_f_> = updatef01byRamsey('qubit',_c&o_,...
 %       'robust',<_b_>,'gui',<_b_>,'save',<_b_>)
 % _f_: float
 % _i_: integer
@@ -185,12 +185,15 @@ function varargout = correctf01byRamsey(varargin)
 		ylabel(ax,'P|1>');
         title(sprintf('Original f01: %0.5fGHz, current f01: %0.5fGHz',q.f01/1e9,f01/1e9));
         drawnow;
-    end
+    else
+            hf = [];
+        end
     
     if ischar(args.save)
         args.save = false;
-        choice  = questdlg('Update settings?','Save options',...
-                'Yes','No','No');
+        choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
+%         choice  = questdlg('Update settings?','Save options',...
+%                 'Yes','No','No');
         if ~isempty(choice) && strcmp(choice, 'Yes')
             args.save = true;
         end
