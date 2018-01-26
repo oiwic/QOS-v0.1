@@ -115,7 +115,7 @@ classdef qCloudPlatformConnection < handle
                     measureQubits{ii} = ['q',num2str(str2double(measureQubits{ii}(2:end))+1,'%0.0f')];
                 end
             end
-            task.measureQubits = measureQubits;
+            task.measureQubits = fliplr(measureQubits);
             task.measureType = jTask.getMeasureType();
             task.submissionTime = jTask.getSubmissionTime();
             task.useCache = jTask.isUseCache();

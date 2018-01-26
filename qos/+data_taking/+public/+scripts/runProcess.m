@@ -15,6 +15,26 @@ R = resonatorReadout(q);
 R.delay = proc.length;
 proc.Run();
 data = R()
+%%
+q = qName2Obj('q5');
+g1 = gate.X(q);
+proc = g1;
+R = resonatorReadout(q);
+R.delay = proc.length;
+proc.Run();
+nPts = 200;
+n = 1:nPts;
+x = nan(1,nPts);
+y = nan(1,nPts);
+figure();
+for ii = 1:nPts
+    proc.Run();
+    data_ = R();
+    y(ii) = data_(2);
+    x(ii) = now;
+    plot((x(2:end)-x(1))*24*60,y(2:end));
+    drawnow;
+end
 %% validate Z_arbPhase
 q = qName2Obj('q1');
 g1 = gate.Y2m(q);

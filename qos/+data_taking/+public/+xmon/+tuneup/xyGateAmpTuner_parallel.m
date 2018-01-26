@@ -134,13 +134,16 @@ function varargout = xyGateAmpTuner_parallel(varargin)
         end
 %         ylim = get(ax,'YLim');
         ylim = [0,1];
+        gateAmp0 = sqc.util.getQSettings(gateAmpSettingsKey,q.name);
+        plot(ax,[gateAmp0,gateAmp0],ylim,'--','Color',[1,0.7,0.7]);
         plot(ax,[gateAmp,gateAmp],ylim,'--r');
 		xlabel(ax,'xy drive amplitude');
 		ylabel(ax,'P|1>');
         if args.AE
             legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],...
                 [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
-                sprintf('%s gate amplitude',args.gateTyp)});
+                sprintf('%s amplitude(pre)',args.gateTyp),...
+                sprintf('%s amplitude(new)',args.gateTyp)});
         else
             legend(ax,{[sprintf('data(%d',args.AENumPi),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
         end

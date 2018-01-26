@@ -165,15 +165,16 @@ function varargout = xyGateAmpTuner(varargin)
         if args.AE
             legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],...
                 [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
-                sprintf('%s gate amplitude',args.gateTyp)});
+                sprintf('%s gate amplitude(pre)',args.gateTyp),...
+                sprintf('%s amplitude(new)',args.gateTyp)});
         else
             legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
         end
         set(ax,'YLim',ylim);
         drawnow;
 	else
-            hf = [];
-        end
+        hf = [];
+    end
 	if ischar(args.save)
         args.save = false;
         choice  = qes.ui.questdlg_timer(600,'Update settings?','Save options','Yes','No','Yes');
