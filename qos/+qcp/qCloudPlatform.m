@@ -376,6 +376,9 @@ classdef qCloudPlatform < handle
             taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
             datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
             save(datafile,'qTask','taskResult','errorMsg');
+            if qTask.stats > 1e4
+                taskResult.singleShotEvents = [];
+            end
             obj.connection.pushResult(taskResult);
             obj.logger.info('qCloud.runTask',sprintf('task: %0.0f done.', qTask.taskId));
         end

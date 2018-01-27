@@ -8,8 +8,8 @@ function varargout = correctf01byPhase(varargin)
 % 2nd step: adjust zdc_amp to set f01 to the f01_set
 
 %
-% <_f_> = correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
-%       'gui',<_b_>,'save',<_b_>)
+% <_f_> = correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,'doCorrection',<_b_>...
+%       'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -25,7 +25,7 @@ function varargout = correctf01byPhase(varargin)
     
     import data_taking.public.xmon.ramsey
     
-    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true,'doCorrection',true});
+    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true,'doCorrection',true,'logger',[]});
 	
 	qubits = args.qubits;
 	if ~iscell(qubits)
@@ -60,6 +60,10 @@ function varargout = correctf01byPhase(varargin)
         data = data(:);
     end
     t = t.';
+    
+    if isscalar(args.doCorrection)
+        args.doCorrection = args.doCorrection*ones(1,numQs);
+    end
 	for ii = 1:numQs
         q = qubits{ii};
         phase = unwrap(data(:,ii));
@@ -118,7 +122,7 @@ function varargout = correctf01byPhase(varargin)
             dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);
             time = t_; % ns
             save(dataFileName,'time','phase','p');
-            if args.doCorrection
+            if args.doCorrection(ii)
                 f01_set = QS.loadSSettings({q.name,'f01_set'});
                 if isempty(f01_set)
                     warning('QOS_correctf01byPhase:noF01_set',...
