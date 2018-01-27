@@ -1,5 +1,5 @@
-cd('D:\QOSv1.1\qos');
-addpath('D:\QOSv1.1\qos\dlls');
+% cd('D:\QOSv1.1\qos');
+% addpath('D:\QOSv1.1\qos\dlls');
 QCLOUD_SETTINGS_PATH = 'D:\data\qCloud\settings\';
 qcpInstatnce = qcp.qCloudPlatform.GetInstance(QCLOUD_SETTINGS_PATH);
 qcpInstatnce.Start();
@@ -28,4 +28,9 @@ qubitParameters = QS.loadSSettings({'shared','qCloud','qubitParameters'});
 % overwrite default
 qcpInstatnce.updateQubitParemeters(qubitParameters);
 %%
+qcpInstatnce.getNumQueuingTasks()
+%%
+while 1
 qcpInstatnce.RunTask();
+pause(2);
+end

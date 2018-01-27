@@ -1,6 +1,6 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-amp = [0e4:1000:3.2e4];
+amp = [0e4:500:2.2e4];
 rabi_amp1('qubit','q6','biasAmp',[0],'biasLonger',20,...
       'xyDriveAmp',amp,'detuning',[0],'driveTyp','X',...
       'dataTyp','S21','gui',true,'save',true);
@@ -16,8 +16,8 @@ rabi_long1_freq('qubit','q6','biasAmp',0,'biasLonger',5,...
       'dataTyp','P','gui',true,'save',true);
 %%
 setQSettings('r_avg',3000);
-ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
-      'time',[10:100:8000],'detuning',[1]*2e6,...
+ramsey('qubit','q5','mode','dp',... % available modes are: df01, dp and dz
+      'time',[10:4:1000],'detuning',[5]*2e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
 %%
 setQSettings('r_avg',5000);

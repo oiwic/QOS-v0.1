@@ -24,12 +24,17 @@ classdef qCloudPlatform < handle
         runtErrorTime
         
         noConcurrentCZ
+        
+        singleTakeNumShots = 3000;
+        wvSamplesTruncatePts = 0;
     end
     methods (Access = private)
         function obj = qCloudPlatform(qCloudSettingsPath)
             obj.qCloudSettingsPath = qCloudSettingsPath;
             obj.defaultResultMsgCN = qes.util.loadSettings(qCloudSettingsPath, 'defaultResultMsgCN');
             obj.defaultResultMsgEN = qes.util.loadSettings(qCloudSettingsPath, 'defaultResultMsgEN');
+            obj.singleTakeNumShots = qes.util.loadSettings(qCloudSettingsPath, 'singleTakeNumShots');
+            obj.wvSamplesTruncatePts = qes.util.loadSettings(qCloudSettingsPath, 'wvSamplesTruncatePts');
             pushoverAPIKey = qes.util.loadSettings(qCloudSettingsPath, {'pushover','key'});
             pushoverReceiver = qes.util.loadSettings(qCloudSettingsPath, {'pushover','receiver'});
             obj.user = qes.util.loadSettings(qCloudSettingsPath, 'user');
@@ -53,8 +58,8 @@ classdef qCloudPlatform < handle
         function calibration(obj)
             % TODO
         end
-        function [result, singleShotEvents, waveformSamples, finalCircuit] =...
-                runCircuit(obj,circuit,opQs,measureQs,measureType)
+        function [result, singleShotEvents, sequenceSamples, finalCircuit] =...
+                runCircuit(obj,circuit,opQs,measureQs,measureType, stats)
             import sqc.op.physical.*
             import sqc.measure.*
             import sqc.util.qName2Obj
@@ -79,7 +84,9 @@ classdef qCloudPlatform < handle
             measureQubits = cell(1,numel(numMeasureQs));
             for ii = 1:numMeasureQs
                 measureQubits{ii} = qName2Obj(measureQs{ii});
+                measureQubits{ii}.r_avg = obj.singleTakeNumShots;
             end
+            runProcess = false;
             switch measureType
                 case 'Mtomoj'
                     R = stateTomography(measureQubits,true);
@@ -89,22 +96,44 @@ classdef qCloudPlatform < handle
                     R.setProcess(process);
                 case 'Mphase'
                     R = phase(measureQubits);
-                    R.setProcess;
+                    R.setProcess(process);
                 case 'Mzj'
                     R = resonatorReadout(measureQubits,true,false);
-                    process.Run();
+                    R.delay = process.length;
+                    runProcess = true;
                 case 'Mzp'
                     R = resonatorReadout(measureQubits,false,false);
-                    process.Run();
+                    R.delay = process.length;
+                    runProcess = true;
                 otherwise
                     obj.logger.error('qCloud:runTask:unsupportedMeasurementType',...
                         ['unsupported measurement type: ', measureType]);
                     throw(MException('QOS:qCloudPlatform:unsupportedMeasurementType',...
                         ['unsupported measurement type: ', measureType]));
             end
-            result = R();
-            singleShotEvents = R.extradata;
-            waveformSamples = waveformLogger.get(opQs);
+            
+%             result = R();
+%             singleShotEvents = R.extradata;
+            
+            result = [];
+            numTakes = ceil(stats/obj.singleTakeNumShots);
+            singleShotEvents = nan(numMeasureQs,numTakes*obj.singleTakeNumShots);
+            for ii = 1:numTakes
+                if runProcess
+                    process.Run();
+                end
+                if ii == 1
+                    result = R();
+                else
+                    result = result + R();
+                end
+                sInd = (ii-1)*obj.singleTakeNumShots+1;
+                singleShotEvents(:,sInd:sInd + obj.singleTakeNumShots-1) = R.extradata;
+            end
+            result = result/numTakes;
+            
+            sequenceSamples = waveformLogger.get(opQs);
+            sequenceSamples(:,max(1,size(sequenceSamples,2) - obj.wvSamplesTruncatePts+1)) = [];
 %             waveformLogger.plotSequenceSamples(sequenceSamples);
             obj.logger.info('qCloud.runCircuit','run circuit done.');
         end
@@ -310,7 +339,7 @@ classdef qCloudPlatform < handle
                 measureType = measureType{1};
                 [result, singleShotEvents, waveformSamples, finalCircuit] =...
                     obj.runCircuit(qTask.circuit,qTask.opQubits,...
-                    qTask.measureQubits,measureType);
+                    qTask.measureQubits,measureType,qTask.stats);
                 taskResult.finalCircuit = finalCircuit;
                 taskResult.result = result;
                 taskResult.singleShotEvents = singleShotEvents;
@@ -349,6 +378,9 @@ classdef qCloudPlatform < handle
             taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
             datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
             save(datafile,'qTask','taskResult','errorMsg');
+            if qTask.stats > 1e4
+                taskResult.singleShotEvents = [];
+            end
             obj.connection.pushResult(taskResult);
             obj.logger.info('qCloud.runTask',sprintf('task: %0.0f done.', qTask.taskId));
         end

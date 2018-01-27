@@ -59,7 +59,10 @@ classdef ACZ < sqc.op.physical.operator
             obj.lam2 = czs.lam2;
             obj.lam3 = czs.lam3;
             obj.padLn = czs.padLn;
-            
+            if numel(czs.dynamicPhases) ~= numQs
+                throw(MException('QOS_ACZ:invalidACZSettings',...
+                            'number of dynamic phases not matching the number of qubits'));
+            end
             obj.phaseShift = czs.dynamicPhases;
             obj.detuneFreq = czs.detuneFreq;
             obj.detuneLonger = czs.detuneLonger;

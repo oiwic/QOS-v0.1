@@ -28,6 +28,17 @@ classdef qCloudPlatformConnection < handle
     end
     methods
         function task = getTask(obj)
+			resp = obj.backend.getNumQueuingTasks();
+			if ~resp.isSuccess()
+                msg = cell(resp.getMessage());
+                obj.logger.error('qCloud.getTask',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:getTaskException',msg{1}));
+            end
+			numQueuingTasks = resp.getData();
+			if numQueuingTasks == 0
+				task = [];
+				return;
+			end
             obj.logger.info('qCloud.getTask','getting task...');
             resp = obj.backend.getTask();
             if ~resp.isSuccess()
@@ -115,7 +126,7 @@ classdef qCloudPlatformConnection < handle
                     measureQubits{ii} = ['q',num2str(str2double(measureQubits{ii}(2:end))+1,'%0.0f')];
                 end
             end
-            task.measureQubits = measureQubits;
+            task.measureQubits = fliplr(measureQubits);
             task.measureType = jTask.getMeasureType();
             task.submissionTime = jTask.getSubmissionTime();
             task.useCache = jTask.isUseCache();
@@ -151,6 +162,10 @@ classdef qCloudPlatformConnection < handle
             jResult.setNoteCN(result.noteCN);
             jResult.setNoteEN(result.noteEN);
             resp = obj.backend.pushResult(jResult);
+            if isempty(resp)
+                obj.logger.error('qCloud.pushResult',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:pushResultException',msg{1}));
+            end
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
                 obj.logger.error('qCloud.pushResult',msg{1});
