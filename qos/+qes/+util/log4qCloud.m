@@ -6,6 +6,9 @@ classdef log4qCloud < qes.util.log4m
         timeStamp
         
         notifier
+        
+        logCount = 0;
+        maxLogPerFile = 2e4;
     end
     methods (Static)
         function obj = getLogger( logPath )
@@ -69,6 +72,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
         function debug(self, funcName, message)
@@ -77,6 +84,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
  
@@ -86,6 +97,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
 
@@ -95,6 +110,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
 
@@ -104,6 +123,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
 
@@ -113,6 +136,10 @@ classdef log4qCloud < qes.util.log4m
             self.funcName = funcName;
             self.message = message;
             self.timeStamp = datestr(now,'yyyy-mm-dd HH:MM:SS,FFF');
+            self.logCount = self.logCount + 1;
+            if self.logCount > self.maxLogPerFile
+                self.newLogFile();
+            end
         end
         
     end

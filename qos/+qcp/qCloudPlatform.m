@@ -43,7 +43,7 @@ classdef qCloudPlatform < handle
             logfile = fullfile(logPath, [datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_qos.log']);
             logger = qes.util.log4qCloud.getLogger(logfile);
             logger.setFilename(logfile);
-            logger.setCommandWindowLevel(logger.INFO);
+            logger.setCommandWindowLevel(logger.ALL);
             logger.setLogLevel(logger.INFO);  
             logger.setNotifier(pushoverAPIKey,pushoverReceiver);
             obj.logger = logger;
@@ -119,6 +119,7 @@ classdef qCloudPlatform < handle
             numTakes = ceil(stats/obj.singleTakeNumShots);
             singleShotEvents = nan(numMeasureQs,numTakes*obj.singleTakeNumShots);
             for ii = 1:numTakes
+                obj.logger.trace('qCloud.runCircuit',sprintf('%0.0f of %0.0f takes', ii, numTakes));
                 if runProcess
                     process.Run();
                 end

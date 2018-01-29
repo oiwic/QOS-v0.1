@@ -12,6 +12,8 @@ classdef log4m < handle
     %       http://www.mathworks.com/matlabcentral/fileexchange/33532-log4matlab
     %
     
+    % modified by YulinWu
+    
     properties (Constant)
         ALL = 0;
         TRACE = 1;
@@ -32,6 +34,10 @@ classdef log4m < handle
         fullpath = 'log4m.log';  %Default file
         commandWindowLevel = qes.util.log4m.ALL;
         logLevel = qes.util.log4m.INFO;
+    end
+    properties(SetAccess = protected, GetAccess = private)
+        cache = '';
+        cacheCount = 0;
     end
     
     methods (Static)
@@ -123,8 +129,7 @@ classdef log4m < handle
             
             self.fullpath = logPath;
         end
-          
-     
+
         function setCommandWindowLevel(self,loggerIdentifier)
             self.commandWindowLevel = loggerIdentifier;
         end
@@ -206,6 +211,27 @@ classdef log4m < handle
             self.writeLog(self.FATAL,funcName,message);
         end
         
+        function commit(self)
+            % Append new log to log file
+            if self.cacheCount == 0
+                return;
+            end
+            try
+                fid = fopen(self.fullpath,'a');
+                fprintf(fid,'%s',self.cache);
+                self.cache = '';
+                self.cacheCount = 0;
+                fclose(fid);
+            catch ME
+                display('log4m commit error: ');
+                display(ME);
+            end
+        end
+        
+        function delete(self)
+            self.delete();
+        end
+        
     end
     
     methods (Access = protected)
@@ -216,6 +242,12 @@ classdef log4m < handle
                 path = fullpath_passed;
 			end
 			self.setFilename(path);
+        end
+        
+        function newLogFile(self)
+            self.commit();
+            [pathstr,name,ext] = fileparts(self.fullpath);
+            self.fullpath = fullfile(pathstr,[name,'_'],ext);
         end
     end
 
@@ -236,6 +268,7 @@ classdef log4m < handle
             end 
             
             % set up our level string
+            doCommit = false;
             switch level
                 case{self.TRACE}
                     levelStr = 'TRACE';
@@ -245,25 +278,24 @@ classdef log4m < handle
                     levelStr = 'INFO';
                 case{self.WARN}
                     levelStr = 'WARN';
+                    doCommit = true;
                 case{self.ERROR}
                     levelStr = 'ERROR';
+                    doCommit = true;
                 case{self.FATAL}
                     levelStr = 'FATAL';
+                    doCommit = true;
                 otherwise
                     levelStr = 'UNKNOWN';
+                    doCommit = true;
             end
 
-            % Append new log to log file
-            try
-                fid = fopen(self.fullpath,'a');
-                fprintf(fid,'%s %s %s - %s\r\n' ...
-                    , datestr(now,'yyyy-mm-dd HH:MM:SS,FFF') ...
-                    , levelStr ...
-                    , scriptName ... % Have left this one with the '.' if it is passed
-                    , message);
-                fclose(fid);
-            catch ME_1
-                display(ME_1);
+            self.cacheCount = self.cacheCount + 1;
+            self.cache = [self.cache, sprintf('%s %s %s - %s\r\n',...
+                datestr(now,'yyyy-mm-dd HH:MM:SS,FFF'), levelStr, scriptName , message)];
+            
+            if self.cacheCount > 50 || doCommit
+                self.commit();
             end
         end
     end

@@ -16,7 +16,6 @@ function varargout = acz_ampLength(varargin)
 
 % Yulin Wu, 2017/7/2
 
-    
     import qes.*
     import sqc.*
     import sqc.op.physical.*
@@ -89,7 +88,7 @@ function varargout = acz_ampLength(varargin)
             isTomography = true;
         otherwise
             throw(MException('QOS_ramsey_dp:unrcognizedDataTyp',...
-            'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
+                'unrecognized dataTyp %s, available dataTyp options are P or Phase.', args.dataTyp));
     end
 
     X_ = gate.X(qt);

@@ -84,16 +84,16 @@ function varargout = randBenchMarking(varargin)
     sessionSettings = QS.loadSSettings;
     hwSettings = QS.loadHwSettings;
     for ii = 1:N
-        if args.doCalibration
-            q_ = q;
-            if ~iscell(q_)
-                q_ = {q_};
-            end
-            for cc = 1:numel(q_)
-                data_taking.public.xmon.tuneup.iq2prob_01(...
-                    'qubits',q_{cc},'numSamples',1e4,'gui',false,'save',true);
-            end
-        end
+%         if args.doCalibration
+%             q_ = q;
+%             if ~iscell(q_)
+%                 q_ = {q_};
+%             end
+%             for cc = 1:numel(q_)
+%                 data_taking.public.xmon.tuneup.iq2prob_01(...
+%                     'qubits',q_{cc},'numSamples',1e4,'gui',false,'save',true);
+%             end
+%         end
 
         R = measure.randBenchMarking(q,p,args.numGates(ii),args.numReps);
         data = R();

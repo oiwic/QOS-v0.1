@@ -1,9 +1,9 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q3';
+q = 'q9';
 
 tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
-%tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
+% tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
 % tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 tuneup.correctf01byPhase('qubits',q,'delayTime',1e-6,'gui','true','save','askMe');
 tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
@@ -105,9 +105,9 @@ zPulseRipple('qubit','q7',...
 %       s.r = [0.011,0.007]; 
 %       s.td = [900,100]; 
 
-    q = 'q9';
-    s.r = [0.0093]; 
-    s.td = [900]; 
+%     q = 'q9';
+%     s.r = [0.011,-0.0025,0.003]; 
+%     s.td = [700,400,70]; 
 
 %       q = 'q10';
 %       s.r = [0.013,0.007]; 
@@ -129,10 +129,10 @@ zPulseRipple('qubit','q7',...
 %     fsamples = xfrFunc.samples_t(fi);
 %     hold on; plot(fi, fsamples(1:2:end),'-g');
 
-delayTime = [0:25:1500];
-setQSettings('r_avg',2000);
+delayTime = [0:20:2000];
+setQSettings('r_avg',3000);
 zPulseRipplePhase('qubit',q,'delayTime',delayTime,...
-       'xfrFunc',[],'zAmp',-2.5e4,'s',s,...
+       'xfrFunc',[xfrFunc_f],'zAmp',-2.5e4,'s',s,...
        'notes','','gui',true,'save',true);
 %%
 [sOpt,LPFBW] = zPulseXfrFunc('qubit','q1','delayTime',[30,100,300,700,1500],...
