@@ -134,8 +134,8 @@ classdef USTCDAC < handle
                 end
                 ret = obj.ReadReg(5,8);
                 obj.isblock = 0;
-                if(mod(floor(ret/(2^20)),4) == 3)
-                    isDACReady = islaneReady;
+                if(mod(floor(ret/(2^20)),4) == 3 && islaneReady)
+                    isDACReady = 1;
                 else
                     isDACReady = 0;
                     obj.InitBoard();
