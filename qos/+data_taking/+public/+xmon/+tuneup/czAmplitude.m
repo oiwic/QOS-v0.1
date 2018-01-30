@@ -1,6 +1,6 @@
 function varargout = czAmplitude(varargin)
 % <_o_> = czAmplitude('controlQ',_c&o_,'targetQ',_c&o_,...
-%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
+%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -14,7 +14,7 @@ function varargout = czAmplitude(varargin)
 
 % Yulin Wu, 2017/10/14
 
-    fcn_name = 'data_taking.public.xmon.tuneup.czAmplitude'; % this and args will be saved with data
+    fcn_name = 'data_taking.public.xmon.tuneup.czAmplitude';
     import qes.*
     import sqc.*
     import sqc.op.physical.*
@@ -27,14 +27,21 @@ function varargout = czAmplitude(varargin)
     scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
     
     czAmp= round(scz.amp*linspace(0.97,1.03,20));
-    acz1= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
-       'dataTyp','Phase',...
-       'czLength',scz.aczLn,'czAmp',czAmp,'cState','1',...
-       'notes','','gui',false,'save',false);
-    acz0= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
-       'dataTyp','Phase',...
-       'czLength',scz.aczLn,'czAmp',czAmp,'cState','0',...
-       'notes','','gui',false,'save',false);
+    try
+        acz1= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
+           'dataTyp','Phase',...
+           'czLength',scz.aczLn,'czAmp',czAmp,'cState','1',...
+           'notes','','gui',false,'save',false);
+        acz0= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
+           'dataTyp','Phase',...
+           'czLength',scz.aczLn,'czAmp',czAmp,'cState','0',...
+           'notes','','gui',false,'save',false);
+    catch ME
+        if ~isempty(args.logger)
+            args.logger.error('QOS_czAmplitude:dataTakingError',ME.message);
+        end
+        throw(ME);
+    end
    
     cz0data=unwrap(acz0.data{1,1});
     cz1data=unwrap(acz1.data{1,1});
@@ -83,7 +90,11 @@ function varargout = czAmplitude(varargin)
             legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'});
             drawnow;
         end
-            throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
+        if ~isempty(args.logger)
+            args.logger.error('QOS_czAmplitude:czAmplitude',...
+                sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name));
+        end
+        throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
                 sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
     end
     if ischar(args.save)
@@ -114,7 +125,11 @@ function varargout = czAmplitude(varargin)
             dataSvName = fullfile(QS.loadSSettings('data_path'),...
                 ['czAmp_',qc.name,qt.name,'_',datestr(now,'yymmddTHHMMSS'),...
                 num2str(ceil(99*rand(1,1)),'%0.0f'),'_.fig']);
-            saveas(hf,dataSvName);
+            try
+                saveas(hf,dataSvName);
+            catch
+                warning('saving figure failed.');
+            end
         end
     end
 end

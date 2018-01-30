@@ -478,8 +478,7 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
             
             % redefined offsetCorr to be a da board specific property other
             % than a ustcadda property, Yulin Wu
-            data = uint16(data +...
-                obj.da_list(obj.da_channel_list(channel).index).da.offsetcorr(obj.da_channel_list(channel).ch)); 
+            data = uint16(data); 
             % ?��?波形
             da_struct.da.WriteWave(ch,0,data);
             % 相当于或上一个�???
@@ -548,6 +547,17 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
                 name = obj.da_list(k).da.name;
                 if(strcmpi(name,da_name))
                     obj.da_list(k).da_trig_delay = point;
+                end
+            end
+        end
+        
+        function AddDAOffset(obj,ch,offset)
+            if(length(ch)==length(offset))
+                for k =1:length(ch)
+                    ch_info = obj.da_channel_list(ch(k));
+                    channel = ch_info.ch;
+                    da = obj.da_list(ch_info.index).da;
+                    da.AddOffset(channel,offset(k))
                 end
             end
         end

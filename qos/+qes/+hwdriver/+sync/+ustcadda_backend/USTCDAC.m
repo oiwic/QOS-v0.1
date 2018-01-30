@@ -24,6 +24,7 @@ classdef USTCDAC < handle
         da_range = 0.8;         %æœ?¤§ç�?µåŽ‹ï¼Œæœªä½¿ç�?¨
         gain = zeros(1,4);      %é€š�?“å¢žç�?Š
         offset = zeros(1,4);    %é€š�?“�??ç½®
+        mixer_offset = zeros(1,4); % use to fix the offset of mixer
         offsetcorr  = zeros(1,4); % å…³é�?­DACç�?µåŽ�?
         
         trig_sel = 0;           %è§¦å?‘æ�?é?æ�?
@@ -133,7 +134,7 @@ classdef USTCDAC < handle
                 end
                 ret = obj.ReadReg(5,8);
                 obj.isblock = 0;
-                if(mod(floor(ret/(2^20)),4) == 3)
+                if(mod(floor(ret/(2^20)),4) == 3 && islaneReady)
                     isDACReady = islaneReady;
                 else
                     isDACReady = 0;
@@ -150,9 +151,9 @@ classdef USTCDAC < handle
             end
 
             for k = 1:obj.channel_amount
-%                 obj.SetOffset(k-1,obj.offset(k));
-                obj.SetGain(k-1,obj.gain(k));
-                obj.SetDefaultVolt(k-1,-obj.offsetcorr(k)+32767);
+%                 obj.SetOffset(k,obj.offset(k));
+                obj.SetGain(k,obj.gain(k));
+                obj.SetDefaultVolt(k,-obj.offsetcorr(k)+32767);
             end
             obj.PowerOnDAC(1,0);
             obj.PowerOnDAC(2,0);
@@ -293,7 +294,7 @@ classdef USTCDAC < handle
         function SetGain(obj,channel,data)
              obj.AutoOpen();
              map = [2,3,0,1];       %æœ‰bugï¼Œéœ€è�?å?šä¸?¬¡æ˜ å°�?
-             channel = map(channel+1);
+             channel = map(channel);
              ret = calllib(obj.driver,'WriteInstruction',obj.id,uint32(hex2dec('00000702')),uint32(channel),uint32(data));
              if(ret == -1)
                  error('USTCDAC:WriteGain','WriteGain failed.');
@@ -303,7 +304,7 @@ classdef USTCDAC < handle
         function SetOffset(obj,channel,data)
             obj.AutoOpen();
             map = [6,7,4,5];       %æœ‰bugï¼Œéœ€è�?å?šä¸?¬¡æ˜ å°�?
-            channel = map(channel+1);
+            channel = map(channel);
             ret = calllib(obj.driver,'WriteInstruction',obj.id,uint32(hex2dec('00000702')),uint32(channel),uint32(data));
             if(ret == -1)
                  error('USTCDAC:WriteOffset','WriteOffset failed.');
@@ -312,7 +313,7 @@ classdef USTCDAC < handle
         
         function SetDefaultVolt(obj,channel,volt)
             obj.AutoOpen();
-
+            channel = channel-1;
             ret = calllib(obj.driver,'WriteInstruction',obj.id,uint32(hex2dec('00001B05')),uint32(channel),uint32(volt));
             if(ret == -1)
                  error('USTCDAC:WriteOffset','WriteOffset failed.');
@@ -331,6 +332,7 @@ classdef USTCDAC < handle
         function WriteWave(obj,ch,offset,wave)
             obj.AutoOpen();
             % èŒƒå›´é™?åˆ¶
+            wave = wave + obj.mixer_offset(ch) + obj.offsetcorr(ch);
             wave(wave > 65535) = 65535;
             wave(wave < 0) = 0;
             % è¡¥å¤Ÿ512bitçš„ä�?å®½æ•´æ�?°å?
@@ -385,6 +387,7 @@ classdef USTCDAC < handle
        % è¯¥å‡½æ�?°æœªä½¿ç�?¨
         function wave = ReadWave(obj,ch,offset,len)
               obj.AutoOpen();
+              ch = ch - 1;
               wave = [];
               startaddr = (ch*2)*2^18 + 2*offset;
               ret = calllib(obj.driver,'ReadMemory',obj.id,uint32(hex2dec('00000003')),uint32(startaddr),uint32(len*2));
@@ -399,6 +402,7 @@ classdef USTCDAC < handle
        % è¯¥å‡½æ�?°æœªä½¿ç�?¨
         function seq = ReadSeq(obj,ch,offset,len)
               obj.AutoOpen();
+              ch = ch - 1;
               startaddr = (ch*2+1)*2^18 + offset*8;
               ret = calllib(obj.driver,'ReadMemory',obj.id,uint32(hex2dec('00000003')),uint32(startaddr),uint32(len*8));
               if(ret == 0)
@@ -529,6 +533,11 @@ classdef USTCDAC < handle
             if(ret ~= 0)
                error('USTCDAC:SetTimeOut','Set timeout failed!');
             end
+        end
+        
+        function AddOffset(obj,ch,offset)
+            obj.mixer_offset(ch) = offset;
+            obj.SetDefaultVolt(ch,32767-obj.offsetcorr(k)-obj.mixer_offset(ch));
         end
         
         % removed by Yulin Wu, 170427

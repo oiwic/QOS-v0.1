@@ -152,8 +152,9 @@ classdef operator < handle & matlab.mixin.Copyable
 							'some qubits has the same mw source but has different qr_xy_fc values.'));
                     end
                 else
-					uSrc = qes.qHandle.FindByClassProp(...
-                        'qes.hwdriver.hardware','name',obj.qubits{ii}.channels.xy_mw.instru);
+                    uSrc = qes.hwdriver.hardware.FindHwByName(obj.qubits{ii}.channels.xy_mw.instru);
+% 					uSrc = qes.qHandle.FindByClassProp(...
+%                         'qes.hwdriver.hardware','name',obj.qubits{ii}.channels.xy_mw.instru);
                     if isempty(uSrc)
                         throw(MException('sqc_op_pysical_operator:hwNotFound',...
 							'mw source %s for qubit %s not found, make sure hardware settings exist and mw source hardware object already created.',...
@@ -165,8 +166,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     mw_src_names{end+1} = uSrc.name;
                     mw_src_channels(end+1) = obj.qubits{ii}.channels.xy_mw.chnl;
                 end
-				dcSrc = qes.qHandle.FindByClassProp(...
-                    'qes.hwdriver.hardware','name',obj.qubits{ii}.channels.z_dc.instru);
+                dcSrc = qes.hwdriver.hardware.FindHwByName(obj.qubits{ii}.channels.z_dc.instru);
+% 				dcSrc = qes.qHandle.FindByClassProp(...
+%                     'qes.hwdriver.hardware','name',obj.qubits{ii}.channels.z_dc.instru);
                 if isempty(dcSrc)
                     throw(MException('sqc_op_pysical_operator:hwNotFound',...
 							'dc source %s for qubit %s not found, make sure hardware settings exist and dc source hardware object already created.',...
@@ -374,9 +376,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,true);
                 end
             end
-			zXTalkQubits2Add = {};
-			xTalkSrcIdx = [];
-			xTalkCoef = [];
+% 			zXTalkQubits2Add = {};
+% 			xTalkSrcIdx = [];
+% 			xTalkCoef = [];
 % 			for ii = 1:numel(obj.z_wv) % correct z cross talk
 %                 if isempty(obj.z_wv{ii})
 %                     continue;
@@ -575,43 +577,44 @@ classdef operator < handle & matlab.mixin.Copyable
 
             %%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%
-            %%%%%%%%%%%%%%%%%%%
-            for jj = 1:numel(obj.xy_wv)
-                if ~isempty(obj.xy_wv{jj}) && obj.xy_wv{jj}.length < obj.length
-                    % this will never happen if the gates are properly implemented, that is a fudamental gate
-                    % must has empty waveforms or the waveform length equals to the length of the gate.
-                    % its is added just in case some one implemented a gate not knowing the above rule
-                    error('bug!');
-                    % obj.xy_wv{jj} = [obj.xy_wv{jj},qes.waveform.spacer(obj.length-obj.xy_wv{jj}.length)];
-                end
-            end
-            for jj = 1:numel(obj.z_wv)
-                if ~isempty(obj.z_wv{jj}) && obj.z_wv{jj}.length < obj.length
-                    % this will never happen if the gates are properly implemented, that is a fudamental gate
-                    % eighter has empty waveforms or the waveform length equals to the length of the gate.
-                    % its is added just in case some one implemented a gate not knowing the above rule
-                    error('bug!');
-%                     obj.z_wv{jj} = [obj.z_wv{jj},qes.waveform.spacer(obj.length-obj.z_wv{jj}.length)];
-                end
-            end
-            for jj = 1:numel(obj1.xy_wv)
-                if ~isempty(obj1.xy_wv{jj}) && obj1.xy_wv{jj}.length < obj1.length
-                    % this will never happen if the gates are properly implemented, that is a fudamental gate
-                    % eight has empty waveforms or the waveform length equals to the length of the gate.
-                    % its is added just in case some one implemented a gate not knowing the above rule
-                    error('bug!');
-                    % obj1.xy_wv{jj} = [obj1.xy_wv{jj},qes.waveform.spacer(obj1.length-obj1.xy_wv{jj}.length)];
-                end
-            end
-            for jj = 1:numel(obj1.z_wv)
-                if ~isempty(obj1.z_wv{jj}) && obj1.z_wv{jj}.length < obj1.length
-                    % this will never happen if the gates are properly implemented, that is a fudamental gate
-                    % eighter has empty waveforms or the waveform length equals to the length of the gate.
-                    % its is added just in case some one implemented a gate not knowing the above rule
-                    error('bug!');
-%                     obj1.z_wv{jj} = [obj1.z_wv{jj},qes.waveform.spacer(obj1.length-obj1.z_wv{jj}.length)];
-                end
-            end
+            %%%%%%%%%%%%%%%%%%% OK up to now, removed for performance,
+            %%%%%%%%%%%%%%%%%%% Yulin Wu, 2018/1/28
+%             for jj = 1:numel(obj.xy_wv)
+%                 if ~isempty(obj.xy_wv{jj}) && obj.xy_wv{jj}.length < obj.length
+%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % must has empty waveforms or the waveform length equals to the length of the gate.
+%                     % its is added just in case some one implemented a gate not knowing the above rule
+%                     error('bug!');
+%                     % obj.xy_wv{jj} = [obj.xy_wv{jj},qes.waveform.spacer(obj.length-obj.xy_wv{jj}.length)];
+%                 end
+%             end
+%             for jj = 1:numel(obj.z_wv)
+%                 if ~isempty(obj.z_wv{jj}) && obj.z_wv{jj}.length < obj.length
+%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % eighter has empty waveforms or the waveform length equals to the length of the gate.
+%                     % its is added just in case some one implemented a gate not knowing the above rule
+%                     error('bug!');
+% %                     obj.z_wv{jj} = [obj.z_wv{jj},qes.waveform.spacer(obj.length-obj.z_wv{jj}.length)];
+%                 end
+%             end
+%             for jj = 1:numel(obj1.xy_wv)
+%                 if ~isempty(obj1.xy_wv{jj}) && obj1.xy_wv{jj}.length < obj1.length
+%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % eight has empty waveforms or the waveform length equals to the length of the gate.
+%                     % its is added just in case some one implemented a gate not knowing the above rule
+%                     error('bug!');
+%                     % obj1.xy_wv{jj} = [obj1.xy_wv{jj},qes.waveform.spacer(obj1.length-obj1.xy_wv{jj}.length)];
+%                 end
+%             end
+%             for jj = 1:numel(obj1.z_wv)
+%                 if ~isempty(obj1.z_wv{jj}) && obj1.z_wv{jj}.length < obj1.length
+%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % eighter has empty waveforms or the waveform length equals to the length of the gate.
+%                     % its is added just in case some one implemented a gate not knowing the above rule
+%                     error('bug!');
+% %                     obj1.z_wv{jj} = [obj1.z_wv{jj},qes.waveform.spacer(obj1.length-obj1.z_wv{jj}.length)];
+%                 end
+%             end
             %%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%
             %%%%%%%%%%%%%%%%%%%
@@ -1002,10 +1005,408 @@ classdef operator < handle & matlab.mixin.Copyable
             else
                 obj = obj1;
                 for ii = 2:n
-                    obj = obj1*obj;
+                    obj = obj1+obj;
                 end
             end
         end
+        
+        function obj = plus(obj2, obj1)
+            % implement + as fast single qubit mtimes
+            % warning: assumes obj2, obj1 are single qubit gates on the
+            % same qubit, this condition will not be checked
+            
+            if isempty(obj2)
+				obj =  obj1;
+				return;
+            end
+            if isempty(obj1)
+				obj = obj2;
+				return;
+            end
+            
+            obj1ln = obj1.length;
+            obj2ln = obj2.length;
+            
+			if obj2ln == 0 && ~isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+				obj =  obj1;
+				return;
+            end
+            if  obj1ln == 0 && ~isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+				obj = obj2;
+				return;
+            end
+            
+            GB = obj1.gate_buffer; % gate_buffer is global
+            obj1.GenWave();
+            obj = sqc.op.physical.operator(obj2);
+            obj.gateClass = 'operator';
+            
+            if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+                obj.phaseShift = -obj2.phase;
+            end
+            if isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+                obj.phaseShift = obj.phaseShift - obj1.phase;
+                return;
+            end
+            % in case like CZ*X*CZ*X, make a copy of X is important
+            obj1 = sqc.op.physical.operator(obj1);
+
+            if ~isempty(obj1.xy_wv{1})
+                if obj.phaseShift ~= 0
+                    obj1.xy_wv{1}.shiftPhase(obj.phaseShift);
+                end
+                if ~isempty(obj.xy_wv{1})
+                    if GB
+                        obj.xy_wv{1} = [obj.xy_wv{1},...
+                            qes.waveform.spacer(GB),obj1.xy_wv{1}];
+                    else
+                        obj.xy_wv{1} = [obj.xy_wv{1},obj1.xy_wv{1}];
+                    end
+                else
+                    if GB+obj12n > 0
+                        obj.xy_wv{1} = [qes.waveform.spacer(GB+obj2ln),obj1.xy_wv{1}];
+                    end
+                    obj.xy_daChnl{1,1} = obj1.xy_daChnl{1,1};
+                    obj.xy_daChnl{2,1} = obj1.xy_daChnl{2,1};
+                end
+            elseif ~isempty(obj.xy_wv{1}) && GB+obj1ln > 0
+                obj.xy_wv{1} = [obj.xy_wv{1},qes.waveform.spacer(GB+obj1ln)];
+            end
+            obj.phaseShift = obj.phaseShift + obj1.phaseShift(1);
+            if ~isempty(obj1.z_wv{1})
+                if ~isempty(obj.z_wv{1})
+                    if GB
+                        obj.z_wv{1} = [obj.z_wv{1},...
+                            qes.waveform.spacer(GB),obj1.z_wv{1}];
+                    else
+                        obj.z_wv{1} = [obj.z_wv{1},obj1.z_wv{1}];
+                    end
+                else
+                    if GB+obj2ln > 0
+                        obj.z_wv{1} = [qes.waveform.spacer(GB+obj2ln),obj1.z_wv{1}];
+                    end
+                    obj.z_daChnl{1,1} = obj1.z_daChnl{1,1};
+                end
+            elseif ~isempty(obj.z_wv{1})  && GB+obj1ln > 0
+                obj.z_wv{1} = [obj.z_wv{1},qes.waveform.spacer(GB+obj1ln)];
+            end
+
+			if isempty(obj.mw_src) && ~isempty(obj1.mw_src)
+				obj.mw_src = obj1.mw_src;
+				obj.mw_src_power = obj1.mw_src_power;
+				obj.needs_mwpower_setup = obj1.needs_mwpower_setup;
+				obj.mw_src_frequency = obj1.mw_src_frequency;
+				obj.needs_mwfreq_setup = obj1.needs_mwfreq_setup;
+            end
+
+            if isempty(obj.zdc_src) && ~isempty(obj1.zdc_src)
+				obj.zdc_src = obj1.zdc_src;
+				obj.zdc_amp = obj1.zdc_amp;
+				obj.needs_zdc_setup = obj1.needs_zdc_setup;
+            end
+
+            obj.length = obj.length + obj1.length + GB;
+        end
+        
+        function obj = noCopyPlus(obj2, obj1)
+            % % no copying version of plus, much faster
+            % should no be used in copy necessary scennarios such as:
+            % A*B*A etc.
+            
+            if isempty(obj2)
+				obj =  obj1;
+				return;
+            end
+            if isempty(obj1)
+				obj = obj2;
+				return;
+            end
+
+            obj1ln = obj1.length;
+            obj2ln = obj2.length;
+            
+			if obj2ln == 0 && ~isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+				obj =  obj1;
+				return;
+            end
+            if  obj1ln == 0 && ~isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+				obj = obj2;
+				return;
+            end
+            
+            GB = obj1.gate_buffer; % gate_buffer is global
+            obj1.GenWave();
+            obj = sqc.op.physical.operator(obj2); % copy the first is necessary
+            obj.gateClass = 'operator';
+            
+            if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+                obj.phaseShift = -obj2.phase;
+            end
+            if isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+                obj.phaseShift = obj.phaseShift - obj1.phase;
+                return;
+            end
+            
+            if ~isempty(obj1.xy_wv{1})
+                if obj.phaseShift ~= 0
+                    obj1.xy_wv{1}.shiftPhase(obj.phaseShift);
+                end
+                if ~isempty(obj.xy_wv{1})
+                    if GB
+                        obj.xy_wv{1} = [obj.xy_wv{1},...
+                            qes.waveform.spacer(GB),obj1.xy_wv{1}];
+                    else
+                        obj.xy_wv{1} = [obj.xy_wv{1},obj1.xy_wv{1}];
+                    end
+                else
+                    if GB+obj12n > 0
+                        obj.xy_wv{1} = [qes.waveform.spacer(GB+obj2ln),obj1.xy_wv{1}];
+                    end
+                    obj.xy_daChnl{1,1} = obj1.xy_daChnl{1,1};
+                    obj.xy_daChnl{2,1} = obj1.xy_daChnl{2,1};
+                end
+            elseif ~isempty(obj.xy_wv{1}) && GB+obj1ln > 0
+                obj.xy_wv{1} = [obj.xy_wv{1},qes.waveform.spacer(GB+obj1ln)];
+            end
+            obj.phaseShift = obj.phaseShift + obj1.phaseShift(1);
+            if ~isempty(obj1.z_wv{1})
+                if ~isempty(obj.z_wv{1})
+                    if GB
+                        obj.z_wv{1} = [obj.z_wv{1},...
+                            qes.waveform.spacer(GB),obj1.z_wv{1}];
+                    else
+                        obj.z_wv{1} = [obj.z_wv{1},obj1.z_wv{1}];
+                    end
+                else
+                    if GB+obj2ln > 0
+                        obj.z_wv{1} = [qes.waveform.spacer(GB+obj2ln),obj1.z_wv{1}];
+                    end
+                    obj.z_daChnl{1,1} = obj1.z_daChnl{1,1};
+                end
+            elseif ~isempty(obj.z_wv{1})  && GB+obj1ln > 0
+                obj.z_wv{1} = [obj.z_wv{1},qes.waveform.spacer(GB+obj1ln)];
+            end
+
+			if isempty(obj.mw_src) && ~isempty(obj1.mw_src)
+				obj.mw_src = obj1.mw_src;
+				obj.mw_src_power = obj1.mw_src_power;
+				obj.needs_mwpower_setup = obj1.needs_mwpower_setup;
+				obj.mw_src_frequency = obj1.mw_src_frequency;
+				obj.needs_mwfreq_setup = obj1.needs_mwfreq_setup;
+            end
+
+            if isempty(obj.zdc_src) && ~isempty(obj1.zdc_src)
+				obj.zdc_src = obj1.zdc_src;
+				obj.zdc_amp = obj1.zdc_amp;
+				obj.needs_zdc_setup = obj1.needs_zdc_setup;
+            end
+
+            obj.length = obj.length + obj1.length + GB;
+        end
+        
+        function obj = noCopyTimes(obj2, obj1)
+            % no copying version of mtimes, much faster
+            % should no be used in copy necessary scennarios such as:
+            % A*B*A etc.
+            
+            if isempty(obj2)
+				obj =  obj1;
+				return;
+            end
+            if isempty(obj1)
+				obj = obj2;
+				return;
+            end
+
+            obj1ln = obj1.length;
+            obj2ln = obj2.length;
+            
+			if obj2ln == 0 && ~isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+				obj =  obj1;
+				return;
+            end
+            if  obj1ln == 0 && ~isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+				obj = obj2;
+				return;
+            end
+            
+            GB = obj1.gate_buffer; % gate_buffer is global
+            obj1.GenWave();
+            obj = sqc.op.physical.operator(obj2); % copy the first is necessary
+            obj.gateClass = 'operator';
+            
+            if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
+                obj.phaseShift = -obj2.phase;
+            end
+            Obj2QInds = 1:numel(obj2.qubits);
+            if isa(obj1,'sqc.op.physical.gate.Z_phase_base')
+                idx = qes.util.find(obj1.qubits{1},obj.qubits);
+                if ~isempty(idx)
+                    obj.phaseShift(idx) = obj.phaseShift(idx) - obj1.phase;
+                else
+                    obj.phaseShift = [obj.phaseShift, -obj1.phase];
+                    obj.qubits{end+1} = obj1.qubits{1};
+                    obj.xy_wv{end+1} = [];
+					obj.xy_daChnl{end+1} = [];
+					obj.xy_daChnl{end+1} = [];
+                    obj.z_wv{end+1} = [];
+                    obj.z_daChnl{end+1} = [];
+                end
+                return;
+            end
+ 
+            addIdx = [];
+
+            if GB+obj2ln < 1
+                padWv1 = [];
+            else
+                padWv1 = qes.waveform.spacer(GB+obj2ln);
+            end
+            if GB+obj1ln < 1
+                padWv2 = [];
+                % error('zeros wavelength is not supported anymore');
+            else
+                padWv2 = qes.waveform.spacer(GB+obj1ln);
+            end
+            
+            for ii = 1:numel(obj1.qubits)
+				idx = qes.util.find(obj1.qubits{ii},obj.qubits);
+                if isempty(idx)
+					addIdx = [addIdx, ii];
+					continue;
+                end
+                Obj2QInds(Obj2QInds == idx) = [];
+                if ~isempty(obj1.xy_wv{ii})
+                    if obj.phaseShift(idx) ~= 0
+                        obj1.xy_wv{ii}.shiftPhase(obj.phaseShift(idx));
+                    end
+					if ~isempty(obj.xy_wv{idx})
+						if GB
+							obj.xy_wv{idx} = [obj.xy_wv{idx},...
+                                qes.waveform.spacer(GB),obj1.xy_wv{ii}];
+						else
+							obj.xy_wv{idx} = [obj.xy_wv{idx},obj1.xy_wv{ii}];
+						end
+                    else
+                        obj.xy_wv{idx} = [padWv1,...
+                            obj1.xy_wv{ii}];
+                        obj.xy_daChnl{1,idx} = obj1.xy_daChnl{1,ii};
+                        obj.xy_daChnl{2,idx} = obj1.xy_daChnl{2,ii};
+                    end
+                elseif ~isempty(obj.xy_wv{idx})
+                    obj.xy_wv{idx} = [obj.xy_wv{idx},padWv2];
+                end
+                obj.phaseShift(idx) = obj.phaseShift(idx) + obj1.phaseShift(ii);
+                if ~isempty(obj1.z_wv{ii})
+                    if ~isempty(obj.z_wv{idx})
+						if GB
+							obj.z_wv{idx} = [obj.z_wv{idx},...
+                                qes.waveform.spacer(GB),obj1.z_wv{ii}];
+						else
+							obj.z_wv{idx} = [obj.z_wv{idx},obj1.z_wv{ii}];
+						end
+                    else
+                        obj.z_wv{idx} = [padWv1,...
+                            obj1.z_wv{ii}];
+                        obj.z_daChnl{1,idx} = obj1.z_daChnl{1,ii};
+                    end
+                elseif ~isempty(obj.z_wv{idx})
+                    obj.z_wv{idx} = [obj.z_wv{idx},padWv2];
+                end
+            end
+            
+            for ii = 1:numel(Obj2QInds)
+                if ~isempty(obj.xy_wv{Obj2QInds(ii)})
+                    obj.xy_wv{Obj2QInds(ii)} = [obj.xy_wv{Obj2QInds(ii)},padWv2];
+                end
+                if ~isempty(obj.z_wv{Obj2QInds(ii)})
+                    obj.z_wv{Obj2QInds(ii)} = [obj.z_wv{Obj2QInds(ii)},padWv2];
+                end
+            end
+            ind = numel(obj.qubits);
+            obj.qubits = [obj.qubits,obj1.qubits(addIdx)];
+            obj.delay_xy_i = [obj.delay_xy_i, obj1.delay_xy_i(addIdx)];
+            obj.delay_xy_q = [obj.delay_xy_q, obj1.delay_xy_q(addIdx)];
+            obj.delay_z = [obj.delay_z, obj1.delay_z(addIdx)];
+            obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
+            obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
+            obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
+            obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
+            obj.phaseShift = [obj.phaseShift,obj1.phaseShift(addIdx)];
+            for ii = 1:numel(addIdx)
+                if ~isempty(obj1.xy_wv{addIdx(ii)})
+                    obj.xy_wv{ind+ii} = [padWv1,...
+                        obj1.xy_wv{addIdx(ii)}];
+					obj.xy_daChnl{1,ind+ii} = obj1.xy_daChnl{1,addIdx(ii)};
+					obj.xy_daChnl{2,ind+ii} = obj1.xy_daChnl{2,addIdx(ii)};
+                end
+                if ~isempty(obj1.z_wv{addIdx(ii)})
+                    obj.z_wv{ind+ii} = [padWv1,...
+                        obj1.z_wv{addIdx(ii)}];
+                    obj.z_daChnl{1,ind+ii} = obj1.z_daChnl{1,addIdx(ii)};
+                end
+            end
+
+			mwSrcIdx2Add = [];
+			for ii = 1:numel(obj1.mw_src)
+				idx = qes.util.find(obj1.mw_src{ii},obj.mw_src);
+				if ~isempty(idx)
+					if obj.mw_src_power(idx) ~= obj1.mw_src_power(ii) ||...
+						obj.mw_src_frequency(idx) ~= obj1.mw_src_frequency(ii)
+						throw(MException('QOS_operator:confictingSettings',...
+							'the two operators have conficting mw settings.'));
+					end
+					obj.needs_mwpower_setup(idx) =...
+						obj.needs_mwpower_setup(idx)*obj1.needs_mwpower_setup(ii);
+					obj.needs_mwfreq_setup(idx) =...
+						obj.needs_mwfreq_setup(idx)*obj1.needs_mwfreq_setup(ii);
+				else
+					mwSrcIdx2Add = [mwSrcIdx2Add,ii];
+				end
+			end
+			if ~isempty(mwSrcIdx2Add)
+				obj.mw_src = [obj.mw_src, obj1.mw_src(mwSrcIdx2Add)];
+				obj.mw_src_power(end-numel(mwSrcIdx2Add)+1:end) =...
+                    obj1.mw_src_power(mwSrcIdx2Add);
+				obj.needs_mwpower_setup(end-numel(mwSrcIdx2Add)+1:end) = ...
+					obj1.needs_mwpower_setup(mwSrcIdx2Add);
+				obj.mw_src_frequency(end-numel(mwSrcIdx2Add)+1:end) = ...
+                    obj1.mw_src_frequency(mwSrcIdx2Add);
+				obj.needs_mwfreq_setup(end-numel(mwSrcIdx2Add)+1:end) = ...
+					obj1.needs_mwfreq_setup(mwSrcIdx2Add);
+			end
+
+			dcSrcIdx2Add = [];
+			for ii = 1:numel(obj1.zdc_src)
+				idx = qes.util.find(obj1.zdc_src{ii},obj.zdc_src);
+				if ~isempty(idx)
+					if obj.zdc_amp(idx) ~= obj1.zdc_amp(ii)
+						throw(MException('QOS_operator:confictingSettings',...
+							'the two operators have conficting dc settings.'));
+					end
+					obj.needs_zdc_setup(idx) =...
+						obj.needs_zdc_setup(idx)*obj1.needs_zdc_setup(ii);
+				else
+					dcSrcIdx2Add = [dcSrcIdx2Add,ii];
+				end
+			end
+			if ~isempty(dcSrcIdx2Add)
+				obj.zdc_src = [obj.zdc_src, obj1.zdc_src(dcSrcIdx2Add)];
+				obj.zdc_amp(end-numel(dcSrcIdx2Add)+1:end) = ...
+                    obj1.zdc_amp(dcSrcIdx2Add);
+				obj.needs_zdc_setup(end-numel(dcSrcIdx2Add)+1:end) = ...
+					obj1.needs_zdc_setup(dcSrcIdx2Add);
+			end
+			
+			% logical_op property will be removed
+            % if ~isempty(obj1.logical_op) && ~isempty(obj2.logical_op)
+                % obj.logical_op = obj1.logical_op*obj2.logical_op;
+				% obj.logical_op = obj2.logical_op*obj1.logical_op;
+            % end
+            
+            obj.length = obj.length + obj1.length + GB;
+        end
+
         function setGateClass(obj,val)
             obj.gateClass = val;
         end

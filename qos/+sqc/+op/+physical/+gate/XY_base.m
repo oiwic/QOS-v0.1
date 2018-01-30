@@ -47,8 +47,9 @@ classdef (Abstract = true) XY_base < sqc.op.physical.operator
             
             persistent da
             if isempty(da) || ~isvalid(da)
-                da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
-                        'name',obj.qubits{1}.channels.xy_i.instru);
+                da = qes.hwdriver.hardware.FindHwByName(obj.qubits{1}.channels.xy_i.instru);
+%                 da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware',...
+%                         'name',obj.qubits{1}.channels.xy_i.instru);
             end
             obj.xy_daChnl{1,1} = da.GetChnl(obj.qubits{1}.channels.xy_i.chnl);
             obj.xy_daChnl{2,1} = da.GetChnl(obj.qubits{1}.channels.xy_q.chnl);

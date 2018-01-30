@@ -1,3 +1,4 @@
+% toolbox.data_tool.showprocesstomo(pexp,pideal,User_defined_gate)
 function [] = showprocesstomo(pexp,pideal,User_defined_gate)
 % Tomo data check
 % Êý¾Ý£º P
@@ -240,7 +241,7 @@ function showchi(haxreal,haximage,chiexp,chiid)
     set(gca,'YTickLabel',chi_Label);
     xlabel(sigam_index_string); ylabel(sigam_index_string);
     colorbar('position',[0.45 0.3 0.01 0.4]);
-    colormap jet
+    colormap jet;
     hold off;
     axes(haximage);
     hold off;

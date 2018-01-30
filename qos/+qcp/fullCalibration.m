@@ -1,3 +1,5 @@
+function fullCalibration()
+
 import sqc.util.getQSettings
 import sqc.util.setQSettings
 import data_taking.public.xmon.*
@@ -9,20 +11,9 @@ AENumPi = 25;
 gAmpTuneRange = 0.03;
 fineTune = false;
 
-qubitGroups = {{'q1','q3','q5','q7','q9','q11'},...
-               {'q2','q4','q6','q8','q10'}};
-
-correctf01 = {[true,true,true,false,false,true],...
-               [true,true,true,true,true]};
-
 setQSettings('r_avg',2000);
 logger = qes.util.log4qCloud.getLogger();
-% %%
-% for ii = 1:numel(qubitGroups)
-%     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
-%     tuneup.correctf01byPhase('qubits',qubitGroups{ii},'delayTime',correctf01DelayTime,'gui',gui,'save',true,'doCorrection',correctf01{ii},'logger',logger);
-%     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
-% end
+
 %% single qubit gates
 qubitGroups = {{'q1','q3','q6','q10'},...
                {'q7','q11','q4'},...
@@ -32,8 +23,16 @@ correctf01 = {[true,true,true,true],...
                [true,true],[false,true]};
 for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
-    tuneup.correctf01byPhase('qubits',qubitGroups{ii},'delayTime',correctf01DelayTime,'gui',gui,'save',true,'doCorrection',correctf01{ii},'logger',logger);
-    tuneup.xyGateAmpTuner_parallel('qubits',qubitGroups{ii},'gateTyp','X/2','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
+    qs = qubitGroups{ii};
+    if ii == 2 || ii == 4 % do not correct max f01 qubits: q7, q9
+        qs = qs(2:end);
+    end
+    tuneup.correctf01byPhase('qubits',qs,'delayTime',correctf01DelayTime,'gui',gui,'save',true,'doCorrection',correctf01{ii},'logger',logger);
+    qs = qubitGroups{ii};
+    if ii == 4 % do not correct q9
+        qs = qs(2:end);
+    end
+    tuneup.xyGateAmpTuner_parallel('qubits',qs,'gateTyp','X/2','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
 %     tuneup.xyGateAmpTuner_parallel('qubits',qubitGroups{ii},'gateTyp','X','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
 end
@@ -60,4 +59,6 @@ for ii = 1:6 % numel(czQSets)
             'numCZs',numCZs(ii),'PhaseTolerance',PhaseTolerance,...
             'gui',gui,'save',true,'logger',logger);
     end
+end
+
 end

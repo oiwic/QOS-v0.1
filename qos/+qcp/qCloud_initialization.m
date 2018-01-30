@@ -28,9 +28,7 @@ qubitParameters = QS.loadSSettings({'shared','qCloud','qubitParameters'});
 % overwrite default
 qcpInstatnce.updateQubitParemeters(qubitParameters);
 %%
-qcpInstatnce.getNumQueuingTasks()
-%%
 while 1
 qcpInstatnce.RunTask();
-pause(2);
+pause(0.5);
 end

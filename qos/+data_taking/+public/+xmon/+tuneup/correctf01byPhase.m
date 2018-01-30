@@ -1,5 +1,4 @@
-% data_taking.public.xmon.tuneup.correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
-%       'gui',<_b_>,'save',<_b_>,'doCorrection',<_b_>)
+
 function varargout = correctf01byPhase(varargin)
 % support multi-qubit parallel correction
 % 
@@ -9,7 +8,7 @@ function varargout = correctf01byPhase(varargin)
 
 %
 % <_f_> = correctf01byPhase('qubit',[_c&o_],'delayTime',<_i_>,'doCorrection',<_b_>...
-%       'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
+%       'gui',<_b_>,'save',<_b_>,'logger',<_o_>,'logger',<_o_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -49,9 +48,17 @@ function varargout = correctf01byPhase(varargin)
     t = unique(round(linspace(0,args.delayTime,20)*daSamplingRate));
     % DRAGE adds a detunning effect to increase f12 exitation to achieve
     % high gate fidelity, in f01 correction DRAGE has to be off
-    q.qr_xy_dragPulse = false; 
-    e = ramsey('qubit',qubits,'mode','dp','dataTyp','Phase',... 
-      'time',t,'detuning',0,'gui',false,'save',false);
+    q.qr_xy_dragPulse = false;
+    try
+        e = ramsey('qubit',qubits,'mode','dp','dataTyp','Phase',... 
+            'time',t,'detuning',0,'gui',false,'save',false);
+    catch ME
+        if ~isempty(args.logger)
+            args.logger.error('QOS_correctf01byPhase:dataTakingError',...
+                ME.message);
+        end
+        throw(ME);
+    end
 
 	data = e.data{1};
     if numQs > 1
@@ -88,8 +95,13 @@ function varargout = correctf01byPhase(varargin)
         end
 
         if abs(df) > 10e6
-            throw(MException('QOS_correctf01byPhase:driftTooLarge',...
-                    'frequency drift too large, settings not updated.'));
+            if ~isempty(args.logger)
+                args.logger.error('QOS_correctf01byPhase:driftTooLarge',...
+                    'frequency drift too large, settings not updated.');
+            end
+            warning('QOS_correctf01byPhase:driftTooLarge',...
+                    'frequency drift too large, settings not updated.');
+            continue;
         end
 
         f01 = q.f01-df;
@@ -117,7 +129,11 @@ function varargout = correctf01byPhase(varargin)
                     num2str(ceil(99*rand(1,1)),'%0.0f'),'_'];
             if ~isempty(hf) && isvalid(hf)
                 figName = fullfile(dataFolder,[dataFileName,'.fig']);
-                saveas(hf,figName);
+                try
+                    saveas(hf,figName);
+                catch
+                    warning('save figure failed.');
+                end
             end
             dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);
             time = t_; % ns
@@ -125,12 +141,16 @@ function varargout = correctf01byPhase(varargin)
             if args.doCorrection(ii)
                 f01_set = QS.loadSSettings({q.name,'f01_set'});
                 if isempty(f01_set)
+                    if ~isempty(args.logger)
+                        args.logger.warn('QOS_correctf01byPhase:noF01_set',...
+                            'f01_set value empty in registry, f01 updated but no corrected.');
+                    end
                     warning('QOS_correctf01byPhase:noF01_set',...
                         'f01_set value empty in registry, f01 updated but no corrected.');
                 else
-                    if abs(f01_set - f01) > 20e6
+                    if abs(f01_set - f01) > 10e6
                         warning('QOS_correctf01byPhase:driftTooLarge',...
-                        'f01 far away from f01_set, it might be a wrong result, f01 updated but no corrected.');
+                            'f01 far away from f01_set, it might be a wrong result, f01 updated but no corrected.');
                     else
                         sqc.util.SetWorkingPoint(q.name, f01_set, false);
                     end

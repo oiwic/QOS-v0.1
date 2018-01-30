@@ -1,10 +1,7 @@
-% data_taking.public.xmon.tuneup.czDynamicPhase('controlQ',_c&o_,'targetQ',_c&o_,'dynamicPhaseQ',[_c&o_],...
-%       'numCZs',<_i_>,'PhaseTolerance',<_f_>,'numIter',<_i_>...
-%       'gui',<_b_>,'save',<_b_>)
-function varargout = czDynamicPhase(varargin)
+function varargout = czDynamicPhase_parallel(varargin)
 % <_o_> = czDynamicPhase('controlQ',_c&o_,'targetQ',_c&o_,'dynamicPhaseQ',[_c&o_],...
 %       'numCZs',<_i_>,'PhaseTolerance',<_f_>,'numIter',<_i_>...
-%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>)
+%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -86,8 +83,8 @@ function varargout = czDynamicPhase(varargin)
                 title([dynamicPhaseQs{jj}.name, ' dynamic phase correction: ', num2str(p(1),'%0.4f')]);
                 drawnow;
             else
-            hf = [];
-        end
+                hf = [];
+            end
             dp = czs.dynamicPhases(qdInd(jj)) + p(1);
             if dp > pi
                 dp = dp - 2*pi;

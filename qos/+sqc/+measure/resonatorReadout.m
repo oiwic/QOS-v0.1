@@ -143,8 +143,11 @@ classdef resonatorReadout < qes.measurement.prob
 					'can not digitize I and Q with the same channel.'));
             end
             
-            ad = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',ad_i_names);
-            da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',da_i_names);
+            ad = qes.hwdriver.hardware.FindHwByName(ad_i_names);
+            da = qes.hwdriver.hardware.FindHwByName(da_i_names);
+            
+%             ad = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',ad_i_names);
+%             da = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',da_i_names);
 			
 			ad_i_chnl_ = ad.GetChnl(ad_i_chnl_);
 			ad_q_chnl_ = ad.GetChnl(ad_q_chnl_);
@@ -208,7 +211,8 @@ classdef resonatorReadout < qes.measurement.prob
             obj.adSamplingRate = ad_i_chnl_.samplingRate;
             obj.daSamplingRate = da_i_chnl_.samplingRate;
 			
-			uSrc = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',qubits{1}.channels.r_mw.instru);
+            uSrc = qes.hwdriver.hardware.FindHwByName(qubits{1}.channels.r_mw.instru);
+% 			uSrc = qes.qHandle.FindByClassProp('qes.hwdriver.hardware','name',qubits{1}.channels.r_mw.instru);
             if isempty(uSrc)
                 throw(MException('QOS_resonatorReadout:hwNotFound',...
                     '%s not found in hardware pool, make sure it is selected in hardware settings and seccessfully created.',...

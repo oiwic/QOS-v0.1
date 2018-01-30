@@ -121,19 +121,45 @@ classdef randBenchMarking < qes.measurement.measurement
             obj.data = NaN(obj.numShots,2);
             obj.extradata = cell(obj.numShots,2);
             for nn = 1:obj.numShots
-
-                % 4 seconds for 20 2 qubit clifords
-
                 [gs,gf_ref,gf_i,gref_idx,gint_idx] = obj.randGates();
-
 				if obj.noReference
 					pa = NaN;
-                else % 0.13 seconds for 20 2 qubit clifords
+                else 
 					PR = gs{1,1};
-					for ii = 2:obj.numGates
-						PR = PR*gs{1,ii};
-					end
-					PR = PR*gf_ref;
+                    
+                    
+%                     for ii = 2:obj.numGates
+%                         PR = PR*gs{1,ii};
+%                     end
+%                     PR = PR*gf_ref;
+ 
+%                     PR.logSequenceSamples = true;
+%                     PR.Run();
+%                     sqc.op.physical.sequenceSampleLogger.plot();
+
+%                     if obj.numQs == 1
+%                         for ii = 2:obj.numGates
+%                             PR = PR+gs{1,ii};
+%                         end
+%                         PR = PR+gf_ref;
+%                     else
+%                         for ii = 2:obj.numGates
+%                             PR = PR*gs{1,ii};
+%                         end
+%                         PR = PR*gf_ref;
+%                     end
+
+                    if obj.numQs == 1
+                        for ii = 2:obj.numGates
+                            PR = PR.noCopyPlus(gs{1,ii});
+                        end
+                        PR = PR.noCopyPlus(gf_ref);
+                    else
+                        for ii = 2:obj.numGates
+                            PR = PR.noCopyTimes(gs{1,ii});
+                        end
+                        PR = PR.noCopyTimes(gf_ref);
+                    end
 				
 					obj.R.state = 1;
 					obj.R.delay = PR.length;
@@ -144,10 +170,24 @@ classdef randBenchMarking < qes.measurement.measurement
 
 				if obj.processIdx > 0 
 					Pi = gs{2,1};
-					for ii = 2:obj.numGates
-						Pi = Pi*obj.process*gs{2,ii};
-					end
-					Pi = Pi*obj.process*gf_i;
+% 					for ii = 2:obj.numGates
+% 						Pi = Pi*obj.process*gs{2,ii};
+% 					end
+% 					Pi = Pi*obj.process*gf_i;
+                    if obj.numQs == 1
+                        for ii = 2:obj.numGates
+                            Pi_ = Pi*obj.process;
+                            Pi = Pi_.noCopyPlus(gs{2,ii});
+                        end
+                        Pi = Pi*obj.process*gf_i;
+                    else
+                        for ii = 2:obj.numGates
+                            Pi_ = Pi*obj.process;
+                            Pi = Pi_.noCopyTimes(gs{2,ii});
+                        end
+                        Pi = Pi*obj.process*gf_i;
+                    end
+                    
 					obj.R.delay = Pi.length;
 					Pi.Run();
 					pb = obj.R();
@@ -250,7 +290,8 @@ classdef randBenchMarking < qes.measurement.measurement
             % g = feval(str2func(['@(q)sqc.op.physical.gate.',gn{1},'(q)']),q);
             g = sqc.op.physical.operator.empty;
             for ii = 1:numel(gn)
-                g = g*feval(str2func(['@(q)sqc.op.physical.gate.',gn{ii},'(q)']),q);
+                % g = g*feval(str2func(['@(q)sqc.op.physical.gate.',gn{ii},'(q)']),q);
+                g = g.noCopyPlus(feval(str2func(['@(q)sqc.op.physical.gate.',gn{ii},'(q)']),q));
             end
         end
         function [g] = generate2Qgates(gn,q1,q2)
@@ -258,7 +299,7 @@ classdef randBenchMarking < qes.measurement.measurement
             for ii = 1:numel(gn) %
                 if ~iscell(gn{ii})
                     % temp
-                    % CZ, the only two qubit gate that is supported
+                    % CZ, the only two qubit gate is supported
                     g_ = feval(str2func(['@(q1,q2)sqc.op.physical.gate.',gn{ii},'(q1,q2)']),q1,q2);
                 else
                     g_ = sqc.measure.randBenchMarking.generate1Qgates(gn{ii}{1},q1);
@@ -268,7 +309,8 @@ classdef randBenchMarking < qes.measurement.measurement
                 if isempty(g)
                     g = g_;
                 else
-                    g = g*g_;
+%                     g = g*g_;
+                    g = g.noCopyTimes(g_);
                 end
 
             end
