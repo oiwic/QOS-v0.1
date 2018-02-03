@@ -546,7 +546,6 @@ classdef operator < handle & matlab.mixin.Copyable
             end
             
             GB = obj1.gate_buffer; % gate_buffer is global
-            obj1.GenWave();
             obj = sqc.op.physical.operator(obj2);
             obj.gateClass = 'operator';
             
@@ -570,7 +569,8 @@ classdef operator < handle & matlab.mixin.Copyable
                 return;
             end
             
-            % in case like CZ*X*CZ*X, make a copy of X is important
+%             obj1.GenWave();
+            % in case like CZ*X*CZ*X, make a copy of X is necessary
             obj1 = sqc.op.physical.operator(obj1);
             
             addIdx = [];
@@ -992,7 +992,8 @@ classdef operator < handle & matlab.mixin.Copyable
 		function obj = mpower(obj1,n)
             % power of operator object
             if n < 0 || round(n) ~= n
-                error('waveform:PowerError','power of a waveform object should be a non negative integer.');
+                throw(MException('operator:illegalArgument',...
+                    'negative or non integer exponent is not supported in operator exponentiation.'));
             end
             if n == 0
 				numQ = numel(obj1.qubits);
@@ -1037,7 +1038,7 @@ classdef operator < handle & matlab.mixin.Copyable
             end
             
             GB = obj1.gate_buffer; % gate_buffer is global
-            obj1.GenWave();
+            
             obj = sqc.op.physical.operator(obj2);
             obj.gateClass = 'operator';
             
@@ -1048,7 +1049,9 @@ classdef operator < handle & matlab.mixin.Copyable
                 obj.phaseShift = obj.phaseShift - obj1.phase;
                 return;
             end
-            % in case like CZ*X*CZ*X, make a copy of X is important
+            
+%             obj1.GenWave();
+            % in case like CZ*X*CZ*X, make a copy of X is necessary
             obj1 = sqc.op.physical.operator(obj1);
 
             if ~isempty(obj1.xy_wv{1})
@@ -1110,7 +1113,7 @@ classdef operator < handle & matlab.mixin.Copyable
         
         function obj = noCopyPlus(obj2, obj1)
             % % no copying version of plus, much faster
-            % should no be used in copy necessary scennarios such as:
+            % should not be used in copy necessary scennarios such as:
             % A*B*A etc.
             
             if isempty(obj2)
@@ -1461,7 +1464,4 @@ classdef operator < handle & matlab.mixin.Copyable
             
         end
     end
-%     enumeration % type enumeration
-%         
-%     end
 end

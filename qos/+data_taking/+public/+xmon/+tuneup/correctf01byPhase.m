@@ -24,7 +24,8 @@ function varargout = correctf01byPhase(varargin)
     
     import data_taking.public.xmon.ramsey
     
-    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true,'doCorrection',true,'logger',[]});
+    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,...
+        'save',true,'doCorrection',true,'logger',[]});
 	
 	qubits = args.qubits;
 	if ~iscell(qubits)
@@ -46,9 +47,7 @@ function varargout = correctf01byPhase(varargin)
 	daSamplingRate = daChnl.samplingRate;
     
     t = unique(round(linspace(0,args.delayTime,20)*daSamplingRate));
-    % DRAGE adds a detunning effect to increase f12 exitation to achieve
-    % high gate fidelity, in f01 correction DRAGE has to be off
-    q.qr_xy_dragPulse = false;
+
     try
         e = ramsey('qubit',qubits,'mode','dp','dataTyp','Phase',... 
             'time',t,'detuning',0,'gui',false,'save',false);
@@ -132,7 +131,7 @@ function varargout = correctf01byPhase(varargin)
                 try
                     saveas(hf,figName);
                 catch
-                    warning('save figure failed.');
+                    warning([q.name, ': save figure failed: ', ME.message]);
                 end
             end
             dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);

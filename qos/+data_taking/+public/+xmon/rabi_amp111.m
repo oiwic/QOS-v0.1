@@ -138,7 +138,7 @@ function procFactory(amp_)
 		else
 			proc = XY;
 		end
-		ln = max(ln,XY.length);
+		ln = max(ln,proc.length);
 		proc.Run();
 	end
 	R.delay = ln;

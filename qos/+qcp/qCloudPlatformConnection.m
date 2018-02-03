@@ -205,7 +205,7 @@ classdef qCloudPlatformConnection < handle
 				case 'ACTIVE'
 					jSysStatus.setStatus(...
                         javaMethod('valueOf','com.alibaba.quantum.domain.v2.SystemStatus$Status','ACTIVE'));
-				case 'MAINTANANCE'
+                case 'MAINTENANCE'
 					jSysStatus.setStatus(...
                         javaMethod('valueOf','com.alibaba.quantum.domain.v2.SystemStatus$Status','MAINTANANCE'));
 				case 'CALIBRATION'

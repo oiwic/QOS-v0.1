@@ -1,6 +1,6 @@
-function [Time, Temperature] = blueForsTemperatureLogReader(logRootDir,Chnl)
+function [Temperature, Time] = blueForsTemperatureLogReader(logRootDir,Chnl)
 % reads the latest temperature log on the specified channel:
-% [Time, Tmc] = qes.util.blueForsTemperatureLogReader('Z:\newton\bluefors\log',6)
+% [Tmc, Time] = qes.util.blueForsTemperatureLogReader('Z:\newton\bluefors\log',6)
 
 % Copyright 2017 Yulin Wu, Institute of Physics, Chinese  Academy of Sciences
 % mail4ywu@gmail.com/mail4ywu@icloud.com

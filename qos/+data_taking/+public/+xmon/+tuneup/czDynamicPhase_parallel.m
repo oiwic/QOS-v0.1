@@ -59,7 +59,7 @@ function varargout = czDynamicPhase_parallel(varargin)
         x = 1:args.numCZs;
         data = nan(args.numCZs,numQs);
         for ii = 1:args.numCZs
-            disp(['Iter: ', num2str(count), 'num CZ: ', num2str(ii),' of ', num2str(args.numCZs)]);
+            disp(['Iter ', num2str(count), ': ', num2str(ii),' of ', num2str(args.numCZs)]);
             proc = Y{1};
             for jj = 2:numQs
                 proc = proc.*Y{jj};

@@ -9,7 +9,7 @@ function varargout = updatef01byPhase(varargin)
 % note: T2* time can not be too short
 %
 % <_f_> = updatef01byPhase('qubit',[_c&o_],'delayTime',<_i_>,...
-%       'gui',<_b_>,'save',<_b_>)
+%       'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -25,7 +25,7 @@ function varargout = updatef01byPhase(varargin)
     
     import data_taking.public.xmon.ramsey
     
-    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true});
+    args = qes.util.processArgs(varargin,{'delayTime',1e-6,'robust',true,'gui',false,'save',true,'logger',[]});
 	
 	qubits = args.qubits;
 	if ~iscell(qubits)
@@ -47,11 +47,16 @@ function varargout = updatef01byPhase(varargin)
 	daSamplingRate = daChnl.samplingRate;
     
     t = unique(round(linspace(0,args.delayTime,20)*daSamplingRate));
-    % DRAGE adds a detunning effect to increase f12 exitation to achieve
-    % high gate fidelity, in f01 correction DRAGE has to be off
-    q.qr_xy_dragPulse = false; 
-    e = ramsey('qubit',qubits,'mode','dp','dataTyp','Phase',... 
-      'time',t,'detuning',0,'gui',false,'save',false);
+    try
+        e = ramsey('qubit',qubits,'mode','dp','dataTyp','Phase',... 
+            'time',t,'detuning',0,'gui',false,'save',false);
+    catch ME
+        if ~isempty(args.logger)
+            args.logger.error('QOS_correctf01byPhase:dataTakingError',...
+                ME.message);
+        end
+        throw(ME);
+    end
 
 	data = e.data{1};
     if numQs > 1
@@ -79,11 +84,18 @@ function varargout = updatef01byPhase(varargin)
             ylabel(ax,'phase(rad)');
             title(['detune frequency: ', num2str(df/1e6,'%0.5fMHz')]);
             grid on;
+        else
+            hf = [];
         end
 
         if abs(df) > 10e6
-            throw(MException('QOS_correctf01byPhase:driftTooLarge',...
-                    'frequency drift too large, settings not updated.'));
+            if ~isempty(args.logger)
+                args.logger.error('QOS_correctf01byPhase:driftTooLarge',...
+                    'frequency drift too large, settings not updated.');
+            end
+            warning('QOS_correctf01byPhase:driftTooLarge',...
+                    'frequency drift too large, settings not updated.');
+            continue;
         end
 
         f01 = q.f01-df;
@@ -111,7 +123,11 @@ function varargout = updatef01byPhase(varargin)
                     num2str(ceil(99*rand(1,1)),'%0.0f'),'_'];
             if ~isempty(hf) && isvalid(hf)
                 figName = fullfile(dataFolder,[dataFileName,'.fig']);
-                saveas(hf,figName);
+                try
+                    saveas(hf,figName);
+                catch ME
+                    warning([q.name, ': save figure failed: ', ME.message]);
+                end
             end
             dataFileName = fullfile(dataFolder,[dataFileName,'.mat']);
             time = t_; % ns
