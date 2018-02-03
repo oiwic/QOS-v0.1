@@ -121,8 +121,7 @@ classdef (Abstract = true) tomography < qes.measurement.measurement
             end
 			for ii = 1:obj.numReadouts
 				if obj.showProgress
-					home;
-					disp(sprintf('%sSate tomography: %0.0f of %0.0f',...
+					disp(sprintf('%sTomography: %0.0f of %0.0f',...
 						obj.progInfoPrefix, ii, obj.numReadouts));
 				end
 				opLn = 0;

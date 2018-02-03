@@ -138,7 +138,7 @@ classdef gateParser
             gateMat = flipud(gateMat);
             I = [1,0;0,1];
             X = [0,1;1,0];
-            Y = [0,-1;1,0];
+            Y = [0,-1i;1i,0];
             Z = [1,0;0,-1];
             X2p = [1, -1i;...
                 -1i   1]*sqrt(2)/2;
@@ -149,15 +149,30 @@ classdef gateParser
             Y2m =[1  1;
                   -1   1]*sqrt(2)/2;
 
-            % X2p = expm(-1j*(pi/2)*X/2);
-            % X2m = expm(-1j*(-pi/2)*X/2);
-            % 
-            % Y2p = expm(-1j*(pi/2)*Y/2);
-            % Y2m = expm(-1j*(-pi/2)*Y/2);
-
-            Z2p = [1,0;0,exp(1j*pi/2)];
-            % Z8p = [1,0;0,exp(1j*pi/8)];
-            % Z4p = [1,0;0,exp(1j*pi/4)];
+            Z2p = [1,0;0,1i];
+            S = [1,0;0,1i];
+            Z2m = [1,0;0,1i];
+            Sd = [1,0;0,-1i];
+            
+            T = [1,0;0,(1+1i)*sqrt(2)/2];
+            Td = [1,0;0,(1-1i)*sqrt(2)/2];
+            
+            function m = Rx(theta)
+                a = theta/2;
+                m = [cos(a),-1j*sin(a);-1j*sin(a),cos(a)];
+            end
+            function m = Ry(theta)
+                a = theta/2;
+                m = [cos(a),-sin(a);sin(a),cos(a)];
+            end
+            function m = Rz(theta)
+                m = [1,0;0,exp(1j*theta)];
+            end
+            
+            function m = Rxy(phi,theta)
+                a = theta/2;
+                m = cos(a)*I - 1j*sin(a)*(cos(phi)*X+sin(phi)*Y);
+            end
 
             H = [1,1;1,-1]/sqrt(2);
 
@@ -182,9 +197,7 @@ classdef gateParser
                         jj = jj + 1;
                         continue;
                     end
-                    if ~ismember(gateMat{ii,jj},supportedGates)
-                         error(['unsupported gate: ', gateMat{ii,jj}]);
-                    end
+                    supportedGates = sqc.op.physical.gateParser.supportedGates();
                     if strcmp(gateMat{ii,jj},'CZ')
                         if jj == numQs || ~strcmp(gateMat{ii,jj+1},'CZ')
                             error('invalid gateMat: at least one CZ without a neibouring CZ');
@@ -221,7 +234,38 @@ classdef gateParser
                             case 'CZ'
                                 g__ = CZ;
                             otherwise
-                                error(['unsupported gate: ', gateMat{ii,jj}]);
+                                parts = strsplit(gateMat{ii,jj},'(');
+                                if length(parts) == 1 || ~ismember(parts{1},supportedGates)
+                                    error(['unsupported gate: ', gateMat{ii,jj}]);
+                                elseif length(parts) > 2 || ~strcmp(parts{2}(end),')') || length(parts{2}) == 1
+                                    error(['illegal gate format: ', gateMat{ii,jj}]);
+                                end
+                                pParts = strsplit(parts{2}(1:end-1),',');
+                                numParams = numel(pParts);
+                                if numParams > 2
+                                    error(['illegal gate format: ', gateMat{ii,jj}]);
+                                elseif numParams == 1
+                                    param1 = str2double(pParts{1});
+                                    switch parts{1}
+                                        case 'Rx'
+                                            g__ = Rx(param1);
+                                        case 'Ry'
+                                            g__ = Ry(param1);
+                                        case 'Rz'
+                                            g__ = Rz(param1);
+                                        otherwise
+                                            error(['unsupported gate: ', gateMat{ii,jj}]);
+                                    end
+                                else
+                                    param1 = str2double(pParts{1});
+                                    param2 = str2double(pParts{2});
+                                    switch parts{1}
+                                        case 'Rxy'
+                                            g__ = Rxy(param1,param2);
+                                        otherwise
+                                            error(['unsupported gate: ', gateMat{ii,jj}]);
+                                    end
+                                end
                         end
                         if jj == 1
                             g_ = g__;

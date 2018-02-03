@@ -28,5 +28,9 @@ function data = loadJson(fullfilename)
         c{ii}(c{ii}==10 & c{ii}==13) = [];
         str = [str,c{ii}];
     end
-    [data, ~] = qes.util.parseJson(str);
+    try
+        [data, ~] = qes.util.parseJson(str);
+    catch ME
+        throw(MException('QOS_loadJson:parseError',[strrep(fullfilename,'\','\\'), ': ', ME.message]));
+    end
 end

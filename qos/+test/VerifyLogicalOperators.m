@@ -14,10 +14,7 @@ CXi = gate.CXi;
 CIXi = CXi.SpanOver(I);
 U1_1 = I.*CIXi.*I;
 U1_2 = CIXi.*I.*I;
-U1 = U1_2*U1_1; % step 1 is seperated in to two sub steps U1_1 ans U1_2
-                % the order of this seperation is not important as we can
-                % easily show that U1_2*U1_1=U1_1*U1_2 
-                % by isequaln(U1_2*U1_1,U1_1*U1_2) == true, 
+U1 = U1_2*U1_1; % step 1 is seperated in to two sub steps U1_1 and U1_2
 CIIXi = CIXi.SpanOver(I);
 U2_1 = I.*CIIXi;
 U2_2 = CIIXi.*I;

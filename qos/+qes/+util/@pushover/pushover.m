@@ -180,7 +180,7 @@ classdef pushover < handle
                 error('pushover:Failed','receiver not set.');
             end
             Post = obj.PostContents();
-            [str,status]=urlread(obj.apiurl,'post',Post);
+            [str,status]=urlread(obj.apiurl,'post',Post,'Timeout',10);
 %             if status==0
 %                 warning('pushover:Failed',['Post failed: ', str]);
 %             end
@@ -197,7 +197,7 @@ classdef pushover < handle
             if isempty(obj.apptoken)
                 return;
             end
-            [JStr,status]=urlread([obj.soundurl,'?token=',obj.apptoken]);
+            [JStr,status]=urlread([obj.soundurl,'?token=',obj.apptoken],'Timeout',10);
             if status==1
                 data=pushover.ParseJson(JStr);
                 if isempty(data{1})

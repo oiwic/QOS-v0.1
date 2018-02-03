@@ -1,6 +1,7 @@
 function varargout = czAmplitude(varargin)
 % <_o_> = czAmplitude('controlQ',_c&o_,'targetQ',_c&o_,...
-%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
+%       'notes',<_c_>,'gui',<_b_>,'save',<_b_>,'logger',<_o_>,...
+%       'repeatIfOutOfBoundButClose',<_b_>)
 % _f_: float
 % _i_: integer
 % _c_: char or char string
@@ -18,14 +19,18 @@ function varargout = czAmplitude(varargin)
     import qes.*
     import sqc.*
     import sqc.op.physical.*
+    
+    varargout = {};
 
-    args = util.processArgs(varargin,{'gui',false,'notes','','save',true});
+    args = util.processArgs(varargin,{'gui',false,'notes','','save',true,...
+        'repeatIfOutOfBoundButClose',false});
     [qc,qt] = data_taking.public.util.getQubits(args,{'controlQ','targetQ'});
     
     aczSettingsKey = sprintf('%s_%s',qc.name,qt.name);
     QS = qes.qSettings.GetInstance();
     scz = QS.loadSSettings({'shared','g_cz',aczSettingsKey});
     
+	czAmp0 = scz.amp;
     czAmp= round(scz.amp*linspace(0.97,1.03,20));
     try
         acz1= data_taking.public.xmon.acz_ampLength('controlQ',qc,'targetQ',qt,...
@@ -77,25 +82,45 @@ function varargout = czAmplitude(varargin)
         czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
     end
     
+    repeat = false;
     if isempty(czamp)
-        
-        if args.gui
-            hf = qes.ui.qosFigure(sprintf('ACZ amplitude | %s,%s', qc.name, qt.name),true);
-            ax = axes('parent',hf);
-            plot(ax,czAmp,cz0data,'--b',czAmp, cz1data,'--r',...
-                czAmp,dp,'.',czAmp,polyval(fdp,czAmp),'-g',...
-                czAmp,ones(1,length(czAmp)),'--k',czAmp,-ones(1,length(czAmp)),'--k');
-            xlabel(ax,'acz amplitude');
-            ylabel(ax,'phase(\pi)');
-            legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'});
-            drawnow;
+        ai = linspace(ampBnd(1),ampBnd(2),200);
+        yi = feval(fdp,ai);
+        ai = [ai,ai];
+        D = abs([yi-pi,yi+pi]);
+        [minD,ind] = min(D);
+        if minD < -0.25
+            czamp = ai(ind);
+            if ~isempty(args.logger)
+                args.logger.warn('QOS_czAmplitude:czAmplitude',...
+                    sprintf('%s,%s acz amplitude may out of range, the closest value is used.',qc.name, qt.name));
+            end
+            warning('QOSTuneup:czAmplitude',...
+                sprintf('%s,%s acz amplitude may out of range, the closest value is used.',qc.name, qt.name));
+            repeat = true;
+        else
+            if args.gui
+                hf = qes.ui.qosFigure(sprintf('ACZ amplitude | %s,%s', qc.name, qt.name),true);
+                ax = axes('parent',hf);
+                plot(ax,czAmp,cz0data,'--b',czAmp, cz1data,'--r',...
+                    czAmp,dp,'.',czAmp,polyval(fdp,czAmp),'-g',...
+                    czAmp,ones(1,length(czAmp)),'--k',czAmp,-ones(1,length(czAmp)),'--k');
+                xlabel(ax,'acz amplitude');
+                ylabel(ax,'phase(\pi)');
+                legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'});
+                drawnow;
+            end
+            if ~isempty(args.logger)
+                args.logger.error('QOS_czAmplitude:czAmplitude',...
+                    sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name));
+                warning('QOSTuneup:czAmplitude',...
+                    sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name));
+                return;
+            else
+                throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
+                    sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
+            end
         end
-        if ~isempty(args.logger)
-            args.logger.error('QOS_czAmplitude:czAmplitude',...
-                sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name));
-        end
-        throw(exceptions.QRuntimeException('QOSTuneup:czAmplitude',...
-                sprintf('%s,%s acz amplitude not found! Probably out of range.',qc.name, qt.name)));
     end
     if ischar(args.save)
         args.save = false;
@@ -113,12 +138,15 @@ function varargout = czAmplitude(varargin)
     if args.gui
         hf = qes.ui.qosFigure(sprintf('ACZ amplitude | %s,%s', qc.name, qt.name),true);
         ax = axes('parent',hf);
-        plot(ax,czAmp,cz0data,'--b',czAmp, cz1data,'--r',...
+        plot(ax,czAmp,cz0data,'--b',czAmp, cz1data,'--c',...
             czAmp,dp,'.',czAmp,polyval(fdp,czAmp),'-g',...
             czAmp,ones(1,length(czAmp)),'--k',czAmp,-ones(1,length(czAmp)),'--k');
+		hold(ax,'on');
+		plot(ax,[czAmp0,czAmp0],get(ax,'YLim'),'--','Color',[1,0.7,0.7]);
+		plot(ax,[czamp,czamp],get(ax,'YLim'),'--r');
         xlabel(ax,'acz amplitude');
         ylabel(ax,'phase(\pi)');
-        legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi'})
+        legend(ax,{'|0>','|1>','difference','difference fit','+\pi','-\pi','CZ Amp(old)','CZ Amp(new)'})
         title(sprintf('acz amplitude: %0.5e',czamp));
         drawnow;
         if args.save && ~isempty(hf) && isvalid(hf)
@@ -131,6 +159,13 @@ function varargout = czAmplitude(varargin)
                 warning('saving figure failed.');
             end
         end
+    end
+    
+    if args.repeatIfOutOfBoundButClose && repeat
+        data_taking.public.xmon.tuneup.czAmplitude(...
+            'controlQ',args.controlQ,'targetQ',args.targetQ,...
+        'gui',args.gui,'save',args.save,'logger',args.logger,...
+        'repeatIfOutOfBoundButClose',false);
     end
 end
     
