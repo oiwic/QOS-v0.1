@@ -74,9 +74,10 @@ function varargout = czDynamicPhase_parallel(varargin)
         for jj = 1:numQs
             p = polyfit(x,data(:,jj),1);
             if args.gui
-                hf = qes.ui.qosFigure(sprintf('ACZ dynamic phase | %s,%s,%s', qc.name, qt.name, dynamicPhaseQs{jj}.name),true);
+                hf = qes.ui.qosFigure(sprintf('ACZ dynamic phase | %s,%s,%s',...
+                    qc.name, qt.name, dynamicPhaseQs{jj}.name),false);
                 ax = axes('parent',hf);
-                plot(ax,x,data(:,jj),'s',x,polyval(p,x),'-r');
+                plot(ax,x,data(:,jj),'s',[0;x],polyval(p,[0;x]),'-r');
                 xlabel(ax,'number of CZs');
                 ylabel(ax,[dynamicPhaseQs{jj}.name,' phase(rad)']);
                 legend(ax,{'data','linear fit'});

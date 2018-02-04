@@ -456,6 +456,9 @@ classdef qCloudPlatform < handle
                 end
             end
             obj = instance;
+            if ~isgraphics(obj.ctrlPanelHandles.CtrlpanelWin)
+                obj.CreateCtrlPanel();
+            end
         end
     end
     methods (Access = private)
@@ -926,7 +929,7 @@ classdef qCloudPlatform < handle
         function delete(obj)
             obj.status = 'OFFLINE';
             obj.updateSystemStatus();
-            obj.logger.info('qCloud.ShutDown','qClund shut down.');
+            obj.logger.info('qCloud.ShutDown','qCloud shut down.');
             obj.logger.commit();
             if isgraphics(obj.ctrlPanelHandles.CtrlpanelWin)
                 close(obj.ctrlPanelHandles.CtrlpanelWin);

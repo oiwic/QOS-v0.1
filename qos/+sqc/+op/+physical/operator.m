@@ -1004,9 +1004,16 @@ classdef operator < handle & matlab.mixin.Copyable
             elseif n == 1
                 obj = copy(obj1);
             else
+                numQ = numel(obj1.qubits);
                 obj = obj1;
-                for ii = 2:n
-                    obj = obj1+obj;
+                if numQ == 1
+                    for ii = 2:n
+                        obj = obj1+obj;
+                    end
+                else
+                    for ii = 2:n
+                        obj = obj1*obj;
+                    end
                 end
             end
         end

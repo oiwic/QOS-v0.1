@@ -85,7 +85,7 @@ function varargout = czAmplitude(varargin)
     repeat = false;
     if isempty(czamp)
         ai = linspace(ampBnd(1),ampBnd(2),200);
-        yi = feval(fdp,ai);
+        yi = polyval(fdp,ai);
         ai = [ai,ai];
         D = abs([yi-pi,yi+pi]);
         [minD,ind] = min(D);

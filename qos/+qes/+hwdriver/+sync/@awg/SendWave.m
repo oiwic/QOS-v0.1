@@ -38,8 +38,8 @@ function SendWave(obj,chnl,DASequence,isI)
             end
             
 %              % version specific
-%             WaveformData(32e3:end) = [];
-%             
+            WaveformData(32e3:end) = [];
+
 % %             to plot the waveform data
 %             persistent ax;
 %             try
@@ -52,7 +52,7 @@ function SendWave(obj,chnl,DASequence,isI)
 %                 plot(ax,[zeros(1,software_delay),samples]);
 %             catch
 %             end
-% %             
+%             
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:
             % SendWave(...); setChnlOutputDelay(...,100);

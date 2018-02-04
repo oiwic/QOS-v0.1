@@ -4,6 +4,7 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
 % s = qes.util.loadSettings('F:\program\qes_settings',{'hardware','hwsettings1','ustcadda','ad_boards'})
 % s = qes.util.loadSettings('F:\program\qes_settings',{'hardware','hwsettings1','ustcadda','ad_boards','ADC2'})
 % s = qes.util.loadSettings('F:\program\qes_settings',{'hardware','hwsettings1','ustcadda','ad_boards','ADC2','records','demod_freq'})
+% [s, r, t] = qes.util.loadSettings('D:\settings\qCloud\s180204\',{'shared','g_cz','q3_q2','dynamicPhases'},true)
 
 % Copyright 2016 Yulin Wu, University of Science and Technology of China
 % mail4ywu@gmail.com/mail4ywu@icloud.com
@@ -163,14 +164,23 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                         data = jdata;
                     end
                     if withHis
+                        dataLn = numel(data);
+                        formatspec = '%s';
+                        for qqq = 1:dataLn
+                            formatspec = [formatspec,'%f'];
+                        end
                         hisFile = [hisFile,'.his'];
                         if exist(hisFile,'file')
                             try
                                 fid = fopen(hisFile,'r');
-                                fdata = textscan(fid,'%s%f');
+                                fdata = textscan(fid,formatspec);
                                 fclose(fid);
                                 varargout{2} = datenum(fdata{1},'yyyy-mm-dd_HH:MM:SS:FFF');
-                                varargout{1} = cell2mat(fdata(2));
+                                hisData = cell2mat(fdata(2));
+                                for qqq = 2:dataLn
+                                    hisData = [hisData,cell2mat(fdata(1+qqq))];
+                                end
+                                varargout{1} = hisData;
                                 
                             catch
                                 warning('read data from his file failed');
@@ -195,12 +205,21 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                         if withHis
                             hisFile = [hisFile,'.',fields{jj},'.his'];
                             if exist(hisFile,'file')
+                                dataLn = numel(data);
+                                formatspec = '%s';
+                                for qqq = 1:dataLn
+                                    formatspec = [formatspec,'%f'];
+                                end
                                 try
                                     fid = fopen(hisFile,'r');
-                                    fdata = textscan(fid,'%s%f');
+                                    fdata = textscan(fid,formatspec);
                                     fclose(fid);
                                     varargout{2} = datenum(fdata{1},'yyyy-mm-dd_HH:MM:SS:FFF');
-                                    varargout{1} = cell2mat(fdata(2));
+                                    hisData = cell2mat(fdata(2));
+                                    for qqq = 2:dataLn
+                                        hisData = [hisData,cell2mat(fdata(1+qqq))];
+                                    end
+                                    varargout{1} = hisData;
                                 catch
                                     warning('read data from his file failed');
                                 end
@@ -244,12 +263,21 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
                             if withHis
                                 hisFile = fullfile(spath,'_history',[fileinfo(ii).name(1:ln_field),'.his']);
                                 if exist(hisFile,'file')
+                                    dataLn = numel(data);
+                                    formatspec = '%s';
+                                    for qqq = 1:dataLn
+                                        formatspec = [formatspec,'%f'];
+                                    end
                                     try
                                         fid = fopen(hisFile,'r');
-                                        fdata = textscan(fid,'%s%f');
+                                        fdata = textscan(fid,formatspec);
                                         fclose(fid);
                                         varargout{2} = datenum(fdata{1},'yyyy-mm-dd_HH:MM:SS:FFF');
-                                        varargout{1} = cell2mat(fdata(2));
+                                        hisData = cell2mat(fdata(2));
+                                        for qqq = 2:dataLn
+                                            hisData = [hisData,cell2mat(fdata(1+qqq))];
+                                        end
+                                        varargout{1} = hisData;
                                     catch
                                         warning('read data from his file failed');
                                     end
