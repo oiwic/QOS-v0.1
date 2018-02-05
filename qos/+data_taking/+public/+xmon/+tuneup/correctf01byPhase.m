@@ -130,7 +130,7 @@ function varargout = correctf01byPhase(varargin)
                 figName = fullfile(dataFolder,[dataFileName,'.fig']);
                 try
                     saveas(hf,figName);
-                catch
+                catch ME
                     warning([q.name, ': save figure failed: ', ME.message]);
                 end
             end

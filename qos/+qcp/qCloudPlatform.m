@@ -392,6 +392,18 @@ classdef qCloudPlatform < handle
 
            function CalibrationFunc(hObject,eventdata)
                 choice = questdlg(...
+                    'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
+                    'Confirm stop','Yes','Cancel','Cancel');
+                switch choice
+                    case 'Yes'
+                        if qes.util.ismember('STOP',obj.eventQueue)
+                            return;
+                        end
+                        obj.eventQueue{end+1} = 'STOP';
+                    otherwise
+                        return;
+                end
+                choice = questdlg(...
                     'This will start calibration, please confirm:',...
                     'Confirm calibration','Yes','Cancel','Cancel');
                 switch choice
@@ -595,7 +607,7 @@ classdef qCloudPlatform < handle
                 end
                 obj.logger.info('qCloud.startup','creating hardware objects done.');
                 
-                just in case some dc source levels has changed
+                % just in case some dc source levels has changed
                 obj.logger.info('qCloud.startup','setting qubit DC bias...');
                 qNames = data_taking.public.util.allQNames();
                 for ii = 1:numel(qNames)

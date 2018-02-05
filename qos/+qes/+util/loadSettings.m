@@ -297,7 +297,8 @@ function [data, varargout] = loadSettings(spath, fields, withHis)
 								throw(MException('QOS:loadSettings:invalidSettingsValue',...
 									sprintf('failed in loading data file %s for field ''%s''.',...
                                     strrep(datafile,'\','\\'), fields{1})));
-							end
+                            end
+                            return;
                     end
                 end
             end

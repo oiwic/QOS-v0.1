@@ -275,6 +275,7 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
                 obj.da_channel_list(k).data = [];
                 % è®¾ç½®é€šé?“è§¦?‘å?è¾“å‡ºå»¶æ—?
                 obj.da_channel_list(k).delay = 0;
+                
             end
             % é…?ç½®ADC,ç›®å??ªæ”¯æŒ?ä¸?¸ªç½‘å??
             for k = 1:obj.numADBoards
@@ -452,7 +453,7 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
             end
         end
         
-        function SendWave(obj,channel,data,isIQ,loFreq)
+        function SendWave(obj,channel,data,isIQ,loFreq,loPower,sbFreq)
             if nargin < 4
                 isIQ = false;
             end

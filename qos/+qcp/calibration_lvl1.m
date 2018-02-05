@@ -1,4 +1,4 @@
-function calibration_lvl1()
+function calibration_lvl1(stopFlag)
 
 import sqc.util.getQSettings
 import sqc.util.setQSettings
@@ -32,9 +32,16 @@ for ii = 1:numel(qubitGroups)
     if ii == 4 % do not correct q9
         qs = qs(2:end);
     end
+    if stopFlag.val
+        tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
+        return;
+    end
     tuneup.xyGateAmpTuner_parallel('qubits',qs,'gateTyp','X/2','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
 %     tuneup.xyGateAmpTuner_parallel('qubits',qubitGroups{ii},'gateTyp','X','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
+    if stopFlag.val
+        return;
+    end
 end
 
 %% cz
@@ -55,11 +62,17 @@ PhaseTolerance = 0.03;
 for ii = 1:numel(czQSets)
     tuneup.czAmplitude('controlQ',czQSets{ii}{1}{1},'targetQ',czQSets{ii}{1}{2},...
         'gui',gui,'save',true,'logger',logger,'repeatIfOutOfBoundButClose',true);
+    if stopFlag.val
+        return;
+    end
     for jj = 2:numel(czQSets{ii})
         tuneup.czDynamicPhase_parallel('controlQ',czQSets{ii}{1}{1},...
             'targetQ',czQSets{ii}{1}{2},'dynamicPhaseQs',czQSets{ii}{jj},...
             'numCZs',numCZs(ii),'PhaseTolerance',PhaseTolerance,...
             'gui',gui,'save',true,'logger',logger);
+    end
+    if stopFlag.val
+        return;
     end
 end
 

@@ -44,6 +44,9 @@ classdef resonatorReadout < qes.measurement.prob
         
         readoutLength
     end
+    properties (SetAccess = private, GetAccess = private)
+        sbFrequency
+    end
     methods
         function obj = resonatorReadout(qubits,jointReadout, iqAsExtraData)
 			if nargin < 2
@@ -371,8 +374,8 @@ classdef resonatorReadout < qes.measurement.prob
             
 % 			obj.r_wv.awg.SetTrigOutDelay(obj.r_wv.awgchnl,obj.delay);
 
-            obj.da_i_chnl.SendWave(obj.r_wv,true);
-            obj.da_q_chnl.SendWave(obj.r_wv,false);
+            obj.da_i_chnl.SendWave(obj.r_wv,true,obj.mw_src_frequency,obj.mw_src_power,obj.sbFrequency);
+            obj.da_q_chnl.SendWave(obj.r_wv,false,obj.mw_src_frequency,obj.mw_src_power,obj.sbFrequency);
             
             if ~isempty(obj.jpaRunner)
                 obj.jpaRunner.Run();
@@ -415,7 +418,7 @@ classdef resonatorReadout < qes.measurement.prob
                     df = (obj.allReadoutQubits{ii}.r_freq - obj.allReadoutQubits{ii}.r_fc)/obj.da.samplingRate;
                     wv_{ii}.phase = 2*pi*df*obj.startWv.length;
                 end
-                
+                obj.sbFrequency = carrierFrequency;
             end
             s = qes.waveform.sequence(wv_{1});
             for ii = 2:num_qubits
