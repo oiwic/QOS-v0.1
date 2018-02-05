@@ -439,7 +439,7 @@ classdef operator < handle & matlab.mixin.Copyable
 				DASequence = qes.waveform.DASequence(obj.z_daChnl{1,ii}.chnl,obj.z_wv{ii});
 				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0,0,0,0];
 
-				obj.z_daChnl{1,ii}.SendWave(DASequence,true);
+				obj.z_daChnl{1,ii}.SendWave(DASequence,true,0,0,0);
                 if obj.logSequenceSamples
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,false);
                 end

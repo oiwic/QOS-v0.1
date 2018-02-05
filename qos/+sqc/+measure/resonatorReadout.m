@@ -187,13 +187,13 @@ classdef resonatorReadout < qes.measurement.prob
             end
             iq_obj.freq = demod_freq;
 			
-			if qubits{1}.r_correctDecay
-				T1 = zeros(1,num_qubits);
-				for ii = 1:num_qubits
-					T1(ii) = qubits{ii}.T1;
-				end
-				iq_obj.T1 = T1;
-			end
+% 			if qubits{1}.r_correctDecay
+% 				T1 = zeros(1,num_qubits);
+% 				for ii = 1:num_qubits
+% 					T1(ii) = qubits{ii}.T1;
+% 				end
+% 				iq_obj.T1 = T1;
+% 			end
 			
 %             iq_obj.startidx = qubits{1}.r_truncatePts(1)+1;
 %             iq_obj.endidx = ad.recordLength-qubits{1}.r_truncatePts(2);

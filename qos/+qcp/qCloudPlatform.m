@@ -38,6 +38,9 @@ classdef qCloudPlatform < handle
 
         serving = false;
         
+        calibrationOn = true;
+        stopCalibration
+        
         lastLvl1CalibrationTime
         lastLvl2CalibrationTime
         lastLvl3CalibrationTime
@@ -88,6 +91,8 @@ classdef qCloudPlatform < handle
             obj.lvl2CalibrationInterval = obj.sysConfig.lvl2CalibrationInterval*6.9444e-04;
             obj.lvl3CalibrationInterval = obj.sysConfig.lvl3CalibrationInterval*6.9444e-04;
             obj.lvl4CalibrationInterval = obj.sysConfig.lvl4CalibrationInterval*6.9444e-04;
+            
+            obj.stopCalibration = qes.util.hvar(false);
            
             if ~isempty(obj.sysConfig.temperatureReaderCfg)
                 r = str2func(['@(x)',obj.sysConfig.temperatureReaderCfg.func,'(x)']);
@@ -105,7 +110,12 @@ classdef qCloudPlatform < handle
             obj.temperatureReader = @TReader;
             obj.status = 'OFFLINE';
             obj.CreateCtrlPanel();
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
         function [result, singleShotEvents, sequenceSamples, finalCircuit] =...
                 runCircuit(obj,circuit,opQs,measureQs,measureType, stats)
@@ -222,13 +232,21 @@ classdef qCloudPlatform < handle
                     case 'STOPSERVING'
                         obj.StopServing();
                     case 'CALIBRATION_LVL1'
-                        obj.Calibration(1);
+                        if obj.calibrationOn
+                            obj.Calibration(1);
+                        end
                     case 'CALIBRATION_LVL2'
-                        obj.Calibration(2);
+                        if obj.calibrationOn
+                            obj.Calibration(2);
+                        end
                     case 'CALIBRATION_LVL3'
-                        obj.Calibration(3);
+                        if obj.calibrationOn
+                            obj.Calibration(3);
+                        end
                     case 'CALIBRATION_LVL4'
-                        obj.Calibration(4);
+                        if obj.calibrationOn
+                            obj.Calibration(4);
+                        end
                     case 'UPDATEPARAMS'
                         obj.updateSystemConfig();
                         obj.updateOneQGateFidelities();
@@ -241,6 +259,7 @@ classdef qCloudPlatform < handle
                             pause(0.5);
                         catch
                             obj.StopServing();
+                            continue;
                         end
                 end
                 obj.eventQueue(1) = [];
@@ -284,9 +303,9 @@ classdef qCloudPlatform < handle
             warning('on');
 
             handles.infoDisp = uicontrol('Parent', handles.CtrlpanelWin,...
-                  'Style','text','Foreg',[1,0,0],'String',obj.status,...
-                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
-                  'Units','normalized',...
+                  'Style','text','Foreg',[0,0,0],'String',obj.status,...
+                  'FontUnits','normalized','Fontsize',0.4,'FontWeight','bold',...
+                  'Units','normalized','BackgroundColor',[1,1,1],'HorizontalAlignment','left',...
                   'Position',[0.04,0.6,0.925,0.3]);
             Pos = [0.04,0.05,0.45,0.25];
             handles.StartButton = uicontrol('Parent', handles.CtrlpanelWin,...
@@ -295,11 +314,6 @@ classdef qCloudPlatform < handle
                   'Units','normalized',...
                   'Tooltip','Start and initialize the quantum computer.',...
                   'Position',Pos,'Callback',{@StartFunc});
-            if strcmp(obj.status,'OFFLINE')
-                set(handles.StartButton,'String','Start','Tooltip','Start and initialize the quantum computer.');
-            else
-                set(handles.StartButton,'String','Restart','Tooltip','Restart and re-initialize the quantum computer.');
-            end
             Pos(1) = Pos(1) + Pos(3) + 0.025;
             handles.StartServingButton = uicontrol('Parent', handles.CtrlpanelWin,...
                 'Style','Pushbutton','String','Start Serving',...
@@ -358,7 +372,7 @@ classdef qCloudPlatform < handle
                             return;
                     end
                 end
-            end
+           end
 
            function StartServingFunc(hObject,eventdata)
                 if obj.serving
@@ -391,20 +405,33 @@ classdef qCloudPlatform < handle
             end
 
            function CalibrationFunc(hObject,eventdata)
-                choice = questdlg(...
-                    'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
-                    'Confirm stop','Yes','Cancel','Cancel');
-                switch choice
-                    case 'Yes'
-                        if qes.util.ismember('STOP',obj.eventQueue)
+                if obj.calibrationOn
+                    choice = questdlg(...
+                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
+                        'What to do?','Start calibration immediately','Stop scheduled calibrations','Start calibration immediately');
+                    switch choice
+                        case 'Stop scheduled calibrations'
+                            obj.calibrationOn = false;
+                            obj.stopCalibration.val = true;
                             return;
-                        end
-                        obj.eventQueue{end+1} = 'STOP';
-                    otherwise
-                        return;
+                        case 'Cancel'
+                            return;
+                    end
+                else
+                    choice = questdlg(...
+                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
+                        'What to do?','Start calibration immediately','Start scheduled calibrations','Start calibration immediately');
+                    switch choice
+                        case 'Start scheduled calibrations'
+                            obj.calibrationOn = true;
+                            obj.stopCalibration.val = false;
+                            return;
+                        case 'Cancel'
+                            return;
+                    end
                 end
                 choice = questdlg(...
-                    'This will start calibration, please confirm:',...
+                    'This will start a nonscheduled calibration, please confirm:',...
                     'Confirm calibration','Yes','Cancel','Cancel');
                 switch choice
                     case 'Yes'
@@ -482,20 +509,35 @@ classdef qCloudPlatform < handle
         function Stop(obj)
             obj.eventQueue = {};
             obj.status = 'OFFLINE';
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             set(obj.ctrlPanelHandles.StartButton,'String','Start',...
                         'Tooltip','Start server.');
             set(obj.ctrlPanelHandles.StartServingButton,'Enable','off');
             set(obj.ctrlPanelHandles.CalibrationButton,'Enable','off');
             set(obj.ctrlPanelHandles.UpdateSystemParametersButton,'Enable','off');
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
         function ConnectQCP(obj)
             obj.connection = qcp.qCloudPlatformConnection.GetInstance();
             obj.updateSystemConfig();
             obj.status = 'MAINTENANCE';
             obj.updateSystemStatus();
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             set(obj.ctrlPanelHandles.UpdateSystemParametersButton,'Enable','on');
         end
         function StartBackend(obj)
@@ -627,12 +669,22 @@ classdef qCloudPlatform < handle
             obj.logger.notify();
             
             obj.status = 'MAINTENANCE';
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             set(obj.ctrlPanelHandles.StartButton,'String','Stop',...
                         'Tooltip','Stop server.');
             set(obj.ctrlPanelHandles.StartServingButton,'Enable','on');
             set(obj.ctrlPanelHandles.CalibrationButton,'Enable','on');
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
         function Restart(obj)
             obj.logger.info('qCloud.restart','restarting qCloud...');
@@ -651,7 +703,12 @@ classdef qCloudPlatform < handle
                'String','Start Serving','Tooltip','Start serving.');
             set(obj.ctrlPanelHandles.CalibrationButton,'Enable','off');
             set(obj.ctrlPanelHandles.UpdateSystemParametersButton,'Enable','off');
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             
             obj.logger.info('qCloud.restart','deleting hardware objects...');
             hwObjs = qes.qSettings.FindByClass('qes.hwdriver.hardware');
@@ -683,7 +740,12 @@ classdef qCloudPlatform < handle
            obj.updateSystemStatus();
            set(obj.ctrlPanelHandles.StartServingButton,'Enable','on',...
                'String','Stop Serving','Tooltip','Stop serving.');
-           set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+           if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
            obj.logger.info('qCloud.run','qCloud now serving...'); 
         end
         function StopServing(obj)
@@ -699,7 +761,12 @@ classdef qCloudPlatform < handle
             obj.updateSystemStatus();
             set(obj.ctrlPanelHandles.StartServingButton,'Enable','on',...
                'String','Start Serving','Tooltip','Start serving.');
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             obj.logger.info('qCloud.restart','qCloud service stopped.');
         end
         function RunTask(obj)
@@ -755,9 +822,10 @@ classdef qCloudPlatform < handle
             taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
             datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
             save(datafile,'qTask','taskResult','errorMsg');
-            if qTask.stats > 1e4
-                taskResult.singleShotEvents = [];
-            end
+%             if qTask.stats > 1e4
+%                 taskResult.singleShotEvents = [];
+%             end
+            taskResult.singleShotEvents = [];
             obj.connection.pushResult(taskResult);
             obj.logger.info('qCloud.runTask',sprintf('task: %0.0f done.', qTask.taskId));
         end
@@ -772,11 +840,16 @@ classdef qCloudPlatform < handle
             statusBackup = obj.status;
             obj.status = 'CALIBRATION';
             obj.updateSystemStatus();
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             switch lvl
                 case 1
                     obj.logger.info('qCloud.calibration','start level 1 calibration...');
-                    qcp.calibration_lvl1();
+                    qcp.calibration_lvl1(obj.stopCalibration);
                     obj.logger.info('qCloud.calibration','level 1 calibration done.');
                     t = now;
                     obj.lastLvl1CalibrationTime = t;
@@ -798,7 +871,7 @@ classdef qCloudPlatform < handle
                     end
                 case 2
                     obj.logger.info('qCloud.calibration','start level 2 calibration...');
-                    qcp.calibration_lvl2();
+                    qcp.calibration_lvl2(obj.stopCalibration);
                     obj.logger.info('qCloud.calibration','level 2 calibration done.');
                     t = now;
                     obj.lastLvl2CalibrationTime = t;
@@ -817,7 +890,7 @@ classdef qCloudPlatform < handle
                     end
                 case 3
                     obj.logger.info('qCloud.calibration','start level 3 calibration...');
-                    qcp.calibration_lvl3();
+                    qcp.calibration_lvl3(obj.stopCalibration);
                     obj.logger.info('qCloud.calibration','level 3 calibration done.');
                     t = now;
                     obj.lastLvl3CalibrationTime = t;
@@ -833,7 +906,7 @@ classdef qCloudPlatform < handle
                     end
                 case 4
                     obj.logger.info('qCloud.calibration','start level 4 calibration...');
-                    qcp.calibration_lvl4();
+                    qcp.calibration_lvl4(obj.stopCalibration);
                     obj.logger.info('qCloud.calibration','level 4 calibration done.');
                     t = now;
                     obj.lastLvl4CalibrationTime = t;
@@ -846,12 +919,17 @@ classdef qCloudPlatform < handle
                     end
             end
             obj.status = statusBackup;
-            set(obj.ctrlPanelHandles.infoDisp,'String',obj.status);
+            if obj.calibrationOn
+                infoStr = [obj.status,' | calibration scheduled'];
+            else
+                infoStr = [obj.status,' | calibration not scheduled'];
+            end
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             obj.updateSystemStatus();
         end
         function updateSystemConfig(obj)
             try
-                obj.sysConfig = obj.sysConfig.load();
+                obj.sysConfig.load();
             catch ME
                 obj.logger.error('qCloud.updateSystemConfig',sprintf('load systemConfig settings failed: %s', ME.message));
                 return;
@@ -903,7 +981,7 @@ classdef qCloudPlatform < handle
         function updateTwoQGateFidelities(obj)
             try
                 QS = qes.qSettings.GetInstance();
-                twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQFidelities'});
+                twoQFidelities = QS.loadSSettings({'shared','qCloud','twoQGateFidelities'});
             catch ME
                 obj.logger.error('qCloud.updateTwoQGateFidelities',...
                     sprintf('load updateTwoQGateFidelities settings failed: %s', ME.message));

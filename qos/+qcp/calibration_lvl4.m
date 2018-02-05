@@ -1,4 +1,4 @@
-function calibration_lvl4()
+function calibration_lvl4(stopFlag)
 
 import sqc.util.getQSettings
 import sqc.util.setQSettings
@@ -20,6 +20,10 @@ qubitGroups = {{'q1','q3','q6','q10'},...
 for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
         'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
+    if stopFlag.val
+        stopFlag.val = false;
+        return;
+    end
 end
 
 

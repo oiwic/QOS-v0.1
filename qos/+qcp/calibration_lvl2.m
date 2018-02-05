@@ -30,6 +30,7 @@ for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
         'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
     if stopFlag.val
+        stopFlag.val = false;
         return;
     end
     tuneup.xyGateAmpTuner_parallel('qubits',qubitGroups{ii},'gateTyp','X/2','AENumPi',AENumPi,...
@@ -37,6 +38,7 @@ for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
         'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
     if stopFlag.val
+        stopFlag.val = false;
         return;
     end
 end

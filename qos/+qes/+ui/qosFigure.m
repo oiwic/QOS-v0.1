@@ -10,6 +10,7 @@ function varargout =qosFigure(figureTitle,autoClose, autoCloseTime)
             if isgraphics(allQOSFigures(1))
                 close(allQOSFigures(1));
             end
+            allQOSFigures(1) = [];
         end
     end
 
