@@ -10,11 +10,6 @@ classdef systemConfig < handle
         twoQGates = {}
         twoQGatesLabel = {}
         measureSizeUpperLimit
-        lvl1CalibrationInterval
-        lvl2CalibrationInterval
-        lvl3CalibrationInterval
-        lvl4CalibrationInterval
-        temperatureReaderCfg
     end
     properties (SetAccess = private, GetAccess = private)
         qCloudSettingsRoot

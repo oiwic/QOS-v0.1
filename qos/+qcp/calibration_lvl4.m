@@ -1,10 +1,9 @@
-function calibration_lvl4(stopFlag)
+function calibration_lvl4(stopFlag,gui)
 
 import sqc.util.getQSettings
 import sqc.util.setQSettings
 import data_taking.public.xmon.*
 
-gui = true;
 iq2ProbNumSamples = 1e4;
 fineTune = true;
 
@@ -19,7 +18,10 @@ qubitGroups = {{'q1','q3','q6','q10'},...
                {'q5','q8'},{'q9','q2'}};
 for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
-        'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
+        'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
+    if ~gui.val
+        pause(0.1);
+    end
     if stopFlag.val
         stopFlag.val = false;
         return;

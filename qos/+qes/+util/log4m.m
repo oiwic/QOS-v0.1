@@ -294,7 +294,7 @@ classdef log4m < handle
             self.cache = [self.cache, sprintf('%s %s %s - %s\r\n',...
                 datestr(now,'yyyy-mm-dd HH:MM:SS,FFF'), levelStr, scriptName , message)];
             
-            if self.cacheCount > 50 || doCommit
+            if self.cacheCount > 10 || doCommit
                 self.commit();
             end
         end

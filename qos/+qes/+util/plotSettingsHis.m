@@ -7,6 +7,12 @@ function axs = plotSettingsHis(settingsRoot,settings,timeBounds,axs, plotChange)
     if nargin < 3 || isempty(timeBounds)
         timeBounds = [0,Inf];
     end
+    if isempty(settings)
+        return;
+    end
+    if ~iscell(settings{1})
+        settings = {settings};
+    end
     numSettings = numel(settings);
     if nargin < 5
         plotChange = false;

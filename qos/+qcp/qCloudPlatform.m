@@ -38,8 +38,10 @@ classdef qCloudPlatform < handle
 
         serving = false;
         
-        calibrationOn = true;
+        calibrationOn = true
         stopCalibration
+        
+        showCalibrationResults =false
         
         lastLvl1CalibrationTime
         lastLvl2CalibrationTime
@@ -82,26 +84,30 @@ classdef qCloudPlatform < handle
 
             obj.sysStatus = qcp.systemStatus(qCloudSettingsRoot);
             obj.sysStatus.load();
-            
+
             obj.lastLvl1CalibrationTime = obj.sysStatus.lastLvl1CalibrationTime;
             obj.lastLvl2CalibrationTime = obj.sysStatus.lastLvl2CalibrationTime;
             obj.lastLvl3CalibrationTime = obj.sysStatus.lastLvl3CalibrationTime;
             obj.lastLvl4CalibrationTime = obj.sysStatus.lastLvl4CalibrationTime;
-            obj.lvl1CalibrationInterval = obj.sysConfig.lvl1CalibrationInterval*6.9444e-04; % convert from minutes to days
-            obj.lvl2CalibrationInterval = obj.sysConfig.lvl2CalibrationInterval*6.9444e-04;
-            obj.lvl3CalibrationInterval = obj.sysConfig.lvl3CalibrationInterval*6.9444e-04;
-            obj.lvl4CalibrationInterval = obj.sysConfig.lvl4CalibrationInterval*6.9444e-04;
+            
+            calibrationSettings = qes.util.loadSettings(qCloudSettingsRoot, 'calibration');
+            obj.lvl1CalibrationInterval = calibrationSettings.lvl1CalibrationInterval*6.9444e-04; % convert from minutes to days
+            obj.lvl2CalibrationInterval = calibrationSettings.lvl2CalibrationInterval*6.9444e-04;
+            obj.lvl3CalibrationInterval = calibrationSettings.lvl3CalibrationInterval*6.9444e-04;
+            obj.lvl4CalibrationInterval = calibrationSettings.lvl4CalibrationInterval*6.9444e-04;
+            obj.showCalibrationResults = qes.util.hvar(calibrationSettings.showCalibrationResults);
             
             obj.stopCalibration = qes.util.hvar(false);
            
-            if ~isempty(obj.sysConfig.temperatureReaderCfg)
-                r = str2func(['@(x)',obj.sysConfig.temperatureReaderCfg.func,'(x)']);
+            temperatureReaderCfg = qes.util.loadSettings(qCloudSettingsRoot, 'temperatureReaderCfg');
+            if ~isempty(temperatureReaderCfg)
+                r = str2func(['@(x)',temperatureReaderCfg.func,'(x)']);
             else
                 r = @(x) [];
             end
             function temperature = TReader()
                 try
-                    temperature = feval(r, obj.sysConfig.temperatureReaderCfg);
+                    temperature = feval(r, temperatureReaderCfg);
                 catch ME
                     obj.logger.warn('qCloud:readTemperatureException',ME.message);
                     temperature = [];
@@ -110,11 +116,7 @@ classdef qCloudPlatform < handle
             obj.temperatureReader = @TReader;
             obj.status = 'OFFLINE';
             obj.CreateCtrlPanel();
-            if obj.calibrationOn
-                infoStr = [obj.status,' | calibration scheduled'];
-            else
-                infoStr = [obj.status,' | calibration not scheduled'];
-            end
+            infoStr = [obj.status,' | not started'];
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
         function [result, singleShotEvents, sequenceSamples, finalCircuit] =...
@@ -849,7 +851,7 @@ classdef qCloudPlatform < handle
             switch lvl
                 case 1
                     obj.logger.info('qCloud.calibration','start level 1 calibration...');
-                    qcp.calibration_lvl1(obj.stopCalibration);
+                    qcp.calibration_lvl1(obj.stopCalibration,obj.showCalibrationResults);
                     obj.logger.info('qCloud.calibration','level 1 calibration done.');
                     t = now;
                     obj.lastLvl1CalibrationTime = t;
@@ -871,7 +873,7 @@ classdef qCloudPlatform < handle
                     end
                 case 2
                     obj.logger.info('qCloud.calibration','start level 2 calibration...');
-                    qcp.calibration_lvl2(obj.stopCalibration);
+                    qcp.calibration_lvl2(obj.stopCalibration,obj.showCalibrationResults);
                     obj.logger.info('qCloud.calibration','level 2 calibration done.');
                     t = now;
                     obj.lastLvl2CalibrationTime = t;
@@ -890,7 +892,7 @@ classdef qCloudPlatform < handle
                     end
                 case 3
                     obj.logger.info('qCloud.calibration','start level 3 calibration...');
-                    qcp.calibration_lvl3(obj.stopCalibration);
+                    qcp.calibration_lvl3(obj.stopCalibration,obj.showCalibrationResults);
                     obj.logger.info('qCloud.calibration','level 3 calibration done.');
                     t = now;
                     obj.lastLvl3CalibrationTime = t;
@@ -906,7 +908,7 @@ classdef qCloudPlatform < handle
                     end
                 case 4
                     obj.logger.info('qCloud.calibration','start level 4 calibration...');
-                    qcp.calibration_lvl4(obj.stopCalibration);
+                    qcp.calibration_lvl4(obj.stopCalibration,obj.showCalibrationResults);
                     obj.logger.info('qCloud.calibration','level 4 calibration done.');
                     t = now;
                     obj.lastLvl4CalibrationTime = t;
@@ -1015,6 +1017,11 @@ classdef qCloudPlatform < handle
                 obj.connection.updateQubitParemeters(s);
             end
             obj.connection.commitQubitParameters();
+        end
+    end
+    methods
+        function addTestUser(obj,userName)
+            obj.connection.addTestUser(userName);
         end
         function delete(obj)
             obj.status = 'OFFLINE';
