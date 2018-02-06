@@ -55,13 +55,17 @@ classdef operator < handle & matlab.mixin.Copyable
     end
     properties (SetAccess = protected, GetAccess = protected)
 		zdc_amp
-		% not updated to instrument till Run is called because setting up the instrument in the set methods
-        % will leads to repeatedly setting or querying of the
-        % instrument in building up long processes
-        mw_src_power % will be removed in future versions, change power by mw_src directly
-        mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
+% 		% not updated to instrument till Run is called because setting up the instrument in the set methods
+%         % will leads to repeatedly setting or querying of the
+%         % instrument in building up long processes
+%         mw_src_power % will be removed in future versions, change power by mw_src directly
+%         mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
         
         phaseShift = 0;
+    end
+    properties
+        mw_src_power % will be removed in future versions, change power by mw_src directly
+        mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
     end
     properties (SetAccess = private, GetAccess = private)
 		needs_mwpower_setup

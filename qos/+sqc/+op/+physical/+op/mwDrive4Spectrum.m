@@ -42,7 +42,7 @@ classdef mwDrive4Spectrum < sqc.op.physical.operator
 			obj.xy_wv{1} = [S,wv,S];
             
             obj.loFreq = obj.mw_src_frequency(1);
-            obj.loPower = obj.mw_src_power_(1);
+            obj.loPower = obj.mw_src_power(1);
             obj.sbFreq = wv.carrierFrequency;
         end
     end
