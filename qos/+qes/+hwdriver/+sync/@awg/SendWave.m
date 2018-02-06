@@ -1,4 +1,4 @@
-function SendWave(obj,chnl,DASequence,isI)
+function SendWave(obj,chnl,DASequence,isI,loFreq,loPower,sbFreq)
     % send waveform to awg. this method is intended to be called within
     % the method SendWave of class waveform only.
 
@@ -8,6 +8,12 @@ function SendWave(obj,chnl,DASequence,isI)
 	DASequence.xfrFunc = obj.xfrFunc{chnl};
     DASequence.padLength = obj.padLength(chnl);
     TYP = lower(obj.drivertype);
+    
+    if nargin < 4
+        loFreq = 0;
+        loPower = 0;
+        sbFreq = 0;
+    end
 
     switch TYP % now we only support our DAC boards
         case {'ustc_da_v1'} % for ustc_da_v1, waveform vpp is -32768, 32768
@@ -38,8 +44,8 @@ function SendWave(obj,chnl,DASequence,isI)
             end
             
 %              % version specific
-%             WaveformData(32e3:end) = [];
-%             
+            WaveformData(32e3:end) = [];
+
 % %             to plot the waveform data
 %             persistent ax;
 %             try
@@ -52,7 +58,7 @@ function SendWave(obj,chnl,DASequence,isI)
 %                 plot(ax,[zeros(1,software_delay),samples]);
 %             catch
 %             end
-% %             
+%             
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:
             % SendWave(...); setChnlOutputDelay(...,100);
@@ -63,7 +69,7 @@ function SendWave(obj,chnl,DASequence,isI)
             % this is a da driver bug, might be corrected in a future version. 
             
             obj.interfaceobj.setChnlOutputDelay(chnl,output_delay_count);
-            obj.interfaceobj.SendWave(chnl,WaveformData);
+            obj.interfaceobj.SendWave(chnl,WaveformData,loFreq,loPower,sbFreq);
         otherwise
             throw(MException('QOS_awg:unsupportedAWG','Unsupported awg.'));
     end

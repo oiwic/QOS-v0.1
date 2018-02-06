@@ -112,7 +112,7 @@ classdef sequenceSampleLogger < handle
                     axs(ii) = axes('parent',h,'Position',[0.075,v,0.9,axH],'Visible','off');
                     v = v + axH;
                 end
-            elseif numel(axs) < numQs
+            elseif numel(axs) ~= numQs
                 error('number of axes not equal to number of qubits');
             end
             linkaxes(axs,'xy');
@@ -148,7 +148,7 @@ classdef sequenceSampleLogger < handle
                     axs(ii) = axes('parent',h,'Position',[0.075,v,0.9,axH],'Visible','off');
                     v = v + axH;
                 end
-            elseif numel(axs) < numQs
+            elseif numel(axs) ~= numQs
                 error('number of axes not equal to number of qubits');
             end
             linkaxes(axs,'xy');

@@ -345,5 +345,18 @@ classdef qCloudPlatformConnection < handle
             end
             obj.logger.info('qCloud.commitQubitParameters','qubit parameters updated.');
         end
+        function addTestUser(userName)
+            if ~ischar(userName)
+                obj.logger.error('qCloud.setTestUser','illegal argument.');
+            end
+            obj.logger.info('qCloud.setTestUser',['add test user: ', userName]);
+            resp = obj.backend.givePermission(userName);
+            if ~resp.isSuccess()
+                msg = cell(resp.getMessage());
+                obj.logger.error('qCloud.setTestUser',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:setTestUser',msg{1}));
+            end
+            obj.logger.info('qCloud.setTestUser',['test user: ', userName,' added.']);
+        end
     end
 end

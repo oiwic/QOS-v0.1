@@ -102,15 +102,15 @@ function saveSettings(spath, field, value)
                     fid = fopen(history_file,'a+');
                 end
                 if ischar(old_value)
-                    fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                    fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),old_value);
                 elseif isnumeric(old_value)
                     if iscolumn(old_value)
                         old_value = old_value.';
                     end
                     if numel(old_value) > 1
-                        fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
+                        fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),num2str(old_value)); 
                     elseif isreal(old_value)
-                        fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                        fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),old_value);
                     else
                         fprintf(fid,'%s\t%0.6e%+0.6ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
                     end
@@ -167,7 +167,7 @@ function saveSettings(spath, field, value)
                             else
                                 fid = fopen(history_file,'a+');
                             end
-                            fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                            fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),old_value);
                             fclose(fid);
                         catch
                             warning('log old value to history file failed');
@@ -246,9 +246,9 @@ function saveSettings(spath, field, value)
                                 old_value = old_value.';
                             end
                             if numel(old_value) > 1
-                               fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),num2str(old_value)); 
+                               fprintf(fid,'%s\t%s\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),num2str(old_value)); 
                             elseif isreal(old_value)
-                                fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd HH:MM:SS:FFF'),old_value);
+                                fprintf(fid,'%s\t%0.6e\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),old_value);
                             else
                                 fprintf(fid,'%s\t%0.6e%+0.6ej\r\n',datestr(now,'yyyy-mm-dd_HH:MM:SS:FFF'),real(old_value),imag(old_value));
                             end

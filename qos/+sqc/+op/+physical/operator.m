@@ -47,18 +47,25 @@ classdef operator < handle & matlab.mixin.Copyable
 %         wvGenerated = false;
 		xy_wv = {}       % order: first applied first to follow the pulse generation time order convention
 		xy_daChnl = {}
+        loFreq
+        loPower
+        sbFreq
         z_wv = {}        % order: first applied first to follow the pulse generation time order convention
 		z_daChnl = {}
     end
     properties (SetAccess = protected, GetAccess = protected)
 		zdc_amp
-		% not updated to instrument till Run is called because setting up the instrument in the set methods
-        % will leads to repeatedly setting or querying of the
-        % instrument in building up long processes
-        mw_src_power % will be removed in future versions, change power by mw_src directly
-        mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
+% 		% not updated to instrument till Run is called because setting up the instrument in the set methods
+%         % will leads to repeatedly setting or querying of the
+%         % instrument in building up long processes
+%         mw_src_power % will be removed in future versions, change power by mw_src directly
+%         mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
         
         phaseShift = 0;
+    end
+    properties
+        mw_src_power % will be removed in future versions, change power by mw_src directly
+        mw_src_frequency % will be removed in future versions, change frequency by mw_src directly
     end
     properties (SetAccess = private, GetAccess = private)
 		needs_mwpower_setup
@@ -96,7 +103,10 @@ classdef operator < handle & matlab.mixin.Copyable
 					if ~isempty(obj.xy_wv{ii})
 						obj.xy_wv{ii} = copy(obj.xy_wv{ii});
 					end
-				end
+                end
+                obj.loFreq = qs.loFreq;
+                obj.loPower = qs.loPower;
+                obj.sbFreq = qs.sbFreq;
 				obj.xy_daChnl = qs.xy_daChnl;
                 obj.z_wv = qs.z_wv;
                 for ii = 1:numel(obj.z_wv)
@@ -125,6 +135,9 @@ classdef operator < handle & matlab.mixin.Copyable
             obj.qubits = qs;
             num_qubits = numel(obj.qubits);
             obj.xy_wv = cell(1,num_qubits);
+            obj.loFreq = zeros(1,num_qubits);
+            obj.loPower = zeros(1,num_qubits);
+            obj.sbFreq = zeros(1,num_qubits);
             obj.z_wv = cell(1,num_qubits);
             obj.xy_daChnl = cell(2,num_qubits);
             obj.z_daChnl = cell(1,num_qubits);
@@ -370,8 +383,12 @@ classdef operator < handle & matlab.mixin.Copyable
 				DASequence = qes.waveform.DASequence(obj.xy_daChnl{1,ii}.chnl,obj.xy_wv{ii});
 				DASequence.outputDelay = [obj.delay_xy_i(ii),obj.delay_xy_q(ii)]...
                     + obj.qubits{ii}.syncDelay_xy;
-				obj.xy_daChnl{1,ii}.SendWave(DASequence,true); % send I
-				obj.xy_daChnl{2,ii}.SendWave(DASequence,false); % send Q
+                try
+				obj.xy_daChnl{1,ii}.SendWave(DASequence,true,obj.loFreq(ii),obj.loPower(ii),obj.sbFreq(ii)); % send I
+                catch
+                    kkk = 1;
+                end
+				obj.xy_daChnl{2,ii}.SendWave(DASequence,false,obj.loFreq(ii),obj.loPower(ii),obj.sbFreq(ii)); % send Q
                 if obj.logSequenceSamples
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,true);
                 end
@@ -424,9 +441,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     continue;
                 end
 				DASequence = qes.waveform.DASequence(obj.z_daChnl{1,ii}.chnl,obj.z_wv{ii});
-				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0];
+				DASequence.outputDelay = [obj.delay_z(ii) + obj.qubits{ii}.syncDelay_z,0,0,0,0];
 
-				obj.z_daChnl{1,ii}.SendWave(DASequence,true);
+				obj.z_daChnl{1,ii}.SendWave(DASequence,true,0,0,0);
                 if obj.logSequenceSamples
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,false);
                 end
@@ -562,6 +579,10 @@ classdef operator < handle & matlab.mixin.Copyable
                     obj.qubits{end+1} = obj1.qubits{1};
                     obj.xy_wv{end+1} = [];
 					obj.xy_daChnl{end+1} = [];
+                    obj.loFreq(end+1) = 0;
+                    obj.loPower(end+1) = 0;
+                    obj.sbFreq(end+1) = 0;
+            
 					obj.xy_daChnl{end+1} = [];
                     obj.z_wv{end+1} = [];
                     obj.z_daChnl{end+1} = [];
@@ -654,6 +675,9 @@ classdef operator < handle & matlab.mixin.Copyable
                             obj1.xy_wv{ii}];
                         obj.xy_daChnl{1,idx} = obj1.xy_daChnl{1,ii};
                         obj.xy_daChnl{2,idx} = obj1.xy_daChnl{2,ii};
+                        obj.loFreq(idx) = obj1.loFreq(ii);
+                        obj.loPower(idx) = obj1.loPower(ii);
+                        obj.sbFreq(idx) = obj1.sbFreq(ii);
                     end
                 elseif ~isempty(obj.xy_wv{idx})
                     obj.xy_wv{idx} = [obj.xy_wv{idx},padWv2];
@@ -691,6 +715,9 @@ classdef operator < handle & matlab.mixin.Copyable
             obj.delay_xy_q = [obj.delay_xy_q, obj1.delay_xy_q(addIdx)];
             obj.delay_z = [obj.delay_z, obj1.delay_z(addIdx)];
             obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
+            obj.loFreq = [obj.loFreq,zeros(1,numel(addIdx))];
+            obj.loPower = [obj.loPower,zeros(1,numel(addIdx))];
+            obj.sbFreq = [obj.sbFreq,zeros(1,numel(addIdx))];
             obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
             obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
             obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
@@ -701,6 +728,9 @@ classdef operator < handle & matlab.mixin.Copyable
                         obj1.xy_wv{addIdx(ii)}];
 					obj.xy_daChnl{1,ind+ii} = obj1.xy_daChnl{1,addIdx(ii)};
 					obj.xy_daChnl{2,ind+ii} = obj1.xy_daChnl{2,addIdx(ii)};
+                    obj.loFreq(ind+ii) = obj1.loFreq(addIdx(ii));
+                    obj.loPower(ind+ii) = obj1.loPower(addIdx(ii));
+                    obj.sbFreq(ind+ii) = obj1.sbFreq(addIdx(ii));
                 end
                 if ~isempty(obj1.z_wv{addIdx(ii)})
                     obj.z_wv{ind+ii} = [padWv1,...
@@ -871,6 +901,9 @@ classdef operator < handle & matlab.mixin.Copyable
                         end
                         obj.xy_daChnl{1,idx} = obj1.xy_daChnl{1,ii};
                         obj.xy_daChnl{2,idx} = obj1.xy_daChnl{2,ii};
+                        obj.loFreq(idx) = obj1.loFreq(ii);
+                        obj.loPower(idx) = obj1.loPower(ii);
+                        obj.sbFreq(idx) = obj1.sbFreq(ii);
                     end
                 end
 %                 if (obj1.phaseShift(ii) ~=0 && obj.phaseShift(idx) ~=0 &&...
@@ -901,6 +934,9 @@ classdef operator < handle & matlab.mixin.Copyable
             obj.delay_z = [obj.delay_z, obj1.delay_z(addIdx)];
             obj2numQ = numel(obj.xy_wv);
             obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
+            obj.loFreq = [obj.loFreq,zeros(1,numel(addIdx))];
+            obj.loPower = [obj.loPower,zeros(1,numel(addIdx))];
+            obj.sbFreq = [obj.sbFreq,zeros(1,numel(addIdx))];
             obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
             obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
             obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
@@ -916,6 +952,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     end
 					obj.xy_daChnl{1,wvInd} = obj1.xy_daChnl{1,addIdx(ii)};
                     obj.xy_daChnl{2,wvInd} = obj1.xy_daChnl{2,addIdx(ii)};
+                    obj.loFreq(wvInd) = obj1.loFreq(addIdx(ii));
+                    obj.loPower(wvInd) = obj1.loPower(addIdx(ii));
+                    obj.sbFreq(wvInd) = obj1.sbFreq(addIdx(ii));
                 end
                 if ~isempty(obj1.z_wv{addIdx(ii)})
 					if dln > 0
@@ -1004,9 +1043,16 @@ classdef operator < handle & matlab.mixin.Copyable
             elseif n == 1
                 obj = copy(obj1);
             else
+                numQ = numel(obj1.qubits);
                 obj = obj1;
-                for ii = 2:n
-                    obj = obj1+obj;
+                if numQ == 1
+                    for ii = 2:n
+                        obj = obj1+obj;
+                    end
+                else
+                    for ii = 2:n
+                        obj = obj1*obj;
+                    end
                 end
             end
         end
@@ -1071,6 +1117,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     end
                     obj.xy_daChnl{1,1} = obj1.xy_daChnl{1,1};
                     obj.xy_daChnl{2,1} = obj1.xy_daChnl{2,1};
+                    obj.loFreq = obj1.loFreq;
+                    obj.loPower = obj1.loPower;
+                    obj.sbFreq = obj1.sbFreq;
                 end
             elseif ~isempty(obj.xy_wv{1}) && GB+obj1ln > 0
                 obj.xy_wv{1} = [obj.xy_wv{1},qes.waveform.spacer(GB+obj1ln)];
@@ -1167,6 +1216,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     end
                     obj.xy_daChnl{1,1} = obj1.xy_daChnl{1,1};
                     obj.xy_daChnl{2,1} = obj1.xy_daChnl{2,1};
+                    obj.loFreq = obj1.loFreq;
+                    obj.loPower = obj1.loPower;
+                    obj.sbFreq = obj1.sbFreq;
                 end
             elseif ~isempty(obj.xy_wv{1}) && GB+obj1ln > 0
                 obj.xy_wv{1} = [obj.xy_wv{1},qes.waveform.spacer(GB+obj1ln)];
@@ -1252,6 +1304,9 @@ classdef operator < handle & matlab.mixin.Copyable
                     obj.xy_wv{end+1} = [];
 					obj.xy_daChnl{end+1} = [];
 					obj.xy_daChnl{end+1} = [];
+                    obj.loFreq(end+1) = 0;
+                    obj.loPower(end+1) = 0;
+                    obj.sbFreq(end+1) = 0;
                     obj.z_wv{end+1} = [];
                     obj.z_daChnl{end+1} = [];
                 end
@@ -1295,6 +1350,9 @@ classdef operator < handle & matlab.mixin.Copyable
                             obj1.xy_wv{ii}];
                         obj.xy_daChnl{1,idx} = obj1.xy_daChnl{1,ii};
                         obj.xy_daChnl{2,idx} = obj1.xy_daChnl{2,ii};
+                        obj.loFreq(idx) = obj1.loFreq(ii);
+                        obj.loPower(idx) = obj1.loPower(ii);
+                        obj.sbFreq(idx) = obj1.sbFreq(ii);
                     end
                 elseif ~isempty(obj.xy_wv{idx})
                     obj.xy_wv{idx} = [obj.xy_wv{idx},padWv2];
@@ -1332,6 +1390,9 @@ classdef operator < handle & matlab.mixin.Copyable
             obj.delay_xy_q = [obj.delay_xy_q, obj1.delay_xy_q(addIdx)];
             obj.delay_z = [obj.delay_z, obj1.delay_z(addIdx)];
             obj.xy_wv = [obj.xy_wv,cell(1,numel(addIdx))];
+            obj.loFreq = [obj.loFreq,zeros(1,numel(addIdx))];
+            obj.loPower = [obj.loPower,zeros(1,numel(addIdx))];
+            obj.sbFreq = [obj.sbFreq,zeros(1,numel(addIdx))];
             obj.z_wv = [obj.z_wv,cell(1,numel(addIdx))];
             obj.xy_daChnl = [obj.xy_daChnl,cell(2,numel(addIdx))];
             obj.z_daChnl = [obj.z_daChnl,cell(1,numel(addIdx))];
@@ -1342,6 +1403,9 @@ classdef operator < handle & matlab.mixin.Copyable
                         obj1.xy_wv{addIdx(ii)}];
 					obj.xy_daChnl{1,ind+ii} = obj1.xy_daChnl{1,addIdx(ii)};
 					obj.xy_daChnl{2,ind+ii} = obj1.xy_daChnl{2,addIdx(ii)};
+                    obj.loFreq(ind+ii) = obj1.loFreq(addIdx(ii));
+                    obj.loPower(ind+ii) = obj1.loPower(addIdx(ii));
+                    obj.sbFreq(ind+ii) = obj1.sbFreq(addIdx(ii));
                 end
                 if ~isempty(obj1.z_wv{addIdx(ii)})
                     obj.z_wv{ind+ii} = [padWv1,...

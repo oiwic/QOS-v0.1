@@ -1,11 +1,10 @@
-function calibration_lvl3()
+function calibration_lvl3(stopFlag,gui)
 
 import sqc.util.getQSettings
 import sqc.util.setQSettings
 import data_taking.public.xmon.*
 
-gui = true;
-iq2ProbNumSamples = 2e4;
+iq2ProbNumSamples = 1e4;
 correctf01DelayTime = 0.6e-6;
 fineTune = false;
 
@@ -22,10 +21,21 @@ correctf01 = {[false,true,true,true],...
                [false,true,true],...
                [true,true],[false,true]};
 for ii = 1:numel(qubitGroups)
+    
+    if ii == 2 || ii == 4 % do not correct max f01 qubits: q7, q9
+        qs = qs(2:end);
+    end
     tuneup.correctf01byPhase('qubits',qubitGroups{ii},'delayTime',correctf01DelayTime,...
-        'gui',gui,'save',true,'doCorrection',correctf01{ii},'logger',logger);
+        'gui',gui.val,'save',true,'doCorrection',correctf01{ii},'logger',logger);
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
-        'fineTune',fineTune,'gui',gui,'save',true,'logger',logger);
+        'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
+    if ~gui.val
+        pause(0.1);
+    end
+    if stopFlag.val
+        stopFlag.val = false;
+        return;
+    end
 end
 
 
