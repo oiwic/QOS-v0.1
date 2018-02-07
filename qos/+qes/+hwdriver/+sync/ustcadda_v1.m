@@ -454,6 +454,11 @@ classdef ustcadda_v1 < qes.hwdriver.icinterface_compatible % extends icinterface
         end
         
         function SendWave(obj,channel,data,loFreq,loPower,sbFreq)
+%             disp('in ustcadda_v1.SendWave: ');
+%             loFreq
+%             loPower
+%             sbFreq
+            
             if nargin < 4
                 isIQ = false;
             end

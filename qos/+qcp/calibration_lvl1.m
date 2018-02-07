@@ -36,7 +36,7 @@ for ii = 1:numel(qubitGroups)
 %     end
 
     if ~gui.val
-        pause(0.1);
+        drawnow;
     end
     if stopFlag.val
         tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
@@ -47,7 +47,7 @@ for ii = 1:numel(qubitGroups)
 %     tuneup.xyGateAmpTuner_parallel('qubits',qubitGroups{ii},'gateTyp','X','AENumPi',AENumPi,'tuneRange',gAmpTuneRange,'gui',gui,'save',true,'logger',logger);
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
     if ~gui.val
-        pause(0.1);
+        drawnow;
     end
     if stopFlag.val
         stopFlag.val = false;
@@ -74,7 +74,7 @@ for ii = 1:numel(czQSets)
     tuneup.czAmplitude('controlQ',czQSets{ii}{1}{1},'targetQ',czQSets{ii}{1}{2},...
         'gui',gui.val,'save',true,'logger',logger,'repeatIfOutOfBoundButClose',true);
     if ~gui.val
-        pause(0.1);
+        drawnow;
     end
     if stopFlag.val
         stopFlag.val = false;
@@ -86,7 +86,7 @@ for ii = 1:numel(czQSets)
             'numCZs',numCZs(ii),'PhaseTolerance',PhaseTolerance,...
             'gui',gui.val,'save',true,'logger',logger);
         if ~gui.val
-            pause(0.1);
+            drawnow;
         end
         if stopFlag.val
             stopFlag.val = false;

@@ -345,7 +345,7 @@ classdef qCloudPlatformConnection < handle
             end
             obj.logger.info('qCloud.commitQubitParameters','qubit parameters updated.');
         end
-        function addTestUser(userName)
+        function addTestUser(obj,userName)
             if ~ischar(userName)
                 obj.logger.error('qCloud.setTestUser','illegal argument.');
             end

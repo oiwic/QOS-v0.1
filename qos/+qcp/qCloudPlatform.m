@@ -119,6 +119,36 @@ classdef qCloudPlatform < handle
             infoStr = [obj.status,' | not started'];
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
+		function runSystemTasks(obj)
+			try
+				systemTasks = qes.util.loadSettings(qCloudSettingsRoot, 'systemTasks');
+			catch ME
+				obj.logger.warn('qCloud.runSystemTasks',['runSystemTasks exception: ', ME.message]);
+			end
+			if isempty(systemTasks)
+				return;
+			end
+			if ~iscell(systemTasks)
+				systemTasks = {systemTasks};
+			end
+			obj.logger.info('qCloud.runSystemTasks','start running system tasks.');
+			numSystemTasks = numel(systemTasks);
+			for ii = 1:numSystemTasks
+				try
+					obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', systemTasks{ii});
+					feval(str2func(systemTasks{ii}));
+					obj.logger.info('qCloud.runSystemTasks',sprintf('task: %s done.', systemTasks{ii});
+				catch ME
+					obj.logger.warn('qCloud.runSystemTasks',sprintf('run system task %s failed: %s', systemTasks{ii}, ME.message));
+				end
+			end
+			obj.logger.info('qCloud.runSystemTasks','all system tasks done.');
+			try
+				qes.util.saveSettings(qCloudSettingsRoot, 'systemTasks','');
+			catch ME
+				obj.logger.warn('qCloud.runSystemTasks',['clear system tasks settings failed: ',ME.message]);
+			end
+		end
         function [result, singleShotEvents, sequenceSamples, finalCircuit] =...
                 runCircuit(obj,circuit,opQs,measureQs,measureType, stats)
             import sqc.op.physical.*
@@ -201,6 +231,7 @@ classdef qCloudPlatform < handle
         end
         function StartEventLoop(obj)
             while isvalid(obj)
+				obj.runSystemTasks();
                 t = now;
                 if (t - obj.lastLvl1CalibrationTime) > obj.lvl1CalibrationInterval
                     if ~qes.util.ismember('CALIBRATION_LVL1',obj.eventQueue)
@@ -805,7 +836,6 @@ classdef qCloudPlatform < handle
                 taskResult.singleShotEvents = [];
                 taskResult.waveforms = [];
             end
-
             QS = qes.qSettings.GetInstance();
             numMQs = numel(qTask.measureQubits);
             taskResult.fidelity = -ones(numMQs,2);
@@ -823,7 +853,16 @@ classdef qCloudPlatform < handle
             taskResult.noteCN = [obj.defaultResultMsgCN, errorMsg];
             taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
             datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
-            save(datafile,'qTask','taskResult','errorMsg');
+            if taskResult.result >= 256
+                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.00);
+            elseif taskResult.result >= 64
+                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.0025);
+            else
+                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.005);
+            end
+            save(datafile,'qTask','taskResult','errorMsg','tr');
+            taskResult.result = tr;
+            
 %             if qTask.stats > 1e4
 %                 taskResult.singleShotEvents = [];
 %             end
