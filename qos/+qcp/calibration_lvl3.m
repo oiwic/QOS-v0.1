@@ -30,7 +30,7 @@ for ii = 1:numel(qubitGroups)
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
         'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
     if ~gui.val
-        drawnow;
+        drawnow;pause(0.1);
     end
     if stopFlag.val
         stopFlag.val = false;

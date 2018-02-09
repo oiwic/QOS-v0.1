@@ -121,7 +121,7 @@ classdef qCloudPlatform < handle
         end
 		function runSystemTasks(obj)
 			try
-				systemTasks = qes.util.loadSettings(qCloudSettingsRoot, 'systemTasks');
+				systemTasks = qes.util.loadSettings(obj.qCloudSettingsRoot, 'systemTasks');
 			catch ME
 				obj.logger.warn('qCloud.runSystemTasks',['runSystemTasks exception: ', ME.message]);
 			end
@@ -135,16 +135,16 @@ classdef qCloudPlatform < handle
 			numSystemTasks = numel(systemTasks);
 			for ii = 1:numSystemTasks
 				try
-					obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', systemTasks{ii});
+					obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', systemTasks{ii}));
 					feval(str2func(systemTasks{ii}));
-					obj.logger.info('qCloud.runSystemTasks',sprintf('task: %s done.', systemTasks{ii});
+					obj.logger.info('qCloud.runSystemTasks',sprintf('task: %s done.', systemTasks{ii}));
 				catch ME
 					obj.logger.warn('qCloud.runSystemTasks',sprintf('run system task %s failed: %s', systemTasks{ii}, ME.message));
 				end
 			end
 			obj.logger.info('qCloud.runSystemTasks','all system tasks done.');
 			try
-				qes.util.saveSettings(qCloudSettingsRoot, 'systemTasks','');
+				qes.util.saveSettings(obj.qCloudSettingsRoot, 'systemTasks','');
 			catch ME
 				obj.logger.warn('qCloud.runSystemTasks',['clear system tasks settings failed: ',ME.message]);
 			end
@@ -231,6 +231,7 @@ classdef qCloudPlatform < handle
         end
         function StartEventLoop(obj)
             while isvalid(obj)
+                drawnow;
 				obj.runSystemTasks();
                 t = now;
                 if (t - obj.lastLvl1CalibrationTime) > obj.lvl1CalibrationInterval
@@ -446,6 +447,9 @@ classdef qCloudPlatform < handle
                         case 'Stop scheduled calibrations'
                             obj.calibrationOn = false;
                             obj.stopCalibration.val = true;
+                            obj.logger.info('qCloud.UerOperation','Scheduled calibrations stopped by user.');
+                            infoStr = [obj.status,' | calibration not scheduled'];
+                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
                             return;
                         case 'Cancel'
                             return;
@@ -458,6 +462,8 @@ classdef qCloudPlatform < handle
                         case 'Start scheduled calibrations'
                             obj.calibrationOn = true;
                             obj.stopCalibration.val = false;
+                            infoStr = [obj.status,' | calibration scheduled'];
+                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
                             return;
                         case 'Cancel'
                             return;
@@ -853,13 +859,7 @@ classdef qCloudPlatform < handle
             taskResult.noteCN = [obj.defaultResultMsgCN, errorMsg];
             taskResult.noteEN = [obj.defaultResultMsgEN, errorMsg];
             datafile = fullfile(obj.dataPath,sprintf('task_%08.0f.mat',qTask.taskId));
-            if taskResult.result >= 256
-                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.00);
-            elseif taskResult.result >= 64
-                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.0025);
-            else
-                tr = data_taking.public.dataproc.qcpdt(taskResult.result,0.005);
-            end
+            tr = data_taking.public.dataproc.qcpdt(taskResult.result);
             save(datafile,'qTask','taskResult','errorMsg','tr');
             taskResult.result = tr;
             
