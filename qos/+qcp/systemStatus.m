@@ -14,6 +14,9 @@ classdef systemStatus < handle
         noticeCN
         noticeEN
     end
+    properties (Dependent = true)
+        lastCalibrationTime
+    end
     properties (SetAccess = private, GetAccess = private)
         qCloudSettingsRoot
     end
@@ -30,6 +33,10 @@ classdef systemStatus < handle
 			for ii = 1:numel(fn)
 				obj.(fn{ii}) = s.(fn{ii});
             end
+        end
+        function val = get.lastCalibrationTime(obj)
+            val = max([obj.lastLvl1CalibrationTime,obj.lastLvl2CalibrationTime,...
+                obj.lastLvl3CalibrationTime, obj.lastLvl4CalibrationTime]);
         end
         function set.status(obj,val)
             if ~qes.util.ismember(val,obj.statusOptions)

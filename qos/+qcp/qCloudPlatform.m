@@ -828,7 +828,7 @@ classdef qCloudPlatform < handle
                 taskResult.singleShotEvents = singleShotEvents;
                 taskResult.waveforms = waveformSamples;
             catch ME
-                errorMsg = [ME.message,char(13),char(10)];
+                errorMsg = ['run circuit failed: ', ME.message,char(13),char(10)];
                 obj.logger.error('qCloud.runTask.runTaskException',ME.message);
                 obj.logger.notify();
                 obj.runErrorCount = obj.runErrorCount + 1;
@@ -989,7 +989,10 @@ classdef qCloudPlatform < handle
             obj.sysStatus.fridgeTemperature = feval(obj.temperatureReader);
             try
                 obj.connection.updateSystemStatus(obj.sysStatus);
-            catch
+            catch ME
+                obj.logger.fatal('qCloud.updateSystemStatus',sprintf('updating system status failed due to an unknown error: %s', ME.message));
+                obj.logger.notify();
+                return;
             end
             try
                 qes.util.saveSettings(obj.qCloudSettingsRoot,...
