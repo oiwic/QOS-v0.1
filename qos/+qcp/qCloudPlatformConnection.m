@@ -220,7 +220,7 @@ classdef qCloudPlatformConnection < handle
                         ['invalid status settings: ', sysStatus.status]));
 			end
             jSysStatus.setFridgeTemperature(sysStatus.fridgeTemperature);
-            jSysStatus.setLastCalibrationTime(sysStatus.lastCalibrationTime);
+            jSysStatus.setLastCalibrationTime(datestr(sysStatus.lastCalibrationTime,'yyyy-mm-dd HH:MM:SS'));
 			jSysStatus.setNoticeCN(sysStatus.noticeCN);
             jSysStatus.setNoticeEN(sysStatus.noticeEN);
             resp = obj.backend.updateSystemStatus(jSysStatus);

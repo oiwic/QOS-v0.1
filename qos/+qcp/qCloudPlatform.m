@@ -124,15 +124,21 @@ classdef qCloudPlatform < handle
 				systemTasks = qes.util.loadSettings(obj.qCloudSettingsRoot, 'systemTasks');
 			catch ME
 				obj.logger.warn('qCloud.runSystemTasks',['runSystemTasks exception: ', ME.message]);
-			end
-			if isempty(systemTasks)
-				return;
-			end
+                return;
+            end
 			if ~iscell(systemTasks)
 				systemTasks = {systemTasks};
 			end
 			obj.logger.info('qCloud.runSystemTasks','start running system tasks.');
 			numSystemTasks = numel(systemTasks);
+            status_backup = obj.status;
+            infoStr_backup = get(obj.ctrlPanelHandles.infoDisp,'String');
+            obj.status = 'MAINTENANCE';
+            obj.updateSystemStatus();
+            infoStr = [obj.status,' | running system tasks'];
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
+            drawnow;
+            pause(0.2);
 			for ii = 1:numSystemTasks
 				try
 					obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', systemTasks{ii}));
@@ -147,7 +153,10 @@ classdef qCloudPlatform < handle
 				qes.util.saveSettings(obj.qCloudSettingsRoot, 'systemTasks','');
 			catch ME
 				obj.logger.warn('qCloud.runSystemTasks',['clear system tasks settings failed: ',ME.message]);
-			end
+            end
+            obj.status = status_backup;
+            obj.updateSystemStatus();
+            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr_backup);
 		end
         function [result, singleShotEvents, sequenceSamples, finalCircuit] =...
                 runCircuit(obj,circuit,opQs,measureQs,measureType, stats)
