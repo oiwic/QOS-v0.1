@@ -132,7 +132,19 @@ function varargout = czAmplitude(varargin)
         end
     end
     if args.save
-        QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'},czamp);
+        try
+            QS.saveSSettings({'shared','g_cz',aczSettingsKey,'amp'},czamp);
+        catch ME
+            if ~isempty(args.logger)
+                args.logger.error('QOS_czAmplitude:czAmplitude',...
+                    sprintf('Error at updating acz amplitude of %s,%s cz gate: ', qc.name, qt.name, ME.message));
+                warning('QOSTuneup:czAmplitude',...
+                    sprintf('Error at updating acz amplitude of %s,%s cz gate: ', qc.name, qt.name, ME.message));
+                return;
+            else
+                throw(ME);
+            end
+        end
     end
     
     if args.gui
