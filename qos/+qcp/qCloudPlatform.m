@@ -126,6 +126,9 @@ classdef qCloudPlatform < handle
 				obj.logger.warn('qCloud.runSystemTasks',['runSystemTasks exception: ', ME.message]);
                 return;
             end
+            if isempty(systemTasks)
+                return;
+            end
 			if ~iscell(systemTasks)
 				systemTasks = {systemTasks};
 			end
@@ -899,8 +902,12 @@ classdef qCloudPlatform < handle
             switch lvl
                 case 1
                     obj.logger.info('qCloud.calibration','start level 1 calibration...');
-                    qcp.calibration_lvl1(obj.stopCalibration,obj.showCalibrationResults);
-                    obj.logger.info('qCloud.calibration','level 1 calibration done.');
+                    try
+                        qcp.calibration_lvl1(obj.stopCalibration,obj.showCalibrationResults);
+                        obj.logger.info('qCloud.calibration','level 1 calibration done.');
+                    catch ME
+                        obj.logger.error('qCloud.calibration',['level 1 calibration failed: ', ME.message]);
+                    end
                     t = now;
                     obj.lastLvl1CalibrationTime = t;
                     obj.lastLvl2CalibrationTime = t;
@@ -921,7 +928,11 @@ classdef qCloudPlatform < handle
                     end
                 case 2
                     obj.logger.info('qCloud.calibration','start level 2 calibration...');
-                    qcp.calibration_lvl2(obj.stopCalibration,obj.showCalibrationResults);
+                    try
+                        qcp.calibration_lvl2(obj.stopCalibration,obj.showCalibrationResults);
+                    catch ME
+                        obj.logger.error('qCloud.calibration',['level 2 calibration failed: ', ME.message]);
+                    end
                     obj.logger.info('qCloud.calibration','level 2 calibration done.');
                     t = now;
                     obj.lastLvl2CalibrationTime = t;
@@ -940,7 +951,11 @@ classdef qCloudPlatform < handle
                     end
                 case 3
                     obj.logger.info('qCloud.calibration','start level 3 calibration...');
-                    qcp.calibration_lvl3(obj.stopCalibration,obj.showCalibrationResults);
+                    try
+                        qcp.calibration_lvl3(obj.stopCalibration,obj.showCalibrationResults);
+                    catch ME
+                        obj.logger.error('qCloud.calibration',['level 3 calibration failed: ', ME.message]);
+                    end
                     obj.logger.info('qCloud.calibration','level 3 calibration done.');
                     t = now;
                     obj.lastLvl3CalibrationTime = t;
@@ -956,7 +971,11 @@ classdef qCloudPlatform < handle
                     end
                 case 4
                     obj.logger.info('qCloud.calibration','start level 4 calibration...');
-                    qcp.calibration_lvl4(obj.stopCalibration,obj.showCalibrationResults);
+                    try
+                        qcp.calibration_lvl4(obj.stopCalibration,obj.showCalibrationResults);
+                    catch ME
+                        obj.logger.error('qCloud.calibration',['level 4 calibration failed: ', ME.message]);
+                    end
                     obj.logger.info('qCloud.calibration','level 4 calibration done.');
                     t = now;
                     obj.lastLvl4CalibrationTime = t;

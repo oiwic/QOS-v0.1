@@ -1,5 +1,5 @@
 function q8_q11_singleQGateRB()
-qubits = {'q8','q9','q10','q11'};
+qubits = {'q8','q9'}; % ,'q10','q11'
 
 import sqc.util.getQSettings
 import sqc.util.setQSettings

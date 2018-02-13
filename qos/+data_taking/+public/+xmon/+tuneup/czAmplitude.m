@@ -63,7 +63,7 @@ function varargout = czAmplitude(varargin)
         if ~isreal(rd)
             rd = [];
         end
-    else
+    elseif numel(rd) == 2
         rd = rd([isreal(rd(1)), isreal(rd(2))]);
     end
     ampBnd = minmax([czAmp(1),czAmp(end)]);
@@ -76,7 +76,7 @@ function varargout = czAmplitude(varargin)
             if ~isreal(rd)
                 rd = [];
             end
-        else
+        elseif numel(rd) == 2
             rd = rd([isreal(rd(1)), isreal(rd(2))]);
         end
         czamp=rd(find(rd>ampBnd(1)&rd<ampBnd(end)));
