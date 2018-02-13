@@ -221,8 +221,24 @@ classdef qCloudPlatformConnection < handle
 			end
             jSysStatus.setFridgeTemperature(sysStatus.fridgeTemperature);
             jSysStatus.setLastCalibrationTime(datestr(sysStatus.lastCalibrationTime,'yyyy-mm-dd HH:MM:SS'));
-			jSysStatus.setNoticeCN(sysStatus.noticeCN);
-            jSysStatus.setNoticeEN(sysStatus.noticeEN);
+            if ~iscell(sysStatus.noticeCN)
+                noticeCN = sysStatus.noticeCN;
+            else
+                noticeCN = '';
+                for ii = 1:numel(sysStatus.noticeCN)
+                    noticeCN = [noticeCN,sysStatus.noticeCN{ii}];
+                end
+            end
+			jSysStatus.setNoticeCN(noticeCN);
+            if ~iscell(sysStatus.noticeEN)
+                noticeEN = sysStatus.noticeEN;
+            else
+                noticeEN = '';
+                for ii = 1:numel(sysStatus.noticeEN)
+                    noticeEN = [noticeEN,sysStatus.noticeEN{ii}];
+                end
+            end
+            jSysStatus.setNoticeEN(noticeEN);
             resp = obj.backend.updateSystemStatus(jSysStatus);
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
