@@ -51,6 +51,11 @@ classdef qCloudPlatform < handle
         lvl2CalibrationInterval
         lvl3CalibrationInterval
         lvl4CalibrationInterval
+        
+        systemTasks = {}
+        systemTasksExecutionTimes = []
+        
+        noConnection = false
     end
     methods (Access = private)
         function obj = qCloudPlatform(qCloudSettingsRoot)
@@ -71,6 +76,15 @@ classdef qCloudPlatform < handle
             logger.setLogLevel(logger.INFO);  
             logger.setNotifier(pushoverAPIKey,pushoverReceiver);
             obj.logger = logger;
+            try
+                
+                noConnection_ = logical(qes.util.loadSettings(qCloudSettingsRoot, 'noConnection'));
+                obj.noConnection = noConnection_(1);
+            catch ME0
+                obj.logger.warn('qCloud:loadSettingsException',...
+                    sprintf('load setting noConnection failed or illegal value: %s, noConnection set to false', ME0.message));
+                obj.noConnection = false;
+            end
             dataPath = qes.util.loadSettings(qCloudSettingsRoot, 'dataPath');
             if ~isdir(dataPath)
                 obj.logger.error('qCloud:invalidPath',sprintf('data path %s is not a valid path.', dataPath));
@@ -119,21 +133,67 @@ classdef qCloudPlatform < handle
             infoStr = [obj.status,' | not started'];
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
-		function runSystemTasks(obj)
+		function checkSystemTasks(obj)
+            if ~isempty(obj.systemTasks) % old system tasks still not executed, no need to check for new ones
+                return;
+            end
 			try
-				systemTasks = qes.util.loadSettings(obj.qCloudSettingsRoot, 'systemTasks');
+				systemTasksSettings = qes.util.loadSettings(obj.qCloudSettingsRoot, 'systemTasks');
+                taskFuncs = systemTasksSettings.functions;
+                executionTimes = systemTasksSettings.executionTimes;
 			catch ME
-				obj.logger.warn('qCloud.runSystemTasks',['runSystemTasks exception: ', ME.message]);
+				obj.logger.warn('qCloud.checkSystemTasks',['checkSystemTasks exception: ', ME.message]);
                 return;
             end
-            if isempty(systemTasks)
+            try
+				qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','functions'},'');
+                qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','executionTimes'},'');
+			catch ME
+				obj.logger.warn('qCloud.checkSystemTasks',['clear system tasks settings failed: ',ME.message]);
+            end
+            if isempty(taskFuncs)
                 return;
             end
-			if ~iscell(systemTasks)
-				systemTasks = {systemTasks};
-			end
-			obj.logger.info('qCloud.runSystemTasks','start running system tasks.');
-			numSystemTasks = numel(systemTasks);
+			if ~iscell(taskFuncs)
+				taskFuncs = {taskFuncs};
+            end
+            if ~iscell(executionTimes)
+				executionTimes = {executionTimes};
+            end
+            if numel(taskFuncs) ~= numel(executionTimes)
+                obj.logger.warn('qCloud.checkSystemTasks','bad system tasks setting, functions and executionTimes length not match.');
+                return;
+            end
+            numSystemTasks = numel(taskFuncs);
+            for ii = 1:numSystemTasks
+                try
+                    systemTaskFunc = str2func(taskFuncs{ii});
+                catch ME
+                    obj.logger.error('qCloud.checkSystemTasks',sprintf('illegal system task ignored: %s', ME.message));
+                    continue;
+                end
+                try
+                    if isempty(executionTimes{ii})
+                        exeTimes = now;
+                    else
+                        exeTimes = datenum(executionTimes{ii});
+                    end
+                catch ME
+                    obj.logger.warn('qCloud.checkSystemTasks',...
+                        sprintf('illegal system task execution time, set to immediate execution: %s', ME.message));
+                    exeTimes = now;
+                end
+                obj.systemTasks{end+1} = systemTaskFunc;
+                obj.systemTasksExecutionTimes(end+1) = exeTimes;
+            end
+            [obj.systemTasksExecutionTimes,ind] = sort(obj.systemTasksExecutionTimes);
+            obj.systemTasks = obj.systemTasks{ind};
+        end
+        function runSystemTasks(obj)
+            if isempty(obj.systemTasks)
+                return;
+            end
+            obj.logger.info('qCloud.runSystemTasks','start running system tasks.');
             status_backup = obj.status;
             infoStr_backup = get(obj.ctrlPanelHandles.infoDisp,'String');
             obj.status = 'MAINTENANCE';
@@ -142,21 +202,19 @@ classdef qCloudPlatform < handle
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
             drawnow;
             pause(0.2);
-			for ii = 1:numSystemTasks
-				try
-					obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', systemTasks{ii}));
-					feval(str2func(systemTasks{ii}));
-					obj.logger.info('qCloud.runSystemTasks',sprintf('task: %s done.', systemTasks{ii}));
-				catch ME
-					obj.logger.warn('qCloud.runSystemTasks',sprintf('run system task %s failed: %s', systemTasks{ii}, ME.message));
-				end
-			end
-			obj.logger.info('qCloud.runSystemTasks','all system tasks done.');
-			try
-				qes.util.saveSettings(obj.qCloudSettingsRoot, 'systemTasks','');
-			catch ME
-				obj.logger.warn('qCloud.runSystemTasks',['clear system tasks settings failed: ',ME.message]);
+            while ~isempty(obj.systemTasks) && now > obj.systemTasksExecutionTimes(1)
+                try
+                    obj.logger.info('qCloud.runSystemTasks',sprintf('start running system task: %s ', func2str(obj.systemTasks{1})));
+                    feval(obj.systemTasks{1});
+                    obj.logger.info('qCloud.runSystemTasks',sprintf('task: %s done.', func2str(obj.systemTasks{1})));
+                catch ME
+                    obj.logger.warn('qCloud.runSystemTasks',...
+                        sprintf('run system task %s failed: %s',func2str(obj.systemTasks{1}), ME.message));
+                end
+                obj.systemTasks(1) = [];
+                obj.systemTasksExecutionTimes(1) = [];
             end
+			obj.logger.info('qCloud.runSystemTasks','system tasks done.');
             obj.status = status_backup;
             obj.updateSystemStatus();
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr_backup);
@@ -241,317 +299,6 @@ classdef qCloudPlatform < handle
 %             waveformLogger.plotSequenceSamples(sequenceSamples);
             obj.logger.info('qCloud.runCircuit','run circuit done.');
         end
-        function StartEventLoop(obj)
-            while isvalid(obj)
-                drawnow;
-				obj.runSystemTasks();
-                t = now;
-                if (t - obj.lastLvl1CalibrationTime) > obj.lvl1CalibrationInterval
-                    if ~qes.util.ismember('CALIBRATION_LVL1',obj.eventQueue)
-                        obj.eventQueue{end+1} = 'CALIBRATION_LVL1';
-                    end
-                elseif (t - obj.lastLvl2CalibrationTime) > obj.lvl2CalibrationInterval
-                    if ~qes.util.ismember('CALIBRATION_LVL2',obj.eventQueue)
-                        obj.eventQueue{end+1} = 'CALIBRATION_LVL2';
-                    end
-                elseif (t - obj.lastLvl3CalibrationTime) > obj.lvl3CalibrationInterval
-                    if ~qes.util.ismember('CALIBRATION_LVL2',obj.eventQueue)
-                        obj.eventQueue{end+1} = 'CALIBRATION_LVL3';
-                    end
-                elseif (t - obj.lastLvl4CalibrationTime) > obj.lvl4CalibrationInterval
-                    if ~qes.util.ismember('CALIBRATION_LVL4',obj.eventQueue)
-                        obj.eventQueue{end+1} = 'CALIBRATION_LVL4';
-                    end
-                end
-                if isempty(obj.eventQueue)
-                    pause(0.5);
-                    continue;
-                end
-                switch obj.eventQueue{1}
-                    case 'STOP'
-                        obj.Stop();
-                        break;
-                    case 'RESTART'
-                        obj.Restart();
-                    case 'STARTSERVING'
-                        obj.StartServing();
-                    case 'STOPSERVING'
-                        obj.StopServing();
-                    case 'CALIBRATION_LVL1'
-                        if obj.calibrationOn
-                            obj.Calibration(1);
-                        end
-                    case 'CALIBRATION_LVL2'
-                        if obj.calibrationOn
-                            obj.Calibration(2);
-                        end
-                    case 'CALIBRATION_LVL3'
-                        if obj.calibrationOn
-                            obj.Calibration(3);
-                        end
-                    case 'CALIBRATION_LVL4'
-                        if obj.calibrationOn
-                            obj.Calibration(4);
-                        end
-                    case 'UPDATEPARAMS'
-                        obj.updateSystemConfig();
-                        obj.updateOneQGateFidelities();
-                        obj.updateTwoQGateFidelities();
-                        obj.updateQubitParemeters();
-                    case 'RunTask' % must be the last one
-                        try
-                            obj.RunTask();
-                            obj.eventQueue{end+1} = 'RunTask';
-                            pause(0.5);
-                        catch
-                            obj.StopServing();
-                            continue;
-                        end
-                end
-                obj.eventQueue(1) = [];
-            end
-        end
-        function CreateCtrlPanel(obj)
-            % Experiment control panel
-            
-            h = findall(0,'tag','QOS | QCloud | Control Panel');
-            if ~isempty(h)
-                figure(h);
-                set(h,'Visible','on');
-                obj.ctrlPanelHandles = guidata(h);
-                return;
-            end
-
-            BkGrndColor = [1,1,1];
-            scrsz = get(0,'ScreenSize');
-            MessWinWinSz = [0.35,0.425,0.3,0.12];
-            rw = 1440/scrsz(3);
-            rh = 900/scrsz(4);
-            MessWinWinSz(3) = rw*MessWinWinSz(3);
-            MessWinWinSz(4) = rh*MessWinWinSz(4);
-            % set the window position on the center of the screen
-            MessWinWinSz(1) = (1 - MessWinWinSz(3))/2;
-            MessWinWinSz(2) = (1 - MessWinWinSz(4))/2;
-
-            handles.obj = obj;
-            handles.CtrlpanelWin = figure('Menubar','none','NumberTitle','off','Units','normalized ','Position',MessWinWinSz,...
-                    'Name','QOS | QCloud | Control Panel','Color',BkGrndColor,...
-                    'tag','QOS | QCloud | Control Panel','resize','off',...
-                    'HandleVisibility','callback','CloseRequestFcn',{@CtrlpanelClose});
-%             handles.CtrlpanelWin = figure('Menubar','none','NumberTitle','off','Units','normalized ','Position',MessWinWinSz,...
-%                     'Name','QOS | QCloud | Control Panel','Color',BkGrndColor,...
-%                     'tag','QOS | QCloud | Control Panel','resize','off',...
-%                     'HandleVisibility','callback');
-            warning('off');
-            jf = get(handles.CtrlpanelWin,'JavaFrame');
-            jf.setFigureIcon(javax.swing.ImageIcon(...
-                im2java(qes.ui.icons.qos1_32by32())));
-            warning('on');
-
-            handles.infoDisp = uicontrol('Parent', handles.CtrlpanelWin,...
-                  'Style','text','Foreg',[0,0,0],'String',obj.status,...
-                  'FontUnits','normalized','Fontsize',0.4,'FontWeight','bold',...
-                  'Units','normalized','BackgroundColor',[1,1,1],'HorizontalAlignment','left',...
-                  'Position',[0.04,0.6,0.925,0.3]);
-            Pos = [0.04,0.05,0.45,0.25];
-            handles.StartButton = uicontrol('Parent', handles.CtrlpanelWin,...
-                'Style','Pushbutton','Foreg',[1,0,0],'String','Start',...
-                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
-                  'Units','normalized',...
-                  'Tooltip','Start and initialize the quantum computer.',...
-                  'Position',Pos,'Callback',{@StartFunc});
-            Pos(1) = Pos(1) + Pos(3) + 0.025;
-            handles.StartServingButton = uicontrol('Parent', handles.CtrlpanelWin,...
-                'Style','Pushbutton','String','Start Serving',...
-                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
-                  'Units','normalized',...
-                  'Tooltip','Start running tasks.',...
-                  'Position',Pos,'Callback',{@StartServingFunc});
-           if strcmp(obj.status,'OFFLINE')
-                set(handles.StartServingButton,'Enable','off','Tooltip','QCP not started.');
-           elseif strcmp(obj.status,'MAINTENANCE') 
-                set(handles.StartServingButton,'Enable','on','String','Start Serving','Tooltip','Start serving.');
-           else
-               set(handles.StartServingButton,'Enable','on','String','Stop Serving','Tooltip','Stop serving.');
-           end
-           Pos = get(handles.StartButton,'Position');
-           Pos(2) = Pos(2) + Pos(4) + 0.005;
-           handles.CalibrationButton = uicontrol('Parent', handles.CtrlpanelWin,...
-                'Style','Pushbutton','String','Calibration',...
-                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
-                  'Units','normalized','Enable','off',...
-                  'Tooltip','Perform nonscheduled calibration.',...
-                  'Position',Pos,'Callback',{@CalibrationFunc});
-           Pos(1) = Pos(1) + Pos(3) + 0.025;
-           handles.UpdateSystemParametersButton = uicontrol('Parent', handles.CtrlpanelWin,...
-                'Style','Pushbutton','String','Update System Params',...
-                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
-                  'Units','normalized','Enable','off',...
-                  'Tooltip','Update system parameters.',...
-                  'Position',Pos,'Callback',{@UpdateSystemParamsFunc});
-           guidata(handles.CtrlpanelWin,handles);
-           obj.ctrlPanelHandles = handles;
-
-           function StartFunc(hObject,eventdata)
-                % handles = guidata(hObject);
-                if strcmp(handles.obj.status,'OFFLINE')
-                    choice = questdlg(...
-                        'This will start the system, please confirm:',...
-                        'Confirm start','Yes','Cancel','Cancel');
-                    switch choice
-                        case 'Yes'
-                            obj.Start()
-                        otherwise
-                            return;
-                    end
-                else
-                    choice = questdlg(...
-                        'This will stop the system, please confirm:',...
-                        'Confirm stop','Yes','Cancel','Cancel');
-                    switch choice
-                        case 'Yes'
-                            if qes.util.ismember('STOP',obj.eventQueue)
-                                return;
-                            end
-                            obj.eventQueue{end+1} = 'STOP';
-                        otherwise
-                            return;
-                    end
-                end
-           end
-
-           function StartServingFunc(hObject,eventdata)
-                if obj.serving
-                    choice = questdlg(...
-                        'This will stop serving, please confirm:',...
-                        'Confirm stop serving','Yes','Cancel','Cancel');
-                    switch choice
-                        case 'Yes'
-                            if qes.util.ismember('STOPSERVING',obj.eventQueue)
-                                return;
-                            end
-                            obj.eventQueue{end+1} = 'STOPSERVING';
-                        otherwise
-                            return;
-                    end
-                else
-                    choice = questdlg(...
-                        'This will start serving, please confirm:',...
-                        'Confirm start serving','Yes','Cancel','Cancel');
-                    switch choice
-                        case 'Yes'
-                            if qes.util.ismember('STARTSERVING',obj.eventQueue)
-                                return;
-                            end
-                            obj.eventQueue{end+1} = 'STARTSERVING';
-                        otherwise
-                            return;
-                    end
-                end
-            end
-
-           function CalibrationFunc(hObject,eventdata)
-                if obj.calibrationOn
-                    choice = questdlg(...
-                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
-                        'What to do?','Start calibration immediately','Stop scheduled calibrations','Start calibration immediately');
-                    switch choice
-                        case 'Stop scheduled calibrations'
-                            obj.calibrationOn = false;
-                            obj.stopCalibration.val = true;
-                            obj.logger.info('qCloud.UerOperation','Scheduled calibrations stopped by user.');
-                            infoStr = [obj.status,' | calibration not scheduled'];
-                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
-                            return;
-                        case 'Cancel'
-                            return;
-                    end
-                else
-                    choice = questdlg(...
-                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
-                        'What to do?','Start calibration immediately','Start scheduled calibrations','Start calibration immediately');
-                    switch choice
-                        case 'Start scheduled calibrations'
-                            obj.calibrationOn = true;
-                            obj.stopCalibration.val = false;
-                            infoStr = [obj.status,' | calibration scheduled'];
-                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
-                            return;
-                        case 'Cancel'
-                            return;
-                    end
-                end
-                choice = questdlg(...
-                    'This will start a nonscheduled calibration, please confirm:',...
-                    'Confirm calibration','Yes','Cancel','Cancel');
-                switch choice
-                    case 'Yes'
-                        levelOptions = {'CALIBRATION_LVL1','CALIBRATION_LVL2',...
-                            'CALIBRATION_LVL3','CALIBRATION_LVL4'};
-                        choise = qes.ui.questdlg_multi({'Level 1','Level 2','Level 3','Level 4'},...
-                            'Calibration Level', 'CALIBRATION_LVL1',...
-                            'Choose the level of calibration to perform:');
-                        if isempty(choise)
-                            return;
-                        end
-                        choise = levelOptions{choise};
-                        if qes.util.ismember(choise,obj.eventQueue)
-                            return;
-                        end
-                        obj.eventQueue{end+1} = choise;
-                    otherwise
-                        return;
-                end
-           end
-            
-           function UpdateSystemParamsFunc(hObject,eventdata)
-                choice = questdlg(...
-                    'This will update system parameters, please confirm:',...
-                    'Confirm updation','Yes','Cancel','Cancel');
-                switch choice
-                    case 'Yes'
-                        if qes.util.ismember('UPDATEPARAMS',obj.eventQueue)
-                            return;
-                        end
-                        obj.eventQueue{end+1} = 'UPDATEPARAMS';
-                    otherwise
-                        return;
-                end
-            end
-            
-            function CtrlpanelClose(hObject,eventdata)
-                % handles = guidata(hObject);
-                if isstruct(handles) && isvalid(handles.obj)
-                    choice = questdlg(...
-                        'This will shutdown QCloud, please confirm:',...
-                        'Confirm shutdown','Yes','Cancel','Cancel');
-                    switch choice
-                        case 'Yes'
-                            delete(handles.obj);
-                    end
-                end
-                delete(gcbf);
-            end
-        end
-    end
-    methods (Static = true)
-        function obj = GetInstance(qCloudSettingsRoot)
-            persistent instance;
-            if isempty(instance) || ~isvalid(instance)
-                if nargin < 1 || ~isdir(qCloudSettingsRoot)
-                    throw(MException('QOS:qCloudPlatform:notEnoughArguments',...
-                        'qCloudSettingPath not given or not a valid path.'))
-                else
-                    instance = qcp.qCloudPlatform(qCloudSettingsRoot);
-                end
-            end
-            obj = instance;
-            if ~isgraphics(obj.ctrlPanelHandles.CtrlpanelWin)
-                obj.CreateCtrlPanel();
-            end
-        end
-    end
-    methods (Access = private)
         function Start(obj)
            obj.ConnectQCP();
            obj.StartBackend();
@@ -579,7 +326,11 @@ classdef qCloudPlatform < handle
             set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
         end
         function ConnectQCP(obj)
-            obj.connection = qcp.qCloudPlatformConnection.GetInstance();
+            if obj.noConnection
+                obj.connection = qcp.qCloudPlatformConnection_null.GetInstance();
+            else
+                obj.connection = qcp.qCloudPlatformConnection.GetInstance();
+            end
             obj.updateSystemConfig();
             obj.status = 'MAINTENANCE';
             obj.updateSystemStatus();
@@ -1087,6 +838,316 @@ classdef qCloudPlatform < handle
                 obj.connection.updateQubitParemeters(s);
             end
             obj.connection.commitQubitParameters();
+        end
+        function StartEventLoop(obj)
+            while isvalid(obj)
+                drawnow;
+                obj.checkSystemTasks();
+				obj.runSystemTasks();
+                t = now;
+                if (t - obj.lastLvl1CalibrationTime) > obj.lvl1CalibrationInterval
+                    if ~qes.util.ismember('CALIBRATION_LVL1',obj.eventQueue)
+                        obj.eventQueue{end+1} = 'CALIBRATION_LVL1';
+                    end
+                elseif (t - obj.lastLvl2CalibrationTime) > obj.lvl2CalibrationInterval
+                    if ~qes.util.ismember('CALIBRATION_LVL2',obj.eventQueue)
+                        obj.eventQueue{end+1} = 'CALIBRATION_LVL2';
+                    end
+                elseif (t - obj.lastLvl3CalibrationTime) > obj.lvl3CalibrationInterval
+                    if ~qes.util.ismember('CALIBRATION_LVL2',obj.eventQueue)
+                        obj.eventQueue{end+1} = 'CALIBRATION_LVL3';
+                    end
+                elseif (t - obj.lastLvl4CalibrationTime) > obj.lvl4CalibrationInterval
+                    if ~qes.util.ismember('CALIBRATION_LVL4',obj.eventQueue)
+                        obj.eventQueue{end+1} = 'CALIBRATION_LVL4';
+                    end
+                end
+                if isempty(obj.eventQueue)
+                    pause(0.5);
+                    continue;
+                end
+                switch obj.eventQueue{1}
+                    case 'STOP'
+                        obj.Stop();
+                        break;
+                    case 'RESTART'
+                        obj.Restart();
+                    case 'STARTSERVING'
+                        obj.StartServing();
+                    case 'STOPSERVING'
+                        obj.StopServing();
+                    case 'CALIBRATION_LVL1'
+                        if obj.calibrationOn
+                            obj.Calibration(1);
+                        end
+                    case 'CALIBRATION_LVL2'
+                        if obj.calibrationOn
+                            obj.Calibration(2);
+                        end
+                    case 'CALIBRATION_LVL3'
+                        if obj.calibrationOn
+                            obj.Calibration(3);
+                        end
+                    case 'CALIBRATION_LVL4'
+                        if obj.calibrationOn
+                            obj.Calibration(4);
+                        end
+                    case 'UPDATEPARAMS'
+                        obj.updateSystemConfig();
+                        obj.updateOneQGateFidelities();
+                        obj.updateTwoQGateFidelities();
+                        obj.updateQubitParemeters();
+                    case 'RunTask' % must be the last one
+                        try
+                            obj.RunTask();
+                            obj.eventQueue{end+1} = 'RunTask';
+                            pause(0.5);
+                        catch
+                            obj.StopServing();
+                            continue;
+                        end
+                end
+                obj.eventQueue(1) = [];
+            end
+        end
+        function CreateCtrlPanel(obj)
+            % Experiment control panel
+            
+            h = findall(0,'tag','QOS | QCloud | Control Panel');
+            if ~isempty(h)
+                figure(h);
+                set(h,'Visible','on');
+                obj.ctrlPanelHandles = guidata(h);
+                return;
+            end
+
+            BkGrndColor = [1,1,1];
+            scrsz = get(0,'ScreenSize');
+            MessWinWinSz = [0.35,0.425,0.3,0.12];
+            rw = 1440/scrsz(3);
+            rh = 900/scrsz(4);
+            MessWinWinSz(3) = rw*MessWinWinSz(3);
+            MessWinWinSz(4) = rh*MessWinWinSz(4);
+            % set the window position on the center of the screen
+            MessWinWinSz(1) = (1 - MessWinWinSz(3))/2;
+            MessWinWinSz(2) = (1 - MessWinWinSz(4))/2;
+
+            handles.obj = obj;
+            handles.CtrlpanelWin = figure('Menubar','none','NumberTitle','off','Units','normalized ','Position',MessWinWinSz,...
+                    'Name','QOS | QCloud | Control Panel','Color',BkGrndColor,...
+                    'tag','QOS | QCloud | Control Panel','resize','off',...
+                    'HandleVisibility','callback','CloseRequestFcn',{@CtrlpanelClose});
+%             handles.CtrlpanelWin = figure('Menubar','none','NumberTitle','off','Units','normalized ','Position',MessWinWinSz,...
+%                     'Name','QOS | QCloud | Control Panel','Color',BkGrndColor,...
+%                     'tag','QOS | QCloud | Control Panel','resize','off',...
+%                     'HandleVisibility','callback');
+            warning('off');
+            jf = get(handles.CtrlpanelWin,'JavaFrame');
+            jf.setFigureIcon(javax.swing.ImageIcon(...
+                im2java(qes.ui.icons.qos1_32by32())));
+            warning('on');
+
+            handles.infoDisp = uicontrol('Parent', handles.CtrlpanelWin,...
+                  'Style','text','Foreg',[0,0,0],'String',obj.status,...
+                  'FontUnits','normalized','Fontsize',0.4,'FontWeight','bold',...
+                  'Units','normalized','BackgroundColor',[1,1,1],'HorizontalAlignment','left',...
+                  'Position',[0.04,0.6,0.925,0.3]);
+            Pos = [0.04,0.05,0.45,0.25];
+            handles.StartButton = uicontrol('Parent', handles.CtrlpanelWin,...
+                'Style','Pushbutton','Foreg',[1,0,0],'String','Start',...
+                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
+                  'Units','normalized',...
+                  'Tooltip','Start and initialize the quantum computer.',...
+                  'Position',Pos,'Callback',{@StartFunc});
+            Pos(1) = Pos(1) + Pos(3) + 0.025;
+            handles.StartServingButton = uicontrol('Parent', handles.CtrlpanelWin,...
+                'Style','Pushbutton','String','Start Serving',...
+                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
+                  'Units','normalized',...
+                  'Tooltip','Start running tasks.',...
+                  'Position',Pos,'Callback',{@StartServingFunc});
+           if strcmp(obj.status,'OFFLINE')
+                set(handles.StartServingButton,'Enable','off','Tooltip','QCP not started.');
+           elseif strcmp(obj.status,'MAINTENANCE') 
+                set(handles.StartServingButton,'Enable','on','String','Start Serving','Tooltip','Start serving.');
+           else
+               set(handles.StartServingButton,'Enable','on','String','Stop Serving','Tooltip','Stop serving.');
+           end
+           Pos = get(handles.StartButton,'Position');
+           Pos(2) = Pos(2) + Pos(4) + 0.005;
+           handles.CalibrationButton = uicontrol('Parent', handles.CtrlpanelWin,...
+                'Style','Pushbutton','String','Calibration',...
+                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
+                  'Units','normalized','Enable','off',...
+                  'Tooltip','Perform nonscheduled calibration.',...
+                  'Position',Pos,'Callback',{@CalibrationFunc});
+           Pos(1) = Pos(1) + Pos(3) + 0.025;
+           handles.UpdateSystemParametersButton = uicontrol('Parent', handles.CtrlpanelWin,...
+                'Style','Pushbutton','String','Update System Params',...
+                  'FontUnits','normalized','Fontsize',0.5,'FontWeight','bold',...
+                  'Units','normalized','Enable','off',...
+                  'Tooltip','Update system parameters.',...
+                  'Position',Pos,'Callback',{@UpdateSystemParamsFunc});
+           guidata(handles.CtrlpanelWin,handles);
+           obj.ctrlPanelHandles = handles;
+
+           function StartFunc(hObject,eventdata)
+                % handles = guidata(hObject);
+                if strcmp(handles.obj.status,'OFFLINE')
+                    choice = questdlg(...
+                        'This will start the system, please confirm:',...
+                        'Confirm start','Yes','Cancel','Cancel');
+                    switch choice
+                        case 'Yes'
+                            obj.Start()
+                        otherwise
+                            return;
+                    end
+                else
+                    choice = questdlg(...
+                        'This will stop the system, please confirm:',...
+                        'Confirm stop','Yes','Cancel','Cancel');
+                    switch choice
+                        case 'Yes'
+                            if qes.util.ismember('STOP',obj.eventQueue)
+                                return;
+                            end
+                            obj.eventQueue{end+1} = 'STOP';
+                        otherwise
+                            return;
+                    end
+                end
+           end
+
+           function StartServingFunc(hObject,eventdata)
+                if obj.serving
+                    choice = questdlg(...
+                        'This will stop serving, please confirm:',...
+                        'Confirm stop serving','Yes','Cancel','Cancel');
+                    switch choice
+                        case 'Yes'
+                            if qes.util.ismember('STOPSERVING',obj.eventQueue)
+                                return;
+                            end
+                            obj.eventQueue{end+1} = 'STOPSERVING';
+                        otherwise
+                            return;
+                    end
+                else
+                    choice = questdlg(...
+                        'This will start serving, please confirm:',...
+                        'Confirm start serving','Yes','Cancel','Cancel');
+                    switch choice
+                        case 'Yes'
+                            if qes.util.ismember('STARTSERVING',obj.eventQueue)
+                                return;
+                            end
+                            obj.eventQueue{end+1} = 'STARTSERVING';
+                        otherwise
+                            return;
+                    end
+                end
+            end
+
+           function CalibrationFunc(hObject,eventdata)
+                if obj.calibrationOn
+                    choice = questdlg(...
+                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
+                        'What to do?','Start calibration immediately','Stop scheduled calibrations','Start calibration immediately');
+                    switch choice
+                        case 'Stop scheduled calibrations'
+                            obj.calibrationOn = false;
+                            obj.stopCalibration.val = true;
+                            obj.logger.info('qCloud.UerOperation','Scheduled calibrations stopped by user.');
+                            infoStr = [obj.status,' | calibration not scheduled'];
+                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
+                            return;
+                        case 'Cancel'
+                            return;
+                    end
+                else
+                    choice = questdlg(...
+                        'Start a nonscheduled calibration or Stop the scheduled calibrations:',...
+                        'What to do?','Start calibration immediately','Start scheduled calibrations','Start calibration immediately');
+                    switch choice
+                        case 'Start scheduled calibrations'
+                            obj.calibrationOn = true;
+                            obj.stopCalibration.val = false;
+                            infoStr = [obj.status,' | calibration scheduled'];
+                            set(obj.ctrlPanelHandles.infoDisp,'String',infoStr);
+                            return;
+                        case 'Cancel'
+                            return;
+                    end
+                end
+                choice = questdlg(...
+                    'This will start a nonscheduled calibration, please confirm:',...
+                    'Confirm calibration','Yes','Cancel','Cancel');
+                switch choice
+                    case 'Yes'
+                        levelOptions = {'CALIBRATION_LVL1','CALIBRATION_LVL2',...
+                            'CALIBRATION_LVL3','CALIBRATION_LVL4'};
+                        choise = qes.ui.questdlg_multi({'Level 1','Level 2','Level 3','Level 4'},...
+                            'Calibration Level', 'CALIBRATION_LVL1',...
+                            'Choose the level of calibration to perform:');
+                        if isempty(choise)
+                            return;
+                        end
+                        choise = levelOptions{choise};
+                        if qes.util.ismember(choise,obj.eventQueue)
+                            return;
+                        end
+                        obj.eventQueue{end+1} = choise;
+                    otherwise
+                        return;
+                end
+           end
+            
+           function UpdateSystemParamsFunc(hObject,eventdata)
+                choice = questdlg(...
+                    'This will update system parameters, please confirm:',...
+                    'Confirm updation','Yes','Cancel','Cancel');
+                switch choice
+                    case 'Yes'
+                        if qes.util.ismember('UPDATEPARAMS',obj.eventQueue)
+                            return;
+                        end
+                        obj.eventQueue{end+1} = 'UPDATEPARAMS';
+                    otherwise
+                        return;
+                end
+            end
+            
+            function CtrlpanelClose(hObject,eventdata)
+                % handles = guidata(hObject);
+                if isstruct(handles) && isvalid(handles.obj)
+                    choice = questdlg(...
+                        'This will shutdown QCloud, please confirm:',...
+                        'Confirm shutdown','Yes','Cancel','Cancel');
+                    switch choice
+                        case 'Yes'
+                            delete(handles.obj);
+                    end
+                end
+                delete(gcbf);
+            end
+        end
+    end
+    methods (Static = true)
+        function obj = GetInstance(qCloudSettingsRoot)
+            persistent instance;
+            if isempty(instance) || ~isvalid(instance)
+                if nargin < 1 || ~isdir(qCloudSettingsRoot)
+                    throw(MException('QOS:qCloudPlatform:notEnoughArguments',...
+                        'qCloudSettingPath not given or not a valid path.'))
+                else
+                    instance = qcp.qCloudPlatform(qCloudSettingsRoot);
+                end
+            end
+            obj = instance;
+            if ~isgraphics(obj.ctrlPanelHandles.CtrlpanelWin)
+                obj.CreateCtrlPanel();
+            end
         end
     end
     methods
