@@ -154,7 +154,7 @@ classdef qCloudPlatform < handle
             if ~iscell(executionTimes)
 				executionTimes = {executionTimes};
             end
-            if numel(taskFuncs) == 1 && stcmpi(taskFuncs{1},'null')
+            if numel(taskFuncs) == 1 && strcmpi(taskFuncs{1},'null')
                 return;
             end
             try
@@ -190,7 +190,7 @@ classdef qCloudPlatform < handle
                 obj.systemTasksExecutionTimes(end+1) = exeTimes;
             end
             [obj.systemTasksExecutionTimes,ind] = sort(obj.systemTasksExecutionTimes);
-            obj.systemTasks = obj.systemTasks{ind};
+            obj.systemTasks = obj.systemTasks(ind);
         end
         function runSystemTasks(obj)
             if isempty(obj.systemTasks) || now < obj.systemTasksExecutionTimes(1)
