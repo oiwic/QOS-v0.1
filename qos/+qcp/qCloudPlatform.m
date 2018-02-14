@@ -145,12 +145,6 @@ classdef qCloudPlatform < handle
 				obj.logger.warn('qCloud.checkSystemTasks',['checkSystemTasks exception: ', ME.message]);
                 return;
             end
-            try
-				qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','functions'},'');
-                qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','executionTimes'},'');
-			catch ME
-				obj.logger.warn('qCloud.checkSystemTasks',['clear system tasks settings failed: ',ME.message]);
-            end
             if isempty(taskFuncs)
                 return;
             end
@@ -159,6 +153,15 @@ classdef qCloudPlatform < handle
             end
             if ~iscell(executionTimes)
 				executionTimes = {executionTimes};
+            end
+            if numel(taskFuncs) == 1 && stcmpi(taskFuncs{1},'null')
+                return;
+            end
+            try
+				qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','functions'},{'null'}); % json can not have empty array
+                qes.util.saveSettings(obj.qCloudSettingsRoot, {'systemTasks','executionTimes'},{'null'});
+			catch ME
+				obj.logger.warn('qCloud.checkSystemTasks',['clear system tasks settings failed: ',ME.message]);
             end
             if numel(taskFuncs) ~= numel(executionTimes)
                 obj.logger.warn('qCloud.checkSystemTasks','bad system tasks setting, functions and executionTimes length not match.');
@@ -190,7 +193,7 @@ classdef qCloudPlatform < handle
             obj.systemTasks = obj.systemTasks{ind};
         end
         function runSystemTasks(obj)
-            if isempty(obj.systemTasks)
+            if isempty(obj.systemTasks) || now < obj.systemTasksExecutionTimes(1)
                 return;
             end
             obj.logger.info('qCloud.runSystemTasks','start running system tasks.');

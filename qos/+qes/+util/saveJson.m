@@ -92,7 +92,7 @@ if result{1}== 1
     else
         fstr = fields;
     end
-    msg = sprintf('error at saving value %s to field %s of json file: ',valueInStr, fstr, fullfilename);
+    msg = sprintf('error at saving value %s to field %s of json file: ',valueInStr, fstr, strrep(fullfilename,'\','\\'));
     throw(MException('QOS_saveJson:typeError',msg))
 end
 %if result{1}== 2
