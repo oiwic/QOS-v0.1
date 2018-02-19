@@ -29,6 +29,9 @@ classdef systemStatus < handle
         end
         function load(obj)
 			s = qes.util.loadSettings(obj.qCloudSettingsRoot, {'systemStatus'});
+            if isempty(s)
+                error('settings not found.');
+            end
             fn = fieldnames(s);
 			for ii = 1:numel(fn)
 				obj.(fn{ii}) = s.(fn{ii});

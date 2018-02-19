@@ -298,7 +298,7 @@ classdef qCloudPlatform < handle
             result = result/numTakes;
             
             sequenceSamples = waveformLogger.get(opQs);
-            sequenceSamples(:,max(1,size(sequenceSamples,2) - obj.wvSamplesTruncatePts+1)) = [];
+            sequenceSamples(:,max(1,size(sequenceSamples,2) - obj.wvSamplesTruncatePts+1):end) = [];
 %             waveformLogger.plotSequenceSamples(sequenceSamples);
             obj.logger.info('qCloud.runCircuit','run circuit done.');
         end
@@ -769,6 +769,17 @@ classdef qCloudPlatform < handle
             end
             obj.sysStatus.status = obj.status;
             obj.sysStatus.fridgeTemperature = feval(obj.temperatureReader);
+            
+%             %%%%%
+            obj.sysStatus.noticeCN = ['系统仍处于测试状态，所有参数、运行结果可能并不准确或仅是系统测试数据.\\n'...
+                '由于目前系统所使用的11比特量子处理器芯片读取保真度较低(高读取错误率), '...
+                '我们必须对测量到的量子态记数数据进行校正才能获得量子态几率幅，校正依赖于一个实验测量得到的校正矩阵, '...
+                '这个校正矩阵存在测量误差，这导致结果中的量子态几率幅可能出现小幅度的负值, '...
+                '我们把这些非物理的小幅度负值设置为0，重新归一化几率幅分布作为最终结果， '...
+                '原始量子态记数数据也提供用户下载。'];
+%             %%%%%
+            
+            
             try
                 obj.connection.updateSystemStatus(obj.sysStatus);
             catch ME

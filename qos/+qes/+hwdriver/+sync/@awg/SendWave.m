@@ -58,7 +58,7 @@ function SendWave(obj,chnl,DASequence,isI,loFreq,loPower,sbFreq)
 %                 plot(ax,[zeros(1,software_delay),samples]);
 %             catch
 %             end
-%             
+            
             % setChnlOutputDelay before SendWave, otherwise output delay
             % will not take effect till next next Run:
             % SendWave(...); setChnlOutputDelay(...,100);

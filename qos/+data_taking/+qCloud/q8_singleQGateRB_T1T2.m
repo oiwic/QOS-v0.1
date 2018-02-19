@@ -4,7 +4,7 @@ import sqc.util.getQSettings
 import sqc.util.setQSettings
 import data_taking.public.xmon.*
 
-numGates = int16(unique(round(logspace(0.5,log10(120),5))));
+numGates = int16(unique(round(logspace(0.5,log10(100),6))));
 
     q = 'q8';
     doCorrection = true;
@@ -17,7 +17,7 @@ numGates = int16(unique(round(logspace(0.5,log10(120),5))));
     T1_1('qubit',q,'biasAmp',[0],'biasDelay',10,'time',[20:1000:28e3],...
       'gui',true,'save',true);
     ramsey('qubit',q,'mode','dp',... % available modes are: df01, dp and dz
-      'time',[10:200:8000],'detuning',[1]*2e6,...
+      'time',[10:50:8000],'detuning',[1]*2e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
   
     setQSettings('r_avg',1500);
@@ -82,6 +82,6 @@ numGates = int16(unique(round(logspace(0.5,log10(120),5))));
     T1_1('qubit',q,'biasAmp',[0],'biasDelay',10,'time',[20:1000:28e3],...
       'gui',true,'save',true);
     ramsey('qubit',q,'mode','dp',... % available modes are: df01, dp and dz
-      'time',[10:200:8000],'detuning',[1]*2e6,...
+      'time',[10:50:8000],'detuning',[1]*2e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
 end

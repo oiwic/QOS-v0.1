@@ -1,4 +1,4 @@
-classdef operator < handle & matlab.mixin.Copyable
+classdef operator < handle %  & matlab.mixin.Copyable
     % base class of all physical quantum operators.
 	% to avoid complication, in mtimes and times all operator properties
 	% opened for tuning of the resulting operator are assigned with the according
@@ -82,41 +82,6 @@ classdef operator < handle & matlab.mixin.Copyable
 			% qs: cell array of qubit objects or qubit names
 			% to the future: keep a static qubit registry/cache
 			% so the common resource like mw soure, dc source etc are not handled repeatedly
-            if isa(qs,'sqc.op.physical.operator')
-                obj = sqc.op.physical.operator(qs.qubits);
-                obj.delay_xy_i = qs.delay_xy_i;
-                obj.delay_xy_q = qs.delay_xy_q;
-                obj.delay_z = qs.delay_z;
-                obj.mw_src_power = qs.mw_src_power;
-                obj.mw_src_frequency = qs.mw_src_frequency;
-                obj.mw_src = qs.mw_src;
-                obj.zdc_src = qs.zdc_src;
-                obj.zdc_amp = qs.zdc_amp;
-                obj.length = qs.length;
-                obj.needs_mwpower_setup = qs.needs_mwpower_setup;
-                obj.needs_mwfreq_setup = qs.needs_mwfreq_setup;
-                obj.needs_zdc_setup = qs.needs_zdc_setup;
-                qs.GenWave();
-                obj.xy_wv = qs.xy_wv;
-                obj.phaseShift = qs.phaseShift;
-				for ii = 1:numel(obj.xy_wv)
-					if ~isempty(obj.xy_wv{ii})
-						obj.xy_wv{ii} = copy(obj.xy_wv{ii});
-					end
-                end
-                obj.loFreq = qs.loFreq;
-                obj.loPower = qs.loPower;
-                obj.sbFreq = qs.sbFreq;
-				obj.xy_daChnl = qs.xy_daChnl;
-                obj.z_wv = qs.z_wv;
-                for ii = 1:numel(obj.z_wv)
-					if ~isempty(obj.z_wv{ii})
-						obj.z_wv{ii} = copy(obj.z_wv{ii});
-					end
-				end
-				obj.z_daChnl = qs.z_daChnl;
-                return;
-            end
             if ~iscell(qs)
                 qs = {qs};
             end
@@ -393,6 +358,8 @@ classdef operator < handle & matlab.mixin.Copyable
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,true);
                 end
             end
+            
+            % removed temporarily, 2017/12/07
 % 			zXTalkQubits2Add = {};
 % 			xTalkSrcIdx = [];
 % 			xTalkCoef = [];
@@ -448,6 +415,8 @@ classdef operator < handle & matlab.mixin.Copyable
                     obj.sequenceSampleLogger.put(obj.qubits{ii}.name,DASequence,false);
                 end
             end
+            
+            % removed temporarily, 2017/12/07
 % 			zWv2Add = {};
 % 			addedZWvDAChnls = {};
 % 			addedZWvSyncDelay = [];
@@ -472,8 +441,7 @@ classdef operator < handle & matlab.mixin.Copyable
 % 			end
         end
         function delete(obj)
-%			% relinquish occupied resources for them to be available for other applications
-%             for ii = 1:numel(obj.zdc_src)	% obsolete, taken of dc and mw chnls are made non exclusive, 17/04/01
+%             for ii = 1:numel(obj.zdc_src)	% obsolete, taken of dc and mw chnls are now non exclusive, 17/04/01
 %                 if isvalid(obj.zdc_src{ii}) % can not do this: the zdc_src or mw_src reference might be used in another operator
 %                     obj.zdc_src{ii}.delete();
 %                 end
@@ -484,19 +452,84 @@ classdef operator < handle & matlab.mixin.Copyable
 %                 end
 %             end
         end
+        function newobj = Copy(obj)
+            newobj = sqc.op.physical.operator(obj.qubits);
+            newobj.delay_xy_i = obj.delay_xy_i;
+            newobj.delay_xy_q = obj.delay_xy_q;
+            newobj.delay_z = obj.delay_z;
+            newobj.mw_src_power = obj.mw_src_power;
+            newobj.mw_src_frequency = obj.mw_src_frequency;
+            newobj.mw_src = obj.mw_src;
+            newobj.zdc_src = obj.zdc_src;
+            newobj.zdc_amp = obj.zdc_amp;
+            newobj.length = obj.length;
+            newobj.needs_mwpower_setup = obj.needs_mwpower_setup;
+            newobj.needs_mwfreq_setup = obj.needs_mwfreq_setup;
+            newobj.needs_zdc_setup = obj.needs_zdc_setup;
+            obj.GenWave();
+            newobj.xy_wv = obj.xy_wv;
+            newobj.phaseShift = obj.phaseShift;
+            for ii = 1:numel(newobj.xy_wv)
+                if ~isempty(newobj.xy_wv{ii})
+                    newobj.xy_wv{ii} = copy(newobj.xy_wv{ii});
+                end
+            end
+            newobj.loFreq = obj.loFreq;
+            newobj.loPower = obj.loPower;
+            newobj.sbFreq = obj.sbFreq;
+            newobj.xy_daChnl = obj.xy_daChnl;
+            newobj.z_wv = obj.z_wv;
+            for ii = 1:numel(newobj.z_wv)
+                if ~isempty(newobj.z_wv{ii})
+                    newobj.z_wv{ii} = copy(newobj.z_wv{ii});
+                end
+            end
+            newobj.z_daChnl = obj.z_daChnl;
+        end
     end
-% 	methods (Access = protected)
+    methods (Access = protected)
 % 		function newobj = copyElement(obj)
-% 			newobj = cast(sqc.op.physical.operator(obj),class(obj));
+%             newobj = sqc.op.physical.operator(obj.qubits);
+%             newobj.delay_xy_i = obj.delay_xy_i;
+%             newobj.delay_xy_q = obj.delay_xy_q;
+%             newobj.delay_z = obj.delay_z;
+%             newobj.mw_src_power = obj.mw_src_power;
+%             newobj.mw_src_frequency = obj.mw_src_frequency;
+%             newobj.mw_src = obj.mw_src;
+%             newobj.zdc_src = obj.zdc_src;
+%             newobj.zdc_amp = obj.zdc_amp;
+%             newobj.length = obj.length;
+%             newobj.needs_mwpower_setup = obj.needs_mwpower_setup;
+%             newobj.needs_mwfreq_setup = obj.needs_mwfreq_setup;
+%             newobj.needs_zdc_setup = obj.needs_zdc_setup;
+%             obj.GenWave();
+%             newobj.xy_wv = obj.xy_wv;
+%             newobj.phaseShift = obj.phaseShift;
+%             for ii = 1:numel(newobj.xy_wv)
+%                 if ~isempty(newobj.xy_wv{ii})
+%                     newobj.xy_wv{ii} = copy(newobj.xy_wv{ii});
+%                 end
+%             end
+%             newobj.loFreq = obj.loFreq;
+%             newobj.loPower = obj.loPower;
+%             newobj.sbFreq = obj.sbFreq;
+%             newobj.xy_daChnl = obj.xy_daChnl;
+%             newobj.z_wv = obj.z_wv;
+%             for ii = 1:numel(newobj.z_wv)
+%                 if ~isempty(newobj.z_wv{ii})
+%                     newobj.z_wv{ii} = copy(newobj.z_wv{ii});
+%                 end
+%             end
+%             newobj.z_daChnl = obj.z_daChnl;
 % 		end
-% 	end
+	end
     methods (Hidden = true)
         function GenWave(obj)
             % to subclasses: redefine your own GenWave.
             % operator(base) objects must have empty GenWave methods, do not add any code!
             % pass
         end
-        % overide the MATLAB method class
+        % overide the MATLAB method
         function cls = class(obj)
             cls =  obj.gateClass;
         end
@@ -537,9 +570,6 @@ classdef operator < handle & matlab.mixin.Copyable
 		function obj = mtimes(obj2, obj1)
             % change ordering for convinience
 %        function obj = mtimes(obj1, obj2)
-%            % implement regular matrix, scalar multiplication and gate operation on a quantum state
-%            % order: second applied first to follow the quantum mechanics
-%            % convention: U1U2|s>, U2 is applied to state |s> first
             
             if isempty(obj2)
 				obj =  obj1;
@@ -563,7 +593,7 @@ classdef operator < handle & matlab.mixin.Copyable
             end
             
             GB = obj1.gate_buffer; % gate_buffer is global
-            obj = sqc.op.physical.operator(obj2);
+            obj = Copy(obj2);
             obj.gateClass = 'operator';
             
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
@@ -591,8 +621,8 @@ classdef operator < handle & matlab.mixin.Copyable
             end
             
 %             obj1.GenWave();
-            % in case like CZ*X*CZ*X, make a copy of X is necessary
-            obj1 = sqc.op.physical.operator(obj1);
+            % in case like A*B*A*B, make a copy of B is necessary
+            obj1 = Copy(obj1);
             
             addIdx = [];
 
@@ -602,7 +632,7 @@ classdef operator < handle & matlab.mixin.Copyable
             %%%%%%%%%%%%%%%%%%% Yulin Wu, 2018/1/28
 %             for jj = 1:numel(obj.xy_wv)
 %                 if ~isempty(obj.xy_wv{jj}) && obj.xy_wv{jj}.length < obj.length
-%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % this will never happen if the gates are properly implemented, that is a gate
 %                     % must has empty waveforms or the waveform length equals to the length of the gate.
 %                     % its is added just in case some one implemented a gate not knowing the above rule
 %                     error('bug!');
@@ -611,7 +641,7 @@ classdef operator < handle & matlab.mixin.Copyable
 %             end
 %             for jj = 1:numel(obj.z_wv)
 %                 if ~isempty(obj.z_wv{jj}) && obj.z_wv{jj}.length < obj.length
-%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % this will never happen if the gates are properly implemented, that is a gate
 %                     % eighter has empty waveforms or the waveform length equals to the length of the gate.
 %                     % its is added just in case some one implemented a gate not knowing the above rule
 %                     error('bug!');
@@ -620,7 +650,7 @@ classdef operator < handle & matlab.mixin.Copyable
 %             end
 %             for jj = 1:numel(obj1.xy_wv)
 %                 if ~isempty(obj1.xy_wv{jj}) && obj1.xy_wv{jj}.length < obj1.length
-%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % this will never happen if the gates are properly implemented, that is a gate
 %                     % eight has empty waveforms or the waveform length equals to the length of the gate.
 %                     % its is added just in case some one implemented a gate not knowing the above rule
 %                     error('bug!');
@@ -629,7 +659,7 @@ classdef operator < handle & matlab.mixin.Copyable
 %             end
 %             for jj = 1:numel(obj1.z_wv)
 %                 if ~isempty(obj1.z_wv{jj}) && obj1.z_wv{jj}.length < obj1.length
-%                     % this will never happen if the gates are properly implemented, that is a fudamental gate
+%                     % this will never happen if the gates are properly implemented, that is a gate
 %                     % eighter has empty waveforms or the waveform length equals to the length of the gate.
 %                     % its is added just in case some one implemented a gate not knowing the above rule
 %                     error('bug!');
@@ -814,11 +844,11 @@ classdef operator < handle & matlab.mixin.Copyable
 			
 			numGates = numel(varargin);
 			if numGates == 1
-				obj = copy(varargin{1});
+				obj = Copy(varargin{1});
 				return;
 			end
 			if numGates > 2
-				obj = copy(varargin{1});
+				obj = Copy(varargin{1});
 				for ii = 2:numGates
 					obj = [obj,varargin{ii}];
 				end
@@ -838,7 +868,7 @@ classdef operator < handle & matlab.mixin.Copyable
 					'at least one of obj1, obj2 is not a sqc.op.physical.operator class object.'));
             end
             obj1.GenWave();
-            obj = sqc.op.physical.operator(obj2);
+            obj = Copy(obj2);
             obj.gateClass = 'operator';
 
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
@@ -1041,7 +1071,7 @@ classdef operator < handle & matlab.mixin.Copyable
 					obj = sqc.op.physical.gate.I(obj1.qubits{ii}).*obj;
 				end
             elseif n == 1
-                obj = copy(obj1);
+                obj = Copy(obj1);
             else
                 numQ = numel(obj1.qubits);
                 obj = obj1;
@@ -1060,7 +1090,7 @@ classdef operator < handle & matlab.mixin.Copyable
         function obj = plus(obj2, obj1)
             % implement + as fast single qubit mtimes
             % warning: assumes obj2, obj1 are single qubit gates on the
-            % same qubit, this condition will not be checked
+            % same qubit
             
             if isempty(obj2)
 				obj =  obj1;
@@ -1085,7 +1115,7 @@ classdef operator < handle & matlab.mixin.Copyable
             
             GB = obj1.gate_buffer; % gate_buffer is global
             
-            obj = sqc.op.physical.operator(obj2);
+            obj = Copy(obj2);
             obj.gateClass = 'operator';
             
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
@@ -1097,8 +1127,8 @@ classdef operator < handle & matlab.mixin.Copyable
             end
             
 %             obj1.GenWave();
-            % in case like CZ*X*CZ*X, make a copy of X is necessary
-            obj1 = sqc.op.physical.operator(obj1);
+            % in case like A*X*A*X, make a copy of X is necessary
+            obj1 = Copy(obj1);
 
             if ~isempty(obj1.xy_wv{1})
                 if obj.phaseShift ~= 0
@@ -1188,7 +1218,7 @@ classdef operator < handle & matlab.mixin.Copyable
             
             GB = obj1.gate_buffer; % gate_buffer is global
             obj1.GenWave();
-            obj = sqc.op.physical.operator(obj2); % copy the first is necessary
+            obj = Copy(obj2); % copy the first is necessary
             obj.gateClass = 'operator';
             
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')
@@ -1287,7 +1317,7 @@ classdef operator < handle & matlab.mixin.Copyable
             
             GB = obj1.gate_buffer; % gate_buffer is global
             obj1.GenWave();
-            obj = sqc.op.physical.operator(obj2); % copy the first is necessary
+            obj = Copy(obj2); % copy the first is necessary
             obj.gateClass = 'operator';
             
             if isa(obj2,'sqc.op.physical.gate.Z_phase_base')

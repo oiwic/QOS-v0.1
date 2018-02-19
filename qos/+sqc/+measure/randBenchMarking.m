@@ -137,18 +137,6 @@ classdef randBenchMarking < qes.measurement.measurement
 %                     PR.Run();
 %                     sqc.op.physical.sequenceSampleLogger.plot();
 
-%                     if obj.numQs == 1
-%                         for ii = 2:obj.numGates
-%                             PR = PR+gs{1,ii};
-%                         end
-%                         PR = PR+gf_ref;
-%                     else
-%                         for ii = 2:obj.numGates
-%                             PR = PR*gs{1,ii};
-%                         end
-%                         PR = PR*gf_ref;
-%                     end
-
                     if obj.numQs == 1
                         for ii = 2:obj.numGates
                             PR = PR.noCopyPlus(gs{1,ii});
@@ -210,7 +198,7 @@ classdef randBenchMarking < qes.measurement.measurement
                     end
                     for ii = 1:obj.numGates
                         g{1,ii} = sqc.measure.randBenchMarking.generate1Qgates(obj.C1{ridx(ii)},obj.qubits{1});
-                        g{2,ii} = g{1,ii};
+                        g{2,ii} = Copy(g{1,ii});
                     end
                 case 2
                     g = cell(2,obj.numGates);
@@ -221,7 +209,7 @@ classdef randBenchMarking < qes.measurement.measurement
                         [g_] = sqc.measure.randBenchMarking.generate2Qgates(...
                                 obj.C2{ridx(ii)},obj.qubits{1},obj.qubits{2});
                          g{1,ii} = g_;
-                         g{2,ii} = g_;
+                         g{2,ii} = Copy(g_);
                     end
                 otherwise
                     error('more than 2 qubits RB is not supported.');
