@@ -1,5 +1,5 @@
 # _QOS_ v0.1
-_QOS_(_Q_uantum _O_perating _S_ystem) is a softwave package developed for operating supperconducting quantum computers. 
+QOS(Quantum Operating System) is a softwave package developed for operating supperconducting quantum computers. 
 
 
 
