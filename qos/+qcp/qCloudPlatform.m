@@ -771,12 +771,15 @@ classdef qCloudPlatform < handle
             obj.sysStatus.fridgeTemperature = feval(obj.temperatureReader);
             
 %             %%%%%
-            obj.sysStatus.noticeCN = ['系统仍处于测试状态，所有参数、运行结果可能并不准确或仅是系统测试数据.\\n'...
+            obj.sysStatus.noticeCN = ['系统仍处于测试状态，所有参数、运行结果可能并不准确或仅是系统测试数据.\n'...
                 '由于目前系统所使用的11比特量子处理器芯片读取保真度较低(高读取错误率), '...
                 '我们必须对测量到的量子态记数数据进行校正才能获得量子态几率幅，校正依赖于一个实验测量得到的校正矩阵, '...
                 '这个校正矩阵存在测量误差，这导致结果中的量子态几率幅可能出现小幅度的负值, '...
                 '我们把这些非物理的小幅度负值设置为0，重新归一化几率幅分布作为最终结果， '...
-                '原始量子态记数数据也提供用户下载。'];
+                '原始量子态记数数据也提供用户下载。\n'...
+				'门保真度为Randomized Benchmarking测得值，因为-X/2、-Y/2门在实现上和X/2、Y/2门仅相差一个相位，而相位的控制可以很精确，',...
+				'因此-X/2、-Y/2门保真度和X/2、Y/2门保真度接近；Z门、S门、Sd门、T门、Td门、Rz门在实现上均为相位操作、不占用量子比特相干时间， '...
+				'操作误差极小，保真度接近1；H门通过其它门组成来实现，所以没有对其进行单独保真度测量。'];
 %             %%%%%
             
             
@@ -846,9 +849,32 @@ classdef qCloudPlatform < handle
                 return;
             end
             qNames = fieldnames(qubitParameters);
+			QS = qes.qSettings.GetInstance();
             for ii = 1:numel(qNames)
                 s = qubitParameters.(qNames{ii});
                 s.qubit = str2double(qNames{ii}(2:end));
+				try
+					s.f01 = QS.loadSSettings({qNames{ii},'f01'});
+				catch ME
+					obj.logger.error('qCloud.updateQubitParemeters',...
+						sprintf('load updateQubitParemeters settings failed: %s', ME.message));
+					s.f01 = [];
+				end
+				try
+					f_ah = QS.loadSSettings({qNames{ii},'f_ah'});
+					s.f12 = s.f01 + f_ah;
+				catch ME
+					obj.logger.error('qCloud.updateQubitParemeters',...
+						sprintf('load updateQubitParemeters settings failed: %s', ME.message));
+					s.f12 = [];
+				end
+				try
+					s.readoutFidelity = QS.loadSSettings({qNames{ii},'r_iq2prob_fidelity'});
+				catch ME
+					obj.logger.error('qCloud.updateQubitParemeters',...
+						sprintf('load updateQubitParemeters settings failed: %s', ME.message));
+					s.readoutFidelity = [];
+				end
                 obj.connection.updateQubitParemeters(s);
             end
             obj.connection.commitQubitParameters();

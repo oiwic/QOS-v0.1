@@ -336,13 +336,17 @@ classdef qCloudPlatformConnection < handle
                 num2str(s.qubit,'%0.0f')));
             jQubitParameters = com.alibaba.quantum.domain.v2.QubitParameters();
             jQubitParameters.setQubit(s.qubit);
-            jQubitParameters.setF01(s.f01);
-            if s.f12 > 0 % negative value: no data(java null)
+			if ~isempty(s.f01)
+				jQubitParameters.setF01(s.f01);
+			end
+            if ~isempty(s.f12)
                 jQubitParameters.setF12(s.f12);
             end
             jQubitParameters.setT1(s.T1);
             jQubitParameters.setT2star(s.T2star);
-            jQubitParameters.setReadoutFidelity(s.readoutFidelity);
+			if ~isempty(s.readoutFidelity)
+				jQubitParameters.setReadoutFidelity(s.readoutFidelity);
+			end
             obj.backend.updateQubitParemeters(jQubitParameters);
 %             if ~resp.isSuccess()
 %                 msg = cell(resp.getMessage());
