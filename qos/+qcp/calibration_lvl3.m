@@ -24,9 +24,12 @@ for ii = 1:numel(qubitGroups)
     qs = qubitGroups{ii};
     if ii == 2 || ii == 4 % do not correct max f01 qubits: q7, q9
         qs = qs(2:end);
-    end
+        correctf01_ = correctf01{ii}(2:end);
+    else
+		correctf01_ = correctf01{ii};
+	end
     tuneup.correctf01byPhase('qubits',qs,'delayTime',correctf01DelayTime,...
-        'gui',gui.val,'save',true,'doCorrection',correctf01{ii},'logger',logger);
+        'gui',gui.val,'save',true,'doCorrection',correctf01_,'logger',logger);
     tuneup.iq2prob_01('qubits',qubitGroups{ii},'numSamples',iq2ProbNumSamples,...
         'fineTune',fineTune,'gui',gui.val,'save',true,'logger',logger);
     if ~gui.val

@@ -769,20 +769,15 @@ classdef qCloudPlatform < handle
             end
             obj.sysStatus.status = obj.status;
             obj.sysStatus.fridgeTemperature = feval(obj.temperatureReader);
-            
-%             %%%%%
-            obj.sysStatus.noticeCN = ['系统仍处于测试状态，所有参数、运行结果可能并不准确或仅是系统测试数据.\n'...
-                '由于目前系统所使用的11比特量子处理器芯片读取保真度较低(高读取错误率), '...
-                '我们必须对测量到的量子态记数数据进行校正才能获得量子态几率幅，校正依赖于一个实验测量得到的校正矩阵, '...
-                '这个校正矩阵存在测量误差，这导致结果中的量子态几率幅可能出现小幅度的负值, '...
-                '我们把这些非物理的小幅度负值设置为0，重新归一化几率幅分布作为最终结果， '...
-                '原始量子态记数数据也提供用户下载。\n'...
-				'门保真度为Randomized Benchmarking测得值，因为-X/2、-Y/2门在实现上和X/2、Y/2门仅相差一个相位，而相位的控制可以很精确，',...
-				'因此-X/2、-Y/2门保真度和X/2、Y/2门保真度接近；Z门、S门、Sd门、T门、Td门、Rz门在实现上均为相位操作、不占用量子比特相干时间， '...
-				'操作误差极小，保真度接近1；H门通过其它门组成来实现，所以没有对其进行单独保真度测量。'];
-%             %%%%%
-            
-            
+            try % Chinese can not be handled by the saveJson function, thus noticeCN is stored in a different settings file
+				obj.sysStatus.noticeCN = qes.util.loadSettings(obj.qCloudSettingsRoot, 'noticeCN');
+            catch ME
+				obj.sysStatus.noticeCN = 'Error!';
+                obj.logger.error('qCloud.updateSystemConfig',...
+                    sprintf('load noticeCN settings failed: %s', ME.message));
+                obj.logger.notify();
+            end
+
             try
                 obj.connection.updateSystemStatus(obj.sysStatus);
             catch ME
@@ -937,6 +932,7 @@ classdef qCloudPlatform < handle
                         obj.updateOneQGateFidelities();
                         obj.updateTwoQGateFidelities();
                         obj.updateQubitParemeters();
+                        obj.updateSystemStatus();
                     case 'RunTask' % must be the last one
                         try
                             obj.RunTask();
