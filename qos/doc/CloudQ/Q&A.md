@@ -1,4 +1,4 @@
-# [**Quantum Computing Cloud Accessed](http://quantumcomputer.ac.cn) Q&A**
+# **[Quantum Computing Cloud Accessed](http://quantumcomputer.ac.cn) Q&A**
 
 ## About the system status
 The system status can be found at: _Parameters_ > _Status_
