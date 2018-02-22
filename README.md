@@ -7,7 +7,7 @@ QOS(Quantum Operating System) is a softwave package for operating supperconducti
 
 <img style="float: right;" src="https://github.com/YulinWu/QOS-v0.1/blob/master/qos/img/DataViewer.PNG" width="500">
 
-<img style="float: right;" src="https://github.com/YulinWu/QOS-v0.1/blob/master/qos/img/sequence_demo.PNG" width="500">
+<img style="float: right;" src="https://github.com/YulinWu/QOS-v0.1/blob/master/qos/img/sequence_demo.png" width="1000">
 
 QOS powers the online Quantum Cloud Platform: http://quantumcomputer.ac.cn, you can submit quantum circuits to run on a real quantum processor.
 
