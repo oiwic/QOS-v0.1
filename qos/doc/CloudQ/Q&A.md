@@ -14,6 +14,7 @@ immediately if it is the first in the task queue, a circuit execution takes only
 for example. During this state the parameter updation will be continued. 
 
 **OFFLINE**: the backend is not connected.
+
 _Note: Experiment tasks can be submitted at any time, they will be executed at a later time if not executed immediately._  
 
 ## How a submitted experiment is run
