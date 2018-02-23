@@ -8,7 +8,7 @@ The system have four states: **ACTIVE**, **CALIBRATION**, **MAINTENANCE**, **OFF
 **ACTIVE**: the system is running tasks or ready to run tasks, in this state, user submitted quantum circuits will be executed
 immediately if it is the first in the task queue, a circuit execution takes only a few seconds.
 
-**CALIBRATION**: the system is performing calibrations. There are four levels of calibrations and takes 1 to 50 minutes to finished. About half of the time the system in performing calibrations, that means a blindly submitted task has a 50% of chance to be executed immediately.
+**CALIBRATION**: the system is performing calibrations. There are four levels of calibrations and takes 1 to 50 minutes to finished. About half of the time the system is performing calibrations, that roughly gives a blindly submitted task a 50% of chance to be executed immediately.
 
 **MAINTENANCE**: The backend is connected but not offering online services, we are doing some maintenance work, running local experiments
 for example. During this state the parameter updation will be continued. 
