@@ -9,7 +9,7 @@ data = Tomo_1QState('qubit',q,'state',state,'gui',true,'save',true);
 %%
 q = 'q10';
 setQSettings('r_avg',5000);
-process = 'X';
+process = 'X/2';
 data = Tomo_1QProcess_animation('qubit',q,'process',process,'numPts',5,'notes','','save',true);
 %%
 gate = 'X/2';
