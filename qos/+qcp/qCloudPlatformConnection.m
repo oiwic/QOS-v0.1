@@ -205,7 +205,7 @@ classdef qCloudPlatformConnection < handle
 				case 'ACTIVE'
 					jSysStatus.setStatus(...
                         javaMethod('valueOf','com.alibaba.quantum.domain.v2.SystemStatus$Status','ACTIVE'));
-				case 'MAINTANANCE'
+                case 'MAINTENANCE'
 					jSysStatus.setStatus(...
                         javaMethod('valueOf','com.alibaba.quantum.domain.v2.SystemStatus$Status','MAINTANANCE'));
 				case 'CALIBRATION'
@@ -220,9 +220,25 @@ classdef qCloudPlatformConnection < handle
                         ['invalid status settings: ', sysStatus.status]));
 			end
             jSysStatus.setFridgeTemperature(sysStatus.fridgeTemperature);
-            jSysStatus.setLastCalibrationTime(sysStatus.lastCalibrationTime);
-			jSysStatus.setNoticeCN(sysStatus.noticeCN);
-            jSysStatus.setNoticeEN(sysStatus.noticeEN);
+            jSysStatus.setLastCalibrationTime(datestr(sysStatus.lastCalibrationTime,'yyyy-mm-dd HH:MM:SS'));
+            if ~iscell(sysStatus.noticeCN)
+                noticeCN = sysStatus.noticeCN;
+            else
+                noticeCN = '';
+                for ii = 1:numel(sysStatus.noticeCN)
+                    noticeCN = [noticeCN,sysStatus.noticeCN{ii}];
+                end
+            end
+			jSysStatus.setNoticeCN(noticeCN);
+            if ~iscell(sysStatus.noticeEN)
+                noticeEN = sysStatus.noticeEN;
+            else
+                noticeEN = '';
+                for ii = 1:numel(sysStatus.noticeEN)
+                    noticeEN = [noticeEN,sysStatus.noticeEN{ii}];
+                end
+            end
+            jSysStatus.setNoticeEN(noticeEN);
             resp = obj.backend.updateSystemStatus(jSysStatus);
             if ~resp.isSuccess()
                 msg = cell(resp.getMessage());
@@ -320,13 +336,17 @@ classdef qCloudPlatformConnection < handle
                 num2str(s.qubit,'%0.0f')));
             jQubitParameters = com.alibaba.quantum.domain.v2.QubitParameters();
             jQubitParameters.setQubit(s.qubit);
-            jQubitParameters.setF01(s.f01);
-            if s.f12 > 0 % negative value: no data(java null)
+			if ~isempty(s.f01)
+				jQubitParameters.setF01(s.f01);
+			end
+            if ~isempty(s.f12)
                 jQubitParameters.setF12(s.f12);
             end
             jQubitParameters.setT1(s.T1);
             jQubitParameters.setT2star(s.T2star);
-            jQubitParameters.setReadoutFidelity(s.readoutFidelity);
+			if ~isempty(s.readoutFidelity)
+				jQubitParameters.setReadoutFidelity(s.readoutFidelity);
+			end
             obj.backend.updateQubitParemeters(jQubitParameters);
 %             if ~resp.isSuccess()
 %                 msg = cell(resp.getMessage());
@@ -344,6 +364,19 @@ classdef qCloudPlatformConnection < handle
                 throw(MException('QOS:qCloudPlatformConnection:commitQubitParameters',msg{1}));
             end
             obj.logger.info('qCloud.commitQubitParameters','qubit parameters updated.');
+        end
+        function addTestUser(obj,userName)
+            if ~ischar(userName)
+                obj.logger.error('qCloud.setTestUser','illegal argument.');
+            end
+            obj.logger.info('qCloud.setTestUser',['add test user: ', userName]);
+            resp = obj.backend.givePermission(userName);
+            if ~resp.isSuccess()
+                msg = cell(resp.getMessage());
+                obj.logger.error('qCloud.setTestUser',msg{1});
+                throw(MException('QOS:qCloudPlatformConnection:setTestUser',msg{1}));
+            end
+            obj.logger.info('qCloud.setTestUser',['test user: ', userName,' added.']);
         end
     end
 end

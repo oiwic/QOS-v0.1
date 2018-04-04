@@ -88,13 +88,13 @@ function varargout = xyGateAmpTuner(varargin)
 	rP = range(P);
 	P0 = min(P);
 	P1 = max(P);
-	if rP < MIN_VISIBILITY
-		throw(MException('QOS_xyGateAmpTuner:visibilityTooLow',...
-				sprintf('visibility(%0.2f) too low, run xyGateAmpTuner at low visibility might produce wrong result, thus not supported.', rP)));
-	elseif rP < 5/sqrt(q.r_avg)
-		throw(MException('QOS_xyGateAmpTuner:rAvgTooLow',...
-				'readout average number %d too small.', q.r_avg));
-    end
+% 	if rP < MIN_VISIBILITY
+% 		throw(MException('QOS_xyGateAmpTuner:visibilityTooLow',...
+% 				sprintf('visibility(%0.2f) too low, run xyGateAmpTuner at low visibility might produce wrong result, thus not supported.', rP)));
+% 	elseif rP < 5/sqrt(q.r_avg)
+% 		throw(MException('QOS_xyGateAmpTuner:rAvgTooLow',...
+% 				'readout average number %d too small.', q.r_avg));
+%     end
     
     gateAmp = findsPkLoc(amps,P);
     
@@ -165,10 +165,9 @@ function varargout = xyGateAmpTuner(varargin)
         if args.AE
             legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],...
                 [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
-                sprintf('%s gate amplitude(pre)',args.gateTyp),...
-                sprintf('%s amplitude(new)',args.gateTyp)});
+                 'gate amplitude(old)','gate amplitude(new)'});
         else
-            legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
+            legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],'gate amplitude(old)','gate amplitude(new)'});
         end
         set(ax,'YLim',ylim);
         drawnow;

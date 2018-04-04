@@ -1,7 +1,7 @@
 function varargout = xyGateAmpTuner_parallel(varargin)
 % tune xy gate amplitude: X, X/2, -X/2, X/4, -X/4, Y, Y/2, -Y/2, Y/4, -Y/4
 % 
-% <_f_> = xyGateAmpTuner('qubit',_c&o_,'gateTyp',_c_,...
+% <_f_> = xyGateAmpTuner('qubits',_c&o_,'gateTyp',_c_,...
 %		'AENumPi',<_i_>,'tuneRange',<_f_>,...  % insert multiple Idle gate(implemented by two pi rotations) to Amplify Error or not
 %       'gui',<_b_>,'save',<_b_>,'logger',<_o_>)
 % _f_: float
@@ -20,19 +20,23 @@ function varargout = xyGateAmpTuner_parallel(varargin)
 	
 	NUM_RABI_SAMPLING_PTS = 50;
 	MIN_VISIBILITY = 0.3;
-	AE_NUM_PI = 11; % must be an positive odd integer
+	AE_NUM_PI = 11; % positive odd integer
 	
-	args = qes.util.processArgs(varargin,{'AE',false,'AENumPi',AE_NUM_PI,'tuneRange',0.05,'gui',false,'save',true,'logger',[]});
+	args = qes.util.processArgs(varargin,{'AENumPi',AE_NUM_PI,'tuneRange',0.05,...
+        'gui',false,'save',true,'logger',[]});
     args.AENumPi = round(args.AENumPi);
     if mod(args.AENumPi,2) ==0 || args.AENumPi <= 0
         if ~isempty(args.logger)
-            args.logger.error('QOS_xyGateAmpTuner:IllegalArgument',sprintf('AENumPi %0.0f not a positive odd integer.',args.AENumPi));
+            args.logger.error('QOS_xyGateAmpTuner:IllegalArgument',...
+                sprintf('AENumPi %0.0f not a positive odd integer.',args.AENumPi));
         end
-        throw(MException('QOS_xyGateAmpTuner:IllegalArgument',sprintf('AENumPi %0.0f not a positive odd integer.',args.AENumPi)));
+        throw(MException('QOS_xyGateAmpTuner:IllegalArgument',...
+            sprintf('AENumPi %0.0f not a positive odd integer.',args.AENumPi)));
     end
 	if args.tuneRange <= 0 || args.tuneRange >= 1
         if ~isempty(args.logger)
-            args.logger.error('QOS_xyGateAmpTuner:IllegalArgument',sprintf('tuneRange %0.3f not withing (0,1))',args.tuneRange));
+            args.logger.error('QOS_xyGateAmpTuner:IllegalArgument',...
+                sprintf('tuneRange %0.3f not withing (0,1))',args.tuneRange));
         end
         throw(MException('QOS_xyGateAmpTuner:IllegalArgument',...
 				sprintf('tuneRange %0.3f not withing (0,1))',args.tuneRange)));
@@ -131,37 +135,14 @@ function varargout = xyGateAmpTuner_parallel(varargin)
         end
         q = qubits{ii};
         P = data(ii,:);
-
-        rP = range(P);
-        P0 = min(P);
-        P1 = max(P);
-        if rP < MIN_VISIBILITY
-            warning('QOS_xyGateAmpTuner:visibilityTooLow',...
-                    sprintf('visibility(%0.2f) too low, run xyGateAmpTuner at low visibility might produce wrong result, tuning for this qubit will be skipped.', rP));
-            if ~isempty(args.logger)
-                args.logger.warn('QOS_xyGateAmpTuner:visibilityTooLow',...
-                    sprintf('visibility(%0.2f) too low, run xyGateAmpTuner at low visibility might produce wrong result, tuning for this qubit will be skipped.', rP));
-            end
-            continue;
-        elseif rP < 5/sqrt(q.r_avg)
-            warning('QOS_xyGateAmpTuner:rAvgTooLow',...
-                    'readout average number %d too small, tuning skipped.', q.r_avg);
-            if ~isempty(args.logger)
-                args.logger.warn('QOS_xyGateAmpTuner:visibilityTooLow',...
-                    'QOS_xyGateAmpTuner:rAvgTooLow',...
-                    'readout average number %d too small, tuning skipped.', q.r_avg);
-            end
-            continue;
-        end
-
         try
             gateAmp = findsPkLoc(amps{ii},P);
         catch ME
             if ~isempty(args.logger)
                 args.logger.warn('QOS_xyGateAmpTuner:findsPkLocError',...
-                    ME.message);
+                    [q.name, ' ',ME.message]);
             end
-            warning('QOS_xyGateAmpTuner:findsPkLocError',ME.message);
+            warning('QOS_xyGateAmpTuner:findsPkLocError',[q.name, ': ', ME.message]);
             continue;
         end
         allGateAmps(ii) = gateAmp;
@@ -180,9 +161,6 @@ function varargout = xyGateAmpTuner_parallel(varargin)
             ax = axes('parent',h);
             plot(ax,amps{ii},P,'-b');
             hold(ax,'on');
-            if args.AE
-               plot(ax,amps_ae,P_ae);
-            end
     %         ylim = get(ax,'YLim');
             ylim = [0,1];
             gateAmp0 = sqc.util.getQSettings(gateAmpSettingsKey,q.name);
@@ -190,14 +168,7 @@ function varargout = xyGateAmpTuner_parallel(varargin)
             plot(ax,[gateAmp,gateAmp],ylim,'--r');
             xlabel(ax,'xy drive amplitude');
             ylabel(ax,'P|1>');
-            if args.AE
-                legend(ax,{[sprintf('data(%d',numPi0),'\pi)'],...
-                    [sprintf('data(AE:%0.0f',args.AENumPi),'\pi)'],...
-                    sprintf('%s amplitude(pre)',args.gateTyp),...
-                    sprintf('%s amplitude(new)',args.gateTyp)});
-            else
-                legend(ax,{[sprintf('data(%d',args.AENumPi),'\pi)'],sprintf('%s gate amplitude',args.gateTyp)});
-            end
+            legend(ax,{[sprintf('data(%d',args.AENumPi),'\pi)'],'gate amplitude(old)', 'gate amplitude(new)'});
             set(ax,'YLim',ylim);
             drawnow;
         else
@@ -217,7 +188,7 @@ function varargout = xyGateAmpTuner_parallel(varargin)
         end
 	end
 	
-	varargout{1} = gateAmp;
+	varargout{1} = allGateAmps;
 end
 
 function xp = findsPkLoc(x,y)

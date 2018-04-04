@@ -54,7 +54,7 @@ function varargout = iq2prob_01(varargin)
 		X{ii} = gate.X(qubits{ii});
 		RDelay = max(RDelay,X{ii}.length);
     end
-    R.delay = RDelay; 
+    R.delay = RDelay;
 
     num_reps = ceil(args.numSamples/N);
     iq_raw_1 = nan(numQs,num_reps*N);
@@ -105,12 +105,12 @@ function varargout = iq2prob_01(varargin)
             
             if args.fineTune
                 D0 = abs(center0 - r_iq2prob_center0_o);
-                if ~isempty(q.r_iqWidth) && D0 > 0.5*q.r_iqWidth
+                if ~isempty(q.r_iqWidth) && D0 > q.r_iqWidth
                     if ~isempty(args.logger)
                         args.logger.error('QOS_iq2prob_01:LargeChange',...
                             [q.name,': Large change measured on r_iq2prob_center0, settings not updated.']);
                     end
-                    waring('iq2prob_01:LargeChange',...
+                    warning('iq2prob_01:LargeChange',...
                         [q.name,': Large change measured on r_iq2prob_center0, settings not updated.']);
 %                     throw(exceptions.QRuntimeException('iq2prob_01:LargeChange',...
 %                         [q.name,': Large change measured on r_iq2prob_center0']));

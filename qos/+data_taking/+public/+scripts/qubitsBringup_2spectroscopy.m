@@ -2,9 +2,9 @@
 % Yulin Wu, 2017/3/11
 %%
 setQSettings('r_avg',700);
-q = 'q11';
+q = 'q2';
 f01 = getQSettings('f01',q);
-freq = f01 -10e6:0.3e6:f01 + 10e6;
+freq = f01 -10e6:0.2e6:f01 + 10e6;
 biasAmp = 0;
 spectroscopy1_zpa('qubit',q,'biasAmp',biasAmp,'driveFreq',[freq],...
        'dataTyp','S21','gui',true,'save',true);

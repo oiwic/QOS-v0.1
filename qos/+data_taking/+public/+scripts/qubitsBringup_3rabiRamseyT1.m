@@ -1,9 +1,10 @@
 % bring up qubits - spectroscopy
 % Yulin Wu, 2017/3/11
-amp = [0e4:500:3.2e4];
-rabi_amp1('qubit','q10','biasAmp',[0],'biasLonger',20,...
+amp = [0e4:500:3e4];
+% amp = 1.85e4;
+rabi_amp1('qubit','q6','biasAmp',[0],'biasLonger',20,...
       'xyDriveAmp',amp,'detuning',[0],'driveTyp','X/2',...
-      'dataTyp','S21','gui',true,'save',true);
+      'dataTyp','P','gui',true,'save',true);
 % rabi_amp1('qubit','q2','xyDriveAmp',[0:500:3e4]);  % lazy mode
 %%
 rabi_long1_amp('qubit','q9','biasAmp',0,'biasLonger',5,...
@@ -15,20 +16,10 @@ rabi_long1_freq('qubit','q6','biasAmp',0,'biasLonger',5,...
       'detuning',[-10:1:10]*1e6,...
       'dataTyp','P','gui',true,'save',true);
 %%
-setQSettings('r_avg',3000);
-ramsey('qubit','q1','mode','dp',... % available modes are: df01, dp and dz
+setQSettings('r_avg',2000);
+ramsey('qubit','q3','mode','dp',... % available modes are: df01, dp and dz
       'time',[10:20:4000],'detuning',[1]*2e6,...
       'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true);
-%%
-setQSettings('r_avg',5000);
-ramsey('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
-      'time',[0:50:2000],'detuning',[0]*1e6,...
-      'dataTyp','P','phaseOffset',0,'notes','','gui',true,'save',true); % P or Phase
-%%
-ramsey_dz('qubit','q1',...
-       'time',[40],'detuning',[0],'phaseOffset',0,...
-       'dataTyp','P',...   % S21 or P
-       'gui','true','save','true');
 %%
 spin_echo('qubit','q9','mode','dp',... % available modes are: df01, dp and dz
       'time',[0:50:8000],'detuning',[2]*1e6,...

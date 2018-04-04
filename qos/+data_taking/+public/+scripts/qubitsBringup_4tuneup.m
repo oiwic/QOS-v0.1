@@ -1,6 +1,6 @@
 % bring up qubits - tuneup
 % Yulin Wu, 2017/3/11
-q = 'q9';
+q = 'q1';
 
 tuneup.iq2prob_01('qubits',q,'numSamples',1e4,'gui',true,'save','askMe');
 % tuneup.optReadoutFreq('qubit',q,'gui',true,'save','askMe');
